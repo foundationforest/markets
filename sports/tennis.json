@@ -1,0 +1,19 @@
+{
+  "name": "tennis",
+  "folder": "sports",
+  "description": "Finding someone to play tennis with.",
+  "sides": "one",
+  "money": false,
+  "evidenceTypes": [],
+  "offerFields": {
+    "level": {
+      "type": "string",
+      "description": "The level played or sought.",
+      "knownValues": ["beginner", "intermediate", "advanced"],
+      "maxLength": 64
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "Two players agree a time and a court, and play. Done is the match played; then each reviews the other. No money moves, so there is no escrow and no receipt: showing up is what builds a record here. Before meeting, check the other player's level and standing."
+}

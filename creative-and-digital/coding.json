@@ -1,0 +1,24 @@
+{
+  "name": "coding",
+  "folder": "creative-and-digital",
+  "description": "Code written to order: apps, sites, scripts and fixes.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "deliveryDays": {
+      "type": "integer",
+      "description": "Days from the start of the deal to delivery.",
+      "minimum": 1
+    },
+    "stack": {
+      "type": "array",
+      "description": "Languages, frameworks and tools the seller works in.",
+      "items": { "type": "string", "maxLength": 64 },
+      "maxLength": 20
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "communication"],
+  "howDealsGo": "The buyer pays into escrow at the start and releases when the code is delivered and runs as asked; a big job splits into several escrows, one per stage. A timer to the seller, set past the due date, pays finished work if the buyer goes quiet, and means a buyer who disagrees must settle before it runs out. Before paying, write down what done means and who owns the code."
+}

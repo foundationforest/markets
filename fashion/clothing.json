@@ -1,0 +1,28 @@
+{
+  "name": "clothing",
+  "folder": "fashion",
+  "description": "Clothes, new or used.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "condition": {
+      "type": "string",
+      "description": "The item's condition.",
+      "knownValues": ["new", "like-new", "good", "fair", "for-parts"],
+      "maxLength": 64
+    },
+    "size": {
+      "type": "string",
+      "description": "The size, as on the label or in the seller's words.",
+      "maxLength": 32
+    },
+    "ships": {
+      "type": "boolean",
+      "description": "True when the seller ships the item. False or absent: handed over in person."
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "In person, the buyer looks it over, pays and releases in one tap. Shipped, the buyer pays into escrow first and releases when it arrives as described; the seller records the delivery in their folder, and a timer to the seller, set past the expected arrival, pays if the buyer goes quiet. Before paying, ask for photos of any wear and for the measurements."
+}

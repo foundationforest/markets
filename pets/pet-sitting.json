@@ -1,0 +1,19 @@
+{
+  "name": "pet-sitting",
+  "folder": "pets",
+  "description": "Looking after pets at their home or the sitter's, and dog walking.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "species": {
+      "type": "array",
+      "description": "The animals taken, such as dog or cat.",
+      "items": { "type": "string", "maxLength": 64 },
+      "maxLength": 10
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "care"],
+  "howDealsGo": "The owner pays into escrow at booking and releases when the pet is back home and well. A timer to the seller, set past the end of the stay, pays for care given if the owner goes quiet. Before paying, meet the sitter with the pet and share the vet's number."
+}

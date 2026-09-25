@@ -1,0 +1,24 @@
+{
+  "name": "private-chef",
+  "folder": "food",
+  "description": "A cook who shops and cooks a meal at the buyer's place.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "guests": {
+      "type": "integer",
+      "description": "How many guests at most.",
+      "minimum": 1
+    },
+    "cuisines": {
+      "type": "array",
+      "description": "Kinds of food cooked.",
+      "items": { "type": "string", "maxLength": 64 },
+      "maxLength": 10
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "food", "punctuality"],
+  "howDealsGo": "The buyer pays into escrow at booking; a big dinner can be two escrows, a share at booking and the rest before the day. Done is the meal served and the kitchen left clean, and the buyer releases then. A timer to the seller, set past the day, pays for work done if the buyer goes quiet. Before paying, share any allergies and agree who buys the food."
+}

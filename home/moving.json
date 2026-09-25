@@ -1,0 +1,22 @@
+{
+  "name": "moving",
+  "folder": "home",
+  "description": "Moving a home's things from one place to another, with or without packing.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "appointmentWindowHours": {
+      "type": "integer",
+      "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
+      "minimum": 0
+    },
+    "packing": {
+      "type": "boolean",
+      "description": "True when the seller also packs and unpacks."
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality", "care"],
+  "howDealsGo": "The buyer pays into escrow when the move is booked. Done is everything at the new place in one piece, and the buyer releases then. A timer to the seller, set past moving day, pays for a finished move if the buyer goes quiet; an arbiter both trust helps if something breaks on the way. Before paying, agree what happens to anything damaged."
+}

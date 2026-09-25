@@ -1,0 +1,18 @@
+{
+  "name": "venues",
+  "folder": "property",
+  "description": "Halls, rooms and spaces booked for events and meetings.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "capacity": {
+      "type": "integer",
+      "description": "How many people the space holds at most.",
+      "minimum": 1
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "location"],
+  "howDealsGo": "The booking is paid into escrow and released after the event; a deposit for damage is a second escrow, released back. A timer to the seller on the booking, set past the event, pays for an event that happened if the buyer goes quiet, and a timer to the buyer on the deposit brings it back. Before paying, visit the space and agree what is included: chairs, cleaning, sound."
+}

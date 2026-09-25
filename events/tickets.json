@@ -1,0 +1,23 @@
+{
+  "name": "tickets",
+  "folder": "events",
+  "description": "Tickets to concerts, games, shows and other events, resold.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "event": {
+      "type": "string",
+      "description": "Which event, with its date and place as printed on the ticket.",
+      "maxLength": 300
+    },
+    "quantity": {
+      "type": "integer",
+      "description": "How many tickets.",
+      "minimum": 1
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "The buyer pays into escrow and releases once the ticket works at the door. A timer to the seller, set past the event, pays for a ticket that worked if the buyer goes quiet; if it did not work, the seller releases the money back. Before paying, check the ticket can be moved to a new name."
+}

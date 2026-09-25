@@ -1,0 +1,23 @@
+{
+  "name": "grooming",
+  "folder": "pets",
+  "description": "Washing, trimming and nail care for pets, at a salon or at home.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "species": {
+      "type": "array",
+      "description": "The animals taken, such as dog or cat.",
+      "items": { "type": "string", "maxLength": 64 },
+      "maxLength": 10
+    },
+    "homeVisits": {
+      "type": "boolean",
+      "description": "True when the seller comes to the buyer's place."
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "care"],
+  "howDealsGo": "The owner pays into escrow at booking and releases after the appointment, or pays and releases in one tap at pickup. Done is the pet groomed as agreed and unhurt. A timer to the seller, set past the appointment, pays for work done if the owner goes quiet. Before paying, mention any health problems or nerves."
+}

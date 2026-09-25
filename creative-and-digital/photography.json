@@ -1,0 +1,18 @@
+{
+  "name": "photography",
+  "folder": "creative-and-digital",
+  "description": "Photo shoots of people, events, products and places, delivered as edited photos.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "deliveryDays": {
+      "type": "integer",
+      "description": "Days from the start of the deal to delivery.",
+      "minimum": 1
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "The buyer pays into escrow at booking and releases when the edited photos arrive; the shoot and the editing can be two escrows. A timer to the seller, set past the due date, pays finished work if the buyer goes quiet. Before paying, agree how many photos and who may use them."
+}

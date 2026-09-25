@@ -1,0 +1,18 @@
+{
+  "name": "security",
+  "folder": "events",
+  "description": "Guards and door staff for events and places.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "headcount": {
+      "type": "integer",
+      "description": "How many people the seller provides.",
+      "minimum": 1
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "The buyer pays into escrow at booking and releases after the shift. Done is every guard there for the whole shift. A timer to the seller, set past the event, pays for a shift worked if the buyer goes quiet, and a big event may name an arbiter both trust. Before paying, ask whether the guards hold the licence the place requires."
+}

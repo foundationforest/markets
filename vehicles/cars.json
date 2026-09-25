@@ -1,0 +1,28 @@
+{
+  "name": "cars",
+  "folder": "vehicles",
+  "description": "Cars, new or used.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "condition": {
+      "type": "string",
+      "description": "The item's condition.",
+      "knownValues": ["new", "like-new", "good", "fair", "for-parts"],
+      "maxLength": 64
+    },
+    "year": {
+      "type": "integer",
+      "description": "The year it was made."
+    },
+    "mileageKm": {
+      "type": "integer",
+      "description": "Distance driven so far, in kilometres.",
+      "minimum": 0
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "Buyer and seller meet, the buyer inspects and test drives, and the buyer pays into escrow before the handover. Done is the car, its keys and its signed papers handed over, and the buyer releases then. With an amount this large, an arbiter both trust is worth naming. Before paying, check the papers name the seller and no debt is held against the car."
+}

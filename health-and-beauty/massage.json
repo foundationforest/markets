@@ -1,0 +1,17 @@
+{
+  "name": "massage",
+  "folder": "health-and-beauty",
+  "description": "Massage, at the seller's place or at home.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "homeVisits": {
+      "type": "boolean",
+      "description": "True when the seller comes to the buyer's place."
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "The buyer pays into escrow at booking and releases after the session, or pays and releases in one tap at the end. Done is the session given for its full length. A timer to the seller, set past the session, pays for work done if the buyer goes quiet. Before paying, check the seller's standing and say what you want worked on."
+}

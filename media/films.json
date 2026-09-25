@@ -1,0 +1,25 @@
+{
+  "name": "films",
+  "folder": "media",
+  "description": "Films and documentaries, from the people who made them.",
+  "sides": "two",
+  "labels": { "seller": "creator", "buyer": "viewer" },
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "durationMinutes": {
+      "type": "integer",
+      "description": "How long it runs, in minutes.",
+      "minimum": 1
+    },
+    "languages": {
+      "type": "array",
+      "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+      "items": { "type": "string", "format": "language" },
+      "maxLength": 10
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall"],
+  "howDealsGo": "A film may be free to watch, or paid to rent or keep. A paid one is paid and released in one tap once the viewer can open it, so each payment has a receipt a review can point at. Before paying, check the languages and subtitles."
+}

@@ -1,0 +1,19 @@
+{
+  "name": "videos",
+  "folder": "media",
+  "description": "Videos, from the person who made them.",
+  "sides": "two",
+  "labels": { "seller": "creator", "buyer": "viewer" },
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "durationMinutes": {
+      "type": "integer",
+      "description": "How long it runs, in minutes.",
+      "minimum": 1
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall"],
+  "howDealsGo": "A video may be free to watch, or paid. A paid one is paid and released in one tap once the viewer can open it, so each payment has a receipt a review can point at. Before paying, check the length."
+}

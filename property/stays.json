@@ -1,0 +1,24 @@
+{
+  "name": "stays",
+  "folder": "property",
+  "description": "Rooms, flats and houses to stay in while away.",
+  "sides": "two",
+  "labels": { "seller": "host", "buyer": "guest" },
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "guests": {
+      "type": "integer",
+      "description": "How many guests at most.",
+      "minimum": 1
+    },
+    "bedrooms": {
+      "type": "integer",
+      "description": "How many bedrooms.",
+      "minimum": 0
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "location", "cleanliness"],
+  "howDealsGo": "The guest pays into escrow at booking and releases once the place is as described, at check-in or at the end. A timer to the host, set past check-out, pays for a stay that happened if the guest goes quiet; a deposit, if any, is a second escrow released back to the guest. Before paying, check the host's standing and get the exact address."
+}

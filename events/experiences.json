@@ -1,0 +1,24 @@
+{
+  "name": "experiences",
+  "folder": "events",
+  "description": "Tours, classes, tastings and other activities led by a person.",
+  "sides": "two",
+  "money": true,
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "groupSize": {
+      "type": "integer",
+      "description": "How many people at most in one group.",
+      "minimum": 1
+    },
+    "languages": {
+      "type": "array",
+      "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+      "items": { "type": "string", "format": "language" },
+      "maxLength": 10
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall"],
+  "howDealsGo": "The buyer pays into escrow at booking and releases after the activity. Done is the activity held as described. A timer to the seller, set past the activity, pays for one that happened if the buyer goes quiet. Before paying, check the meeting point and what to bring."
+}
