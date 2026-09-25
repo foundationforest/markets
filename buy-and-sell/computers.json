@@ -1,0 +1,24 @@
+{
+  "name": "computers",
+  "category": "buy-and-sell",
+  "roles": ["seller", "buyer"],
+  "fields": {
+    "post": {
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "The item's condition.",
+          "knownValues": ["new", "like-new", "good", "fair", "for-parts"],
+          "maxLength": 64
+        },
+        "ships": {
+          "type": "boolean",
+          "description": "True when the seller ships the item. False or absent: handed over in person."
+        }
+      }
+    }
+  },
+  "evidenceTypes": ["escrow"],
+  "suggested": { "autoReleaseDays": 1, "cancellationSteps": [] },
+  "credentialIssuers": []
+}

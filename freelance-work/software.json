@@ -1,0 +1,19 @@
+{
+  "name": "software",
+  "category": "freelance-work",
+  "roles": ["seller", "buyer"],
+  "fields": {
+    "post": {
+      "properties": {
+        "deliveryDays": {
+          "type": "integer",
+          "description": "Days from the start of the deal to the due date.",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "evidenceTypes": ["escrow"],
+  "suggested": { "autoReleaseDays": 7, "cancellationSteps": [] },
+  "credentialIssuers": []
+}
