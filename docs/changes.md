@@ -52,12 +52,13 @@ Built on top of markets PR #1 (session 1), which was still open.
   - `directory.md` rewritten: per category, one paragraph on how deals usually go and one line per market. New sections "Scopes" and "Aliases". No statuses, no draft marks, no tables of values, no excluded kinds.
   - `template.md` rewritten field by field from forest's `MARKET_REQUIRED_KEYS` and `MARKET_KEYS`. `README.md` rewritten: how to add a market, and that the foundation merges mechanically.
   - `CLAUDE.md` rewritten to the open directory.
-  - `check.sh`: only its header comment changed. `./check.sh` passes all 18 files against forest main (`08459a3`).
+  - `check.sh` also refuses a file whose name is listed as an alias in `directory.md`'s Aliases table, which it reads. `./check.sh` passes all 18 files against forest main (`08459a3`).
 - **Decided (by the task and forest's plan):**
   - Anyone can make any market; this repo holds the recommended spellings; nothing here allows, forbids or approves anything. Closes session 1's open item 1 (excluded kinds).
   - Files carry no money or time values. Closes item 3: there is no auto-release left to suggest. Session 1's suggested values per category are gone.
   - Categories are only for reading, and `tutoring` stays in `freelance-work`. Closes item 4.
-  - The recommended badge scope is `market/role`. Closes item 5.
+  - The recommended badge scope is `market:role`, such as `plumbing:seller`. Closes item 5. The task first said `market/role`, as forest's plan does; at review it became a colon, to match forest's index.
+  - "The name isn't already here" covers aliases: `check.sh` refuses a file whose name is listed as an alias (decided at review).
   - A category is a folder and a page; forest's plan now says so too. Closes item 7.
 - **Chosen, not decided** (each reversible, nothing ships):
   - **`roles` written out in every file**, though `seller` and `buyer` are the default when it's left out. The task named them, and a reader sees the sides without knowing the default.
@@ -67,13 +68,13 @@ Built on top of markets PR #1 (session 1), which was still open.
   - **README step 3 asks for a `directory.md` line.** A missing line is not a reason to refuse a merge; the two checks are the only rules.
 - **Learned:**
   - When this session planned, forest main still had the old plan and validator: a file on the new template failed there ("missing suggested", "unknown key description"). forest PR #19 merged overnight, and main's `shapes/`, handoff and `CLAUDE.md` now match it byte for byte.
-  - `check.sh` on a scratch copy: a `suggested` key, a duplicate name and a file in the wrong folder each fail with exit 1.
+  - `check.sh` on a scratch copy: a `suggested` key, a duplicate name, a file in the wrong folder and a file named `plumber` (an alias of `plumbing`) each fail with exit 1.
   - A `phones` post with `"condition": "mint, boxed"` and a field no market declares passes; a role outside the file's roles fails.
   - The base post lexicon requires `remote`, so every goods post must carry `"remote": false`. This sharpens session 1's open item 8.
-  - The longest scope here, `video-editing/seller`, is 20 bytes, under the registry's 64-byte bound that forest lists as open.
+  - The longest scope here, `video-editing:seller`, is 20 bytes, under the registry's 64-byte bound that forest lists as open.
 - **Open:**
-  1. **forest's index splits a scope at a colon.** The plan and this directory say `market/role`. forest's `index/src/markets.ts` (`splitScope`, and its log's item 9) reads `plumbing/seller` as a market named `plumbing/seller` with no role, so such a badge would not count. forest's to fix; not changed from here.
+  1. **forest's plan still says `market/role`.** This repo and forest's index (`splitScope` in `index/src/markets.ts`) use a colon; forest's handoff (Markets), `CLAUDE.md` and `shapes/README.md` still say a slash. forest's words need to follow; not changed from here.
   2. **Where indexes read aliases.** forest's index keeps its own `index/config/aliases.json`, whose one entry is `online-tutors`, not a name here (it's an alias of `tutoring`). Whether indexes read the table in `directory.md`, or this repo also carries a machine-readable list, is open. A market file can't hold aliases: the key would fail.
-  3. **An alias as a new file.** A file named like a listed alias (`plumber.json`) passes both merge checks, since aliases aren't files. Whether "the name isn't already here" covers aliases is open.
+  3. **The alias check reads `directory.md` as it stands in the pull request.** A pull request that removes `plumber` from the table and adds `plumber.json` passes. Whether the check should compare against main is open.
   4. **Whether a market file keeps `credentialIssuers`** is open in forest's plan.
   5. Still open from session 1: which three markets launch first; how a change to an existing file is merged (a rename strands badges); `remote` on goods, now required (see Learned); no automatic check on pull requests.
