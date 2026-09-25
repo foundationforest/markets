@@ -1,6 +1,7 @@
 {
   "name": "furniture",
   "category": "buy-and-sell",
+  "description": "Tables, chairs, beds, shelves and the like.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
@@ -19,6 +20,5 @@
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": { "autoReleaseDays": 1, "cancellationSteps": [] },
   "credentialIssuers": []
 }

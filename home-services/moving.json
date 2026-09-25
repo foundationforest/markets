@@ -1,6 +1,7 @@
 {
   "name": "moving",
   "category": "home-services",
+  "description": "Moving a home's things from one place to another, with or without packing.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
@@ -14,12 +15,5 @@
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": {
-    "autoReleaseDays": 2,
-    "cancellationSteps": [
-      { "hours": -24, "refundPercent": 100 },
-      { "hours": 0, "refundPercent": 50 }
-    ]
-  },
   "credentialIssuers": []
 }

@@ -1,6 +1,7 @@
 {
   "name": "electrical",
   "category": "home-services",
+  "description": "Wiring, sockets, lights and fuse boxes: fixing and fitting.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
@@ -14,12 +15,5 @@
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": {
-    "autoReleaseDays": 2,
-    "cancellationSteps": [
-      { "hours": -24, "refundPercent": 100 },
-      { "hours": 0, "refundPercent": 50 }
-    ]
-  },
   "credentialIssuers": []
 }
