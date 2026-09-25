@@ -63,7 +63,7 @@ The sides a post in this market can take.
 - A list of at least one lowercase slug, each at most 64 characters, none twice.
 - Left out, the roles are `seller` and `buyer`. Every file here writes them out anyway.
 - A post's `role` must be one of them; the validator checks it.
-- The recommended badge scope is `market:role`, such as `plumbing:seller` (see [`directory.md`](directory.md#scopes)).
+- The recommended badge scope is `market/role`, such as `plumbing/seller` (see [`directory.md`](directory.md#scopes)).
 
 ## `fields` (required)
 

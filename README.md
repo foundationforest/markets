@@ -2,7 +2,7 @@
 
 The foundation's directory of Forest markets: the spellings it recommends, so one trade doesn't split into ten names, grouped in categories for reading. Anyone can make any market, under any name. Nothing here allows, forbids or approves anything.
 
-- [`directory.md`](directory.md): the recommended markets by category, the recommended badge scope (`market:role`) and other common spellings of each market.
+- [`directory.md`](directory.md): the recommended markets by category, the recommended badge scope (`market/role`) and other common spellings of each market.
 - [`template.md`](template.md): the market file, field by field.
 - `<category>/<name>.json`: one file per recommended market.
 - [`check.sh`](check.sh): checks every file against forest's validator.

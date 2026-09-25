@@ -41,10 +41,10 @@ The seller sells a thing, new or used. The buyer pays into escrow, and the thing
 
 ## Scopes
 
-The recommended badge scope is `market:role`, for example `plumbing:seller` and `plumbing:buyer`. That way a person can hold one profile per side of a market: one that sells plumbing work and one that buys it.
+The recommended badge scope is `market/role`, for example `plumbing/seller` and `plumbing/buyer`. That way a person can hold one profile per side of a market: one that sells plumbing work and one that buys it.
 
 - The roles are the ones the market's file names. Every file here names `seller` and `buyer`.
-- Market names and roles are slugs, so neither ever holds a colon: the first colon always splits the two.
+- Market names and roles are slugs, so neither ever holds a slash: the first slash always splits the two.
 - The registry accepts any scope. This is a recommendation.
 
 ## Aliases
