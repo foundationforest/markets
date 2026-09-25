@@ -1,6 +1,7 @@
 {
   "name": "tools",
   "category": "buy-and-sell",
+  "description": "Hand tools, power tools and garden tools.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
@@ -19,6 +20,5 @@
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": { "autoReleaseDays": 1, "cancellationSteps": [] },
   "credentialIssuers": []
 }

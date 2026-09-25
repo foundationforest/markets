@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Checks every market file here against the validator in forest/shapes, then this repo's two
-# naming rules: a file lives at <category>/<name>.json, and no two files share a name.
+# Checks every market file here against the validator in forest/shapes (main), then that the name
+# isn't already here: each file lives at <category>/<name>.json, and no two files share a name.
 # Needs git, Node 22 and npm. Exit 0 when every file passes, 1 when any fails.
 set -euo pipefail
 

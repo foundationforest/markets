@@ -1,6 +1,7 @@
 {
   "name": "bikes",
   "category": "buy-and-sell",
+  "description": "Bicycles, electric bikes and their parts.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
@@ -19,6 +20,5 @@
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": { "autoReleaseDays": 1, "cancellationSteps": [] },
   "credentialIssuers": []
 }

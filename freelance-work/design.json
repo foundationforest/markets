@@ -1,19 +1,19 @@
 {
   "name": "design",
   "category": "freelance-work",
+  "description": "Logos, graphics, layouts and other visual design, delivered as files.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
       "properties": {
         "deliveryDays": {
           "type": "integer",
-          "description": "Days from the start of the deal to the due date.",
+          "description": "Days from the start of the deal to delivery.",
           "minimum": 1
         }
       }
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": { "autoReleaseDays": 7, "cancellationSteps": [] },
   "credentialIssuers": []
 }

@@ -1,6 +1,7 @@
 {
   "name": "clothing",
   "category": "buy-and-sell",
+  "description": "Clothes, shoes and accessories.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
@@ -19,6 +20,5 @@
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": { "autoReleaseDays": 1, "cancellationSteps": [] },
   "credentialIssuers": []
 }

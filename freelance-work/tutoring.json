@@ -1,6 +1,7 @@
 {
   "name": "tutoring",
   "category": "freelance-work",
+  "description": "Lessons in any subject, one session at a time.",
   "roles": ["seller", "buyer"],
   "fields": {
     "post": {
@@ -22,6 +23,5 @@
     }
   },
   "evidenceTypes": ["escrow"],
-  "suggested": { "autoReleaseDays": 7, "cancellationSteps": [] },
   "credentialIssuers": []
 }
