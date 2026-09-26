@@ -1,0 +1,24 @@
+{
+  "name": "chauffeur",
+  "folder": "transport",
+  "description": "A driver for hours or days, in the driver's car or the buyer's.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      },
+      "ownCar": {
+        "type": "boolean",
+        "description": "True when the driver brings the car. False or absent: the buyer's car."
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality", "safety"],
+  "howDealsGo": "The buyer pays into escrow at booking and releases at the end of it. Done is the driver there on time for the whole booking. A timer to the seller, set past the booking, pays for driving done if the buyer goes quiet. Before paying, check whose car it is and who pays for fuel."
+}

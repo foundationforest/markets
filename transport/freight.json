@@ -1,0 +1,19 @@
+{
+  "name": "freight",
+  "folder": "transport",
+  "description": "Large loads, pallets and vehicles carried long distances.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "maxKg": {
+        "type": "integer",
+        "description": "The heaviest load taken, in kilograms.",
+        "minimum": 1
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality", "care"],
+  "howDealsGo": "The buyer pays into escrow at booking and releases when the load arrives as it left. The seller records pickup and delivery in their folder, and a timer to the seller, set past the expected arrival, pays if the buyer goes quiet. An arbiter both trust helps with big loads, where damage is costly. Before paying, agree who covers damage on the way."
+}

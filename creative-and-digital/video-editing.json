@@ -1,0 +1,24 @@
+{
+  "name": "video-editing",
+  "folder": "creative-and-digital",
+  "description": "Cutting and finishing video from the buyer's footage.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      },
+      "revisions": {
+        "type": "integer",
+        "description": "How many rounds of changes are included.",
+        "minimum": 0
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "communication"],
+  "howDealsGo": "The buyer pays into escrow at the start and releases when the finished video arrives as asked; a big job splits into several escrows, one per stage. A timer to the seller, set past the due date, pays finished work if the buyer goes quiet, and means a buyer who disagrees must settle before it runs out. Before paying, agree the length, the format and the rounds of changes."
+}

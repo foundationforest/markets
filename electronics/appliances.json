@@ -1,0 +1,24 @@
+{
+  "name": "appliances",
+  "folder": "electronics",
+  "description": "Fridges, washing machines, ovens and small home appliances, new or used.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "condition": {
+        "type": "string",
+        "description": "The item's condition.",
+        "knownValues": ["new", "like-new", "good", "fair", "for-parts"],
+        "maxLength": 64
+      },
+      "ships": {
+        "type": "boolean",
+        "description": "True when the seller ships the item. False or absent: handed over in person."
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "The buyer checks it works, then pays and releases in one tap; when the seller delivers, the buyer pays into escrow first and releases once it is in and running. A timer to the seller, set past the delivery, pays if the buyer goes quiet. Before paying, check it fits the space and the power supply where it is going."
+}

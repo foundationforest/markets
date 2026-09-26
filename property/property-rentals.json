@@ -1,0 +1,24 @@
+{
+  "name": "property-rentals",
+  "folder": "property",
+  "description": "Homes and rooms rented to live in.",
+  "sides": "two",
+  "labels": { "seller": "landlord", "buyer": "tenant" },
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "bedrooms": {
+        "type": "integer",
+        "description": "How many bedrooms.",
+        "minimum": 0
+      },
+      "furnished": {
+        "type": "boolean",
+        "description": "True when it comes furnished."
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy", "communication"],
+  "howDealsGo": "Each rent payment can be its own escrow that the tenant releases, and the deposit is one more escrow, released back to the tenant at the end. Done is the place handed back as it was let, and the deposit returned. A timer to the tenant on the deposit, set past the end of the lease, keeps it from being held without reason, and an arbiter both trust can settle damage. Before paying, visit the place or send someone you trust."
+}

@@ -1,0 +1,27 @@
+{
+  "name": "music-lessons",
+  "folder": "education",
+  "description": "Lessons in playing an instrument or singing, online or in person.",
+  "sides": "two",
+  "labels": { "seller": "teacher", "buyer": "student" },
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "instruments": {
+        "type": "array",
+        "description": "The instruments taught, singing included.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "clarity"],
+  "howDealsGo": "The student pays into escrow for a lesson or a set of lessons, and releases after each lesson is held. Done is the lesson given at the agreed time, for its full length. A timer to the teacher, set past the lesson, pays for a lesson given if the student goes quiet. Before paying, check whether you need your own instrument."
+}

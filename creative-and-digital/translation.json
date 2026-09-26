@@ -1,0 +1,25 @@
+{
+  "name": "translation",
+  "folder": "creative-and-digital",
+  "description": "Text translated from one language to another.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "The buyer pays into escrow at the start and releases when the translation arrives. Done is the whole text translated, accurate and in the agreed format. A timer to the seller, set past the due date, pays finished work if the buyer goes quiet. Before paying, say whether the translation must be certified."
+}

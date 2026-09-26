@@ -1,0 +1,25 @@
+{
+  "name": "writing",
+  "folder": "creative-and-digital",
+  "description": "Articles, copy and other text, written to order.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "communication"],
+  "howDealsGo": "The buyer pays into escrow at the start and releases when the text arrives as asked. A timer to the seller, set past the due date, pays finished work if the buyer goes quiet, and means a buyer who disagrees must settle before it runs out. Before paying, agree the length, the tone and the rounds of changes."
+}

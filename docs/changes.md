@@ -78,3 +78,61 @@ Built on top of markets PR #1 (session 1), which was still open.
   3. **The alias check reads `directory.md` as it stands in the pull request.** A pull request that removes `plumber` from the table and adds `plumber.json` passes. Whether the check should compare against main is open.
   4. **Whether a market file keeps `credentialIssuers`** is open in forest's plan.
   5. Still open from session 1: which three markets launch first; how a change to an existing file is merged (a rename strands badges); `remote` on goods, now required (see Learned); no automatic check on pull requests.
+
+## 2026-09-25: session 3, the guide, and every market discussed
+
+Built from main (`e430122`); no markets pull request was open. A forest session is changing the market schema at the same time; nothing of it was pushed while this one ran.
+
+- **Built:**
+  - `README.md`: the guide (version 1), verbatim from the task.
+  - `CLAUDE.md`: five lines.
+  - 57 market files, one per market in the guide's examples table, in 16 folders. Each has, in this order: `name`, `folder`, `description`, `sides`, `labels` (12 files only), `money`, `evidenceTypes`, `offerFields`, `reviewFields`, `ratings`, `howDealsGo`. Nothing else.
+  - `directory.md`: the 17 folders in the guide's order, one sentence each, and one line per market with its sides and whether money moves. No Scopes or Aliases sections.
+  - `check.sh`: same purpose. It runs forest's validator on every file, then checks each file lives at `<folder>/<name>.json` and no two files share a name. The alias check is gone with the table.
+  - Removed: `template.md` (it described the old schema), the three old folders, and `phones`, `computers`, `software`, `furniture` and `tools`. `electronics` covers phones and computers, `coding` covers software; furniture and tools aren't in the guide.
+- **Decided (by the task and at plan review):**
+  - The key names above, given by the task. `category`, `roles`, `fields` and `credentialIssuers` are gone from the files.
+  - Labels only on stays (host, guest), property-rentals (landlord, tenant), tutoring, courses and music-lessons (teacher, student), rides (driver, rider) and the five media markets (creator, viewer).
+  - The Aliases table is dropped. The forest session removes the index's alias reading.
+  - The badge scope is `market/role`, with a slash, as the guide and forest's index say. This closes the handoff's open item that this repo said a colon.
+- **Chosen, not decided** (each reversible, nothing ships):
+  - **`offerFields` is a map of field name to a lexicon field definition,** flat types only, as `fields.post.properties` was. `reviewFields` is `{}` everywhere, since the guide puts a match result "later".
+  - **One definition per field name,** identical in every file that uses it: 39 fields. The old ones kept their wording (`appointmentWindowHours`, `deliveryDays`, `condition`, `ships`, `subjects`, `languages`). New ones include `year`, `mileageKm`, `bedrooms`, `guests`, `homeVisits`, `cuisines`, `headcount`, `maxKg`, `countries`, `revisions`, `license`, `species` and `level`. No field is required.
+  - **Rating names:** `overall` first, then at most two more a buyer can judge (punctuality, accuracy, cleanliness, location, care, clarity, communication, food, safety, thoroughness, tidiness). Five markets have `overall` only.
+  - **Media has `money: true`,** read as "money can move here", since the guide says free or paid.
+  - **The `howDealsGo` texts say what each escrow option does in that market and why, not how often people use it.** No deal has run, so nothing is known about habits. Four patterns, tuned per market: a visit (pay at booking, release after, a timer to the seller set past the visit), goods (one tap in person; shipped, release on arrival, a timer to the seller set past the expected arrival), rentals (a deposit as a second escrow, a timer to the buyer on it), remote work (release on delivery, milestones as several escrows, a timer to the seller with its trade-off said plainly). No numbers in any of them.
+  - **`travel-and-stays` is listed with no markets.** The guide's table puts `stays` under `property`, and the README is verbatim, so the table wins.
+- **Learned:**
+  - `check.sh` against forest main fails all 57 files, and only on the keys ("missing category", "unknown key folder" and so on). It will pass only once forest's schema session merges, and only if its key names match these.
+  - Every offer-field definition passes forest's current validator when mapped to `fields.post.properties`: names, types, no base post field reused, and the merged lexicon still valid.
+  - On a scratch copy, `check.sh` refuses a second `plumbing` in another folder and a file in the wrong folder, exit 1.
+  - forest's index reads `directory.md` lines shaped ``- [`name`](folder/name.json): ...``. The new lines keep that shape. The index also reads `category` and `roles` from each file, which now don't exist.
+- **Open:**
+  1. **forest's key names.** If the schema session names any key differently, these files change to match it.
+  2. **forest's index** needs `folder` for the path check, the roles from `sides` (`seller` and `buyer`, or `peer`), and no alias table. The forest session's change.
+  3. **A post in a no-money market still needs a `price`:** the base post lexicon requires it. tennis, running-partners and study-partners can't post a valid offer until that changes in forest.
+  4. **No-money markets have no evidence type,** so under today's index their reviews weigh near zero. The guide puts check-in evidence "later".
+  5. **Names that read two ways,** frozen at the first badge: `training` (pets, not people), `security` (event guards, not computer security), `bikes` (bicycles), `hair`, `legal`. Worth one look before any badge exists.
+  6. **Ratings:** the guide says named ratings from 1.0 to 10.0; the review lexicon today has one rating from 1 to 5. forest's to change.
+  7. **The handoff's Markets section** still describes the alias table and a market file with `category` and `roles`.
+  8. **`travel-and-stays` or `property` for `stays`.** Folders move freely, so this costs nothing either way.
+  9. Still open from before: `check.sh` doesn't check that every file is listed in `directory.md` (all 57 are, checked by a scratch script this session); no check runs on pull requests; how a change to an existing file is merged; which three markets launch first.
+
+## 2026-09-26: session 4, no money key, four renames, stays moved
+
+On top of markets PR #3 (session 3), which is still open. forest #31 had merged: the market file has no `money` key, and a price is optional on every post.
+
+- **Built:**
+  - `money` removed from all 57 files and from the README's list of what a market file says. `directory.md` no longer says whether money moves on each line.
+  - `offerFields` is now `{ "properties": { ... } }`, the block shape forest's validator takes; `{}` when a market has none (short-form). `reviewFields` stays `{}`.
+  - Renamed: `training` to `pet-training`, `security` to `event-security`, `hair` to `hairdressing`, `legal` to `legal-advice`. `stays` moved from `property` to `travel-and-stays`. The README's examples table follows both, so it lists no market that doesn't exist.
+  - The three no-money markets' texts say "Usually no money changes hands" in place of "No money moves", so no file says what a market allows.
+- **Decided (by the task):** no `money` key; the four new names; `stays` in `travel-and-stays`.
+- **Learned:**
+  - `./check.sh` passes all 57 files against forest main (`1c4b5e2`).
+  - Before the fix, forest's validator refused every file for the `money` key. With that key gone, it refused the next thing: `offerFields` as a bare map of fields ("only "properties" and "required" belong here"). It checks unknown keys first and stops there, so the second problem only showed after the first was fixed.
+  - forest's index reads the same directory line shape as before, ``- [`name`](folder/name.json): ...``, and no Aliases table.
+- **Open:**
+  1. ~~`howDealsGo` and "no word on the options".~~ Decided by Carlos: the texts stay as they are, options included.
+  2. ~~The guide still speaks of money per market.~~ Decided by Carlos: the examples table says only "one-sided", and step 6 asks only which evidence can prove a deal happened.
+  3. From session 3: open items 1 to 3 and 6 are closed by forest #29 and #31 (the key names, the index, an optional price, named ratings out of 10). Item 5 is closed for four names; `bikes` stays. Item 8 is closed: `stays` moved. Items 4, 7 and 9 stay open.

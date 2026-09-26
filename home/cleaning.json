@@ -1,0 +1,19 @@
+{
+  "name": "cleaning",
+  "folder": "home",
+  "description": "Cleaning a home, once or on a schedule.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "appointmentWindowHours": {
+        "type": "integer",
+        "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
+        "minimum": 0
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality", "thoroughness"],
+  "howDealsGo": "Each clean is its own escrow, paid at booking. Done is the home clean when the cleaner leaves, and the buyer releases after a look round. A timer to the seller, set past the visit, pays for work done if the buyer goes quiet. Before paying, agree what is included: windows, oven, supplies."
+}

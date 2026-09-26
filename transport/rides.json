@@ -1,0 +1,20 @@
+{
+  "name": "rides",
+  "folder": "transport",
+  "description": "Rides in someone's car, across town or between cities.",
+  "sides": "two",
+  "labels": { "seller": "driver", "buyer": "rider" },
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "seats": {
+        "type": "integer",
+        "description": "How many seats.",
+        "minimum": 1
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality", "safety"],
+  "howDealsGo": "The rider pays into escrow when the ride is agreed and releases at drop-off, or pays and releases in one tap at the end. Done is the rider at the destination. A timer to the driver, set past the ride, pays for a ride given if the rider goes quiet. Before riding, check the driver's standing and the car's plate."
+}

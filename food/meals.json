@@ -1,0 +1,24 @@
+{
+  "name": "meals",
+  "folder": "food",
+  "description": "Home-cooked meals, picked up or delivered.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "cuisines": {
+        "type": "array",
+        "description": "Kinds of food cooked.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "delivers": {
+        "type": "boolean",
+        "description": "True when the seller delivers. False or absent: picked up."
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "food"],
+  "howDealsGo": "The buyer pays and releases in one tap at pickup, or pays into escrow first and releases when the meal arrives. Done is the meal as described, on time. Amounts are small, so neither a timer nor an arbiter adds much. Before paying, ask what is in it."
+}

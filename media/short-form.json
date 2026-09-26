@@ -1,0 +1,12 @@
+{
+  "name": "short-form",
+  "folder": "media",
+  "description": "Short clips made to watch in one go on a phone.",
+  "sides": "two",
+  "labels": { "seller": "creator", "buyer": "viewer" },
+  "evidenceTypes": ["escrow"],
+  "offerFields": {},
+  "reviewFields": {},
+  "ratings": ["overall"],
+  "howDealsGo": "A clip may be free to watch, or paid to unlock. A paid one is paid and released in one tap once the viewer can open it, so each payment has a receipt a review can point at. Before paying, check the creator's standing."
+}

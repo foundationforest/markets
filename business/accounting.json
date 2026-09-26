@@ -1,0 +1,20 @@
+{
+  "name": "accounting",
+  "folder": "business",
+  "description": "Bookkeeping, tax returns and accounts.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "countries": {
+        "type": "array",
+        "description": "Countries whose rules the seller works under, as two-letter codes.",
+        "items": { "type": "string", "minLength": 2, "maxLength": 2 },
+        "maxLength": 20
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "communication"],
+  "howDealsGo": "The buyer pays into escrow at the start and releases when the books or the return are done. Done is the filing made or the accounts delivered, on time. A timer to the seller, set past the deadline, pays for finished work if the buyer goes quiet. Before paying, check the seller works under your country's rules."
+}

@@ -1,0 +1,20 @@
+{
+  "name": "legal-advice",
+  "folder": "business",
+  "description": "Legal advice, documents and representation.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "countries": {
+        "type": "array",
+        "description": "Countries whose rules the seller works under, as two-letter codes.",
+        "items": { "type": "string", "minLength": 2, "maxLength": 2 },
+        "maxLength": 20
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "communication"],
+  "howDealsGo": "The buyer pays into escrow at the start and releases when the advice or document is delivered; a longer case splits into several escrows, one per stage. Done is what the deal lists, delivered. An arbiter both trust suits a larger case. Before paying, check the seller is licensed where your matter is."
+}

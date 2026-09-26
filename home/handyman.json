@@ -1,0 +1,19 @@
+{
+  "name": "handyman",
+  "folder": "home",
+  "description": "Small repairs and jobs around a home: shelves, doors, putting furniture together.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "appointmentWindowHours": {
+        "type": "integer",
+        "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
+        "minimum": 0
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "The buyer books a visit and pays into escrow. Done is every task on the list finished, and the buyer releases then. A timer to the seller, set past the visit, pays for work done if the buyer goes quiet. Before paying, write the list of tasks into the deal, so both know what done means."
+}

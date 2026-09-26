@@ -1,0 +1,24 @@
+{
+  "name": "property-sales",
+  "folder": "property",
+  "description": "Homes, flats and land, sold.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "bedrooms": {
+        "type": "integer",
+        "description": "How many bedrooms.",
+        "minimum": 0
+      },
+      "areaM2": {
+        "type": "integer",
+        "description": "Floor area, in square metres.",
+        "minimum": 1
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "The sale follows the steps the law sets where the property is; an escrow here can hold a deposit or the price until the transfer is signed. Done is the property in the buyer's name, and the buyer releases then. An arbiter both trust, such as the notary or lawyer on the sale, fits here, and a timer to the buyer on a deposit brings it back if the transfer never happens. Before paying, check with the land registry that the seller owns it."
+}

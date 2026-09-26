@@ -1,0 +1,20 @@
+{
+  "name": "consulting",
+  "folder": "business",
+  "description": "Advice and projects for a business, from someone who knows the field.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "specialties": {
+        "type": "array",
+        "description": "What the seller advises on.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "communication"],
+  "howDealsGo": "The buyer pays into escrow at the start and releases when what the deal lists is delivered; a big job splits into several escrows, one per stage. A timer to the seller, set past the due date, pays finished work if the buyer goes quiet, and means a buyer who disagrees must settle before it runs out. An arbiter both trust suits a large project. Before paying, write what will be delivered into the deal."
+}

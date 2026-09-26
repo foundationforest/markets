@@ -1,0 +1,25 @@
+{
+  "name": "event-staff",
+  "folder": "events",
+  "description": "Waiters, bar staff, hosts and helpers for events.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "jobs": {
+        "type": "array",
+        "description": "What the staff do, such as serving, bar or cloakroom.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "headcount": {
+        "type": "integer",
+        "description": "How many people the seller provides.",
+        "minimum": 1
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "The buyer pays into escrow at booking and releases after the shift. Done is every person there for the whole shift, doing the agreed job. A timer to the seller, set past the event, pays for a shift worked if the buyer goes quiet. Before paying, agree what the staff wear and who feeds them."
+}

@@ -1,0 +1,27 @@
+{
+  "name": "news",
+  "folder": "media",
+  "description": "Reporting and analysis, from the person who wrote or filmed it.",
+  "sides": "two",
+  "labels": { "seller": "creator", "buyer": "viewer" },
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "topics": {
+        "type": "array",
+        "description": "What it covers.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "A story may be free to read, or paid. A paid one is paid and released in one tap once the viewer can open it, so each payment has a receipt a review can point at. Reviews here rate accuracy: whether the story held up."
+}

@@ -1,0 +1,19 @@
+{
+  "name": "gardening",
+  "folder": "home",
+  "description": "Mowing, pruning, planting and clearing a garden or yard.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "appointmentWindowHours": {
+        "type": "integer",
+        "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
+        "minimum": 0
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "The buyer books a visit and pays into escrow. Done is the garden as agreed and the cuttings dealt with, and the buyer releases then. A timer to the seller, set past the visit, pays for work done if the buyer goes quiet. Before paying, agree who takes the green waste away."
+}

@@ -1,0 +1,19 @@
+{
+  "name": "painting",
+  "folder": "home",
+  "description": "Painting and decorating walls, ceilings, doors and outside walls.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "appointmentWindowHours": {
+        "type": "integer",
+        "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
+        "minimum": 0
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality", "tidiness"],
+  "howDealsGo": "The buyer pays into escrow when the job is booked; a job over several days can be several escrows, one per room or stage. Done is the paint dry, the edges clean and the floors as they were, and the buyer releases then. A timer to the seller, set past the last day, pays for work done if the buyer goes quiet. Before paying, agree who buys the paint."
+}

@@ -1,0 +1,24 @@
+{
+  "name": "bikes",
+  "folder": "vehicles",
+  "description": "Bicycles and electric bikes, and their parts.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "condition": {
+        "type": "string",
+        "description": "The item's condition.",
+        "knownValues": ["new", "like-new", "good", "fair", "for-parts"],
+        "maxLength": 64
+      },
+      "ships": {
+        "type": "boolean",
+        "description": "True when the seller ships the item. False or absent: handed over in person."
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "accuracy"],
+  "howDealsGo": "In person, the buyer looks it over, pays and releases in one tap. Shipped, the buyer pays into escrow first and releases when it arrives as described; the seller records the delivery in their folder, and a timer to the seller, set past the expected arrival, pays if the buyer goes quiet. Before paying, check the frame number is not reported stolen."
+}

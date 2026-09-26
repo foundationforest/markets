@@ -1,0 +1,27 @@
+{
+  "name": "study-partners",
+  "folder": "community",
+  "description": "Finding someone to study with, in person or online.",
+  "sides": "one",
+  "evidenceTypes": [],
+  "offerFields": {
+    "properties": {
+      "subjects": {
+        "type": "array",
+        "description": "What is taught or sought.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10,
+        "minLength": 1
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "Two people agree a time, a place or a call, and a subject, and study. Done is the session held; then each reviews the other. Usually no money changes hands, so there is no escrow and no receipt: showing up is what builds a record here. Before meeting, agree what you'll each prepare."
+}

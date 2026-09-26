@@ -1,0 +1,20 @@
+{
+  "name": "pet-training",
+  "folder": "pets",
+  "description": "Teaching pets to behave, one to one or in classes.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "species": {
+        "type": "array",
+        "description": "The animals taken, such as dog or cat.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "care"],
+  "howDealsGo": "A session or a set of sessions is paid into escrow, and the owner releases after each one. Done is the session held; results also depend on practice at home. A timer to the seller, set past each session, pays for sessions held if the owner goes quiet. Before paying, ask how the trainer trains: with rewards or with corrections."
+}

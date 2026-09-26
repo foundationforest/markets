@@ -1,0 +1,21 @@
+{
+  "name": "photos",
+  "folder": "media",
+  "description": "Photos to view or license, from the person who took them.",
+  "sides": "two",
+  "labels": { "seller": "creator", "buyer": "viewer" },
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "license": {
+        "type": "string",
+        "description": "What the viewer may do with it.",
+        "knownValues": ["personal", "commercial"],
+        "maxLength": 64
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall"],
+  "howDealsGo": "A photo may be free to view, or paid. A paid one is paid and released in one tap once the viewer can open it, so each payment has a receipt a review can point at. Before paying, check the license says what you may do with it."
+}

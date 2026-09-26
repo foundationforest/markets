@@ -1,0 +1,19 @@
+{
+  "name": "deliveries",
+  "folder": "transport",
+  "description": "Parcels, food and errands carried across town.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "maxKg": {
+        "type": "integer",
+        "description": "The heaviest load taken, in kilograms.",
+        "minimum": 1
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality", "care"],
+  "howDealsGo": "The buyer pays into escrow and releases when the recipient has it. Done is the parcel handed over, and the seller records the delivery in their folder. A timer to the seller, set past the delivery, pays if the buyer goes quiet. Before paying, say the size and weight."
+}
