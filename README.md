@@ -75,7 +75,7 @@ Later, in the foundation: two proofs a person makes about their own profiles, ne
 3. Apply the one rule: would reputation from an existing market carry over? If yes, it's the same market.
 4. Name it: lowercase, unique, the name you'd still use in twenty years.
 5. Two-sided or one-sided? Give labels only if seller and buyer aren't the natural words.
-6. Does money move? Which evidence can prove a deal happened, even evidence that doesn't exist yet?
+6. Which evidence can prove a deal happened, even evidence that doesn't exist yet?
 7. What do people rate? Name the ratings.
 8. Write "how deals here usually go" in plain words.
 9. Pick a folder. Folders can move; the name can't.
@@ -100,8 +100,8 @@ Later, in the foundation: two proofs a person makes about their own profiles, ne
 | events | tickets, experiences, event-staff, event-security |
 | health-and-beauty | hairdressing, massage, personal-training |
 | pets | pet-sitting, grooming, pet-training |
-| sports | tennis (one-sided, no money), running-partners (one-sided, no money) |
-| community | study-partners (one-sided, no money) |
+| sports | tennis (one-sided), running-partners (one-sided) |
+| community | study-partners (one-sided) |
 
 ## Foundation versus apps
 
