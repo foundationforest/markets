@@ -4,17 +4,18 @@
   "description": "Homes and rooms rented to live in.",
   "sides": "two",
   "labels": { "seller": "landlord", "buyer": "tenant" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "bedrooms": {
-      "type": "integer",
-      "description": "How many bedrooms.",
-      "minimum": 0
-    },
-    "furnished": {
-      "type": "boolean",
-      "description": "True when it comes furnished."
+    "properties": {
+      "bedrooms": {
+        "type": "integer",
+        "description": "How many bedrooms.",
+        "minimum": 0
+      },
+      "furnished": {
+        "type": "boolean",
+        "description": "True when it comes furnished."
+      }
     }
   },
   "reviewFields": {},

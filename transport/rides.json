@@ -4,13 +4,14 @@
   "description": "Rides in someone's car, across town or between cities.",
   "sides": "two",
   "labels": { "seller": "driver", "buyer": "rider" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "seats": {
-      "type": "integer",
-      "description": "How many seats.",
-      "minimum": 1
+    "properties": {
+      "seats": {
+        "type": "integer",
+        "description": "How many seats.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

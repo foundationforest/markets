@@ -3,14 +3,15 @@
   "folder": "business",
   "description": "Advice and projects for a business, from someone who knows the field.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "specialties": {
-      "type": "array",
-      "description": "What the seller advises on.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10
+    "properties": {
+      "specialties": {
+        "type": "array",
+        "description": "What the seller advises on.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      }
     }
   },
   "reviewFields": {},

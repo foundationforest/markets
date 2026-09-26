@@ -117,3 +117,22 @@ Built from main (`e430122`); no markets pull request was open. A forest session 
   7. **The handoff's Markets section** still describes the alias table and a market file with `category` and `roles`.
   8. **`travel-and-stays` or `property` for `stays`.** Folders move freely, so this costs nothing either way.
   9. Still open from before: `check.sh` doesn't check that every file is listed in `directory.md` (all 57 are, checked by a scratch script this session); no check runs on pull requests; how a change to an existing file is merged; which three markets launch first.
+
+## 2026-09-26: session 4, no money key, four renames, stays moved
+
+On top of markets PR #3 (session 3), which is still open. forest #31 had merged: the market file has no `money` key, and a price is optional on every post.
+
+- **Built:**
+  - `money` removed from all 57 files and from the README's list of what a market file says. `directory.md` no longer says whether money moves on each line.
+  - `offerFields` is now `{ "properties": { ... } }`, the block shape forest's validator takes; `{}` when a market has none (short-form). `reviewFields` stays `{}`.
+  - Renamed: `training` to `pet-training`, `security` to `event-security`, `hair` to `hairdressing`, `legal` to `legal-advice`. `stays` moved from `property` to `travel-and-stays`. The README's examples table follows both, so it lists no market that doesn't exist.
+  - The three no-money markets' texts say "Usually no money changes hands" in place of "No money moves", so no file says what a market allows.
+- **Decided (by the task):** no `money` key; the four new names; `stays` in `travel-and-stays`.
+- **Learned:**
+  - `./check.sh` passes all 57 files against forest main (`1c4b5e2`).
+  - Before the fix, forest's validator refused every file for the `money` key. With that key gone, it refused the next thing: `offerFields` as a bare map of fields ("only "properties" and "required" belong here"). It checks unknown keys first and stops there, so the second problem only showed after the first was fixed.
+  - forest's index reads the same directory line shape as before, ``- [`name`](folder/name.json): ...``, and no Aliases table.
+- **Open:**
+  1. **`howDealsGo` and "no word on the options".** forest's follow-up to #31 decided that no page a person reads says anything about the escrow options, and its page test checks that no page says "arbiter" or "timer". The index shows each market's `howDealsGo` on the market page. The guide asks that text to say which options people turn on, and 49 of the 57 texts name a timer or an arbiter. Either the texts drop the options, or the rule covers only an offer's and a receipt's own options. *Needs Carlos.*
+  2. **The guide still speaks of money per market** in two places: the examples table ("one-sided, no money") and step 6 of adding a market ("Does money move?"). Left as they are; with no `money` key, whether they stay is Carlos's.
+  3. From session 3: open items 1 to 3 and 6 are closed by forest #29 and #31 (the key names, the index, an optional price, named ratings out of 10). Item 5 is closed for four names; `bikes` stays. Item 8 is closed: `stays` moved. Items 4, 7 and 9 stay open.

@@ -3,17 +3,18 @@
   "folder": "health-and-beauty",
   "description": "Training sessions with a coach, in a gym, outdoors, at home or online.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "homeVisits": {
-      "type": "boolean",
-      "description": "True when the seller comes to the buyer's place."
-    },
-    "sessions": {
-      "type": "integer",
-      "description": "How many sessions the offer includes.",
-      "minimum": 1
+    "properties": {
+      "homeVisits": {
+        "type": "boolean",
+        "description": "True when the seller comes to the buyer's place."
+      },
+      "sessions": {
+        "type": "integer",
+        "description": "How many sessions the offer includes.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

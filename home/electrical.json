@@ -3,13 +3,14 @@
   "folder": "home",
   "description": "Wiring, sockets, lights and fuse boxes: fixing and fitting.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "appointmentWindowHours": {
-      "type": "integer",
-      "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
-      "minimum": 0
+    "properties": {
+      "appointmentWindowHours": {
+        "type": "integer",
+        "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
+        "minimum": 0
+      }
     }
   },
   "reviewFields": {},

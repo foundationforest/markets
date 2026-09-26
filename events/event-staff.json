@@ -3,19 +3,20 @@
   "folder": "events",
   "description": "Waiters, bar staff, hosts and helpers for events.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "jobs": {
-      "type": "array",
-      "description": "What the staff do, such as serving, bar or cloakroom.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10
-    },
-    "headcount": {
-      "type": "integer",
-      "description": "How many people the seller provides.",
-      "minimum": 1
+    "properties": {
+      "jobs": {
+        "type": "array",
+        "description": "What the staff do, such as serving, bar or cloakroom.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "headcount": {
+        "type": "integer",
+        "description": "How many people the seller provides.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

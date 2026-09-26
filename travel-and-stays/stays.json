@@ -1,21 +1,22 @@
 {
   "name": "stays",
-  "folder": "property",
+  "folder": "travel-and-stays",
   "description": "Rooms, flats and houses to stay in while away.",
   "sides": "two",
   "labels": { "seller": "host", "buyer": "guest" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "guests": {
-      "type": "integer",
-      "description": "How many guests at most.",
-      "minimum": 1
-    },
-    "bedrooms": {
-      "type": "integer",
-      "description": "How many bedrooms.",
-      "minimum": 0
+    "properties": {
+      "guests": {
+        "type": "integer",
+        "description": "How many guests at most.",
+        "minimum": 1
+      },
+      "bedrooms": {
+        "type": "integer",
+        "description": "How many bedrooms.",
+        "minimum": 0
+      }
     }
   },
   "reviewFields": {},

@@ -3,13 +3,14 @@
   "folder": "creative-and-digital",
   "description": "Photo shoots of people, events, products and places, delivered as edited photos.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "deliveryDays": {
-      "type": "integer",
-      "description": "Days from the start of the deal to delivery.",
-      "minimum": 1
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

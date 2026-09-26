@@ -3,14 +3,15 @@
   "folder": "business",
   "description": "Bookkeeping, tax returns and accounts.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "countries": {
-      "type": "array",
-      "description": "Countries whose rules the seller works under, as two-letter codes.",
-      "items": { "type": "string", "minLength": 2, "maxLength": 2 },
-      "maxLength": 20
+    "properties": {
+      "countries": {
+        "type": "array",
+        "description": "Countries whose rules the seller works under, as two-letter codes.",
+        "items": { "type": "string", "minLength": 2, "maxLength": 2 },
+        "maxLength": 20
+      }
     }
   },
   "reviewFields": {},

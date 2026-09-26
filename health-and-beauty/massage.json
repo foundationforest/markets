@@ -3,12 +3,13 @@
   "folder": "health-and-beauty",
   "description": "Massage, at the seller's place or at home.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "homeVisits": {
-      "type": "boolean",
-      "description": "True when the seller comes to the buyer's place."
+    "properties": {
+      "homeVisits": {
+        "type": "boolean",
+        "description": "True when the seller comes to the buyer's place."
+      }
     }
   },
   "reviewFields": {},

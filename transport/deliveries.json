@@ -3,13 +3,14 @@
   "folder": "transport",
   "description": "Parcels, food and errands carried across town.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "maxKg": {
-      "type": "integer",
-      "description": "The heaviest load taken, in kilograms.",
-      "minimum": 1
+    "properties": {
+      "maxKg": {
+        "type": "integer",
+        "description": "The heaviest load taken, in kilograms.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

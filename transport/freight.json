@@ -3,13 +3,14 @@
   "folder": "transport",
   "description": "Large loads, pallets and vehicles carried long distances.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "maxKg": {
-      "type": "integer",
-      "description": "The heaviest load taken, in kilograms.",
-      "minimum": 1
+    "properties": {
+      "maxKg": {
+        "type": "integer",
+        "description": "The heaviest load taken, in kilograms.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

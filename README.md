@@ -33,7 +33,6 @@ Folders exist so people and AIs can find a market. They say what a deal is about
 
 - name, folder, one-line description
 - sides: two or one; labels when the market has better words than seller and buyer
-- whether money moves here
 - evidence types that apply (the escrow receipt for anything with money; title, tracking, check-in later)
 - the fields an offer here usually carries (appointment window, delivery days, condition, ships, dates)
 - the fields a review here may carry beyond the standard (a match result, later)
@@ -88,18 +87,19 @@ Later, in the foundation: two proofs a person makes about their own profiles, ne
 |---|---|
 | home | plumbing, electrical, cleaning, gardening, handyman, moving, painting |
 | vehicles | cars, motorcycles, car-rental, bikes |
-| property | property-sales, property-rentals, stays (host, guest), venues |
+| property | property-sales, property-rentals, venues |
+| travel-and-stays | stays (host, guest) |
 | electronics | electronics, appliances |
 | fashion | clothing, shoes, accessories |
 | education | tutoring, courses, music-lessons |
 | creative-and-digital | design, video-editing, coding, writing, translation, photography |
 | media | photos, videos, films, short-form, news (creator, viewer; free or paid) |
-| business | consulting, accounting, legal |
+| business | consulting, accounting, legal-advice |
 | food | private-chef, catering, meals |
 | transport | rides, deliveries, freight, chauffeur |
-| events | tickets, experiences, event-staff, security |
-| health-and-beauty | hair, massage, personal-training |
-| pets | pet-sitting, grooming, training |
+| events | tickets, experiences, event-staff, event-security |
+| health-and-beauty | hairdressing, massage, personal-training |
+| pets | pet-sitting, grooming, pet-training |
 | sports | tennis (one-sided, no money), running-partners (one-sided, no money) |
 | community | study-partners (one-sided, no money) |
 

@@ -1,16 +1,17 @@
 {
-  "name": "training",
+  "name": "pet-training",
   "folder": "pets",
   "description": "Teaching pets to behave, one to one or in classes.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "species": {
-      "type": "array",
-      "description": "The animals taken, such as dog or cat.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10
+    "properties": {
+      "species": {
+        "type": "array",
+        "description": "The animals taken, such as dog or cat.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      }
     }
   },
   "reviewFields": {},

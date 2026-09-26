@@ -4,7 +4,6 @@
   "description": "Short clips made to watch in one go on a phone.",
   "sides": "two",
   "labels": { "seller": "creator", "buyer": "viewer" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {},
   "reviewFields": {},

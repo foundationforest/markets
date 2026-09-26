@@ -3,19 +3,20 @@
   "folder": "vehicles",
   "description": "Cars rented from their owner or a rental business.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "seats": {
-      "type": "integer",
-      "description": "How many seats.",
-      "minimum": 1
-    },
-    "transmission": {
-      "type": "string",
-      "description": "How the gears change.",
-      "knownValues": ["manual", "automatic"],
-      "maxLength": 32
+    "properties": {
+      "seats": {
+        "type": "integer",
+        "description": "How many seats.",
+        "minimum": 1
+      },
+      "transmission": {
+        "type": "string",
+        "description": "How the gears change.",
+        "knownValues": ["manual", "automatic"],
+        "maxLength": 32
+      }
     }
   },
   "reviewFields": {},

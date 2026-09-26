@@ -3,18 +3,19 @@
   "folder": "creative-and-digital",
   "description": "Logos, graphics, layouts and other visual design, delivered as files.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "deliveryDays": {
-      "type": "integer",
-      "description": "Days from the start of the deal to delivery.",
-      "minimum": 1
-    },
-    "revisions": {
-      "type": "integer",
-      "description": "How many rounds of changes are included.",
-      "minimum": 0
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      },
+      "revisions": {
+        "type": "integer",
+        "description": "How many rounds of changes are included.",
+        "minimum": 0
+      }
     }
   },
   "reviewFields": {},

@@ -3,23 +3,24 @@
   "folder": "vehicles",
   "description": "Motorcycles and scooters, new or used.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "condition": {
-      "type": "string",
-      "description": "The item's condition.",
-      "knownValues": ["new", "like-new", "good", "fair", "for-parts"],
-      "maxLength": 64
-    },
-    "year": {
-      "type": "integer",
-      "description": "The year it was made."
-    },
-    "mileageKm": {
-      "type": "integer",
-      "description": "Distance driven so far, in kilometres.",
-      "minimum": 0
+    "properties": {
+      "condition": {
+        "type": "string",
+        "description": "The item's condition.",
+        "knownValues": ["new", "like-new", "good", "fair", "for-parts"],
+        "maxLength": 64
+      },
+      "year": {
+        "type": "integer",
+        "description": "The year it was made."
+      },
+      "mileageKm": {
+        "type": "integer",
+        "description": "Distance driven so far, in kilometres.",
+        "minimum": 0
+      }
     }
   },
   "reviewFields": {},

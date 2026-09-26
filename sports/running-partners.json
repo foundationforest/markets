@@ -3,22 +3,23 @@
   "folder": "sports",
   "description": "Finding someone to run with.",
   "sides": "one",
-  "money": false,
   "evidenceTypes": [],
   "offerFields": {
-    "level": {
-      "type": "string",
-      "description": "The level played or sought.",
-      "knownValues": ["beginner", "intermediate", "advanced"],
-      "maxLength": 64
-    },
-    "distanceKm": {
-      "type": "integer",
-      "description": "How far a usual run goes, in kilometres.",
-      "minimum": 1
+    "properties": {
+      "level": {
+        "type": "string",
+        "description": "The level played or sought.",
+        "knownValues": ["beginner", "intermediate", "advanced"],
+        "maxLength": 64
+      },
+      "distanceKm": {
+        "type": "integer",
+        "description": "How far a usual run goes, in kilometres.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},
   "ratings": ["overall", "punctuality"],
-  "howDealsGo": "Two runners agree a time, a place and a pace, and run. Done is the run done together; then each reviews the other. No money moves, so there is no escrow and no receipt: showing up is what builds a record here. The first time, meet somewhere public."
+  "howDealsGo": "Two runners agree a time, a place and a pace, and run. Done is the run done together; then each reviews the other. Usually no money changes hands, so there is no escrow and no receipt: showing up is what builds a record here. The first time, meet somewhere public."
 }

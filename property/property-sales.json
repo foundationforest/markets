@@ -3,18 +3,19 @@
   "folder": "property",
   "description": "Homes, flats and land, sold.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "bedrooms": {
-      "type": "integer",
-      "description": "How many bedrooms.",
-      "minimum": 0
-    },
-    "areaM2": {
-      "type": "integer",
-      "description": "Floor area, in square metres.",
-      "minimum": 1
+    "properties": {
+      "bedrooms": {
+        "type": "integer",
+        "description": "How many bedrooms.",
+        "minimum": 0
+      },
+      "areaM2": {
+        "type": "integer",
+        "description": "Floor area, in square metres.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

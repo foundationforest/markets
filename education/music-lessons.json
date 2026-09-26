@@ -4,20 +4,21 @@
   "description": "Lessons in playing an instrument or singing, online or in person.",
   "sides": "two",
   "labels": { "seller": "teacher", "buyer": "student" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "instruments": {
-      "type": "array",
-      "description": "The instruments taught, singing included.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10
-    },
-    "languages": {
-      "type": "array",
-      "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
-      "items": { "type": "string", "format": "language" },
-      "maxLength": 10
+    "properties": {
+      "instruments": {
+        "type": "array",
+        "description": "The instruments taught, singing included.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      }
     }
   },
   "reviewFields": {},

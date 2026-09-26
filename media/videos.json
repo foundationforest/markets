@@ -4,13 +4,14 @@
   "description": "Videos, from the person who made them.",
   "sides": "two",
   "labels": { "seller": "creator", "buyer": "viewer" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "durationMinutes": {
-      "type": "integer",
-      "description": "How long it runs, in minutes.",
-      "minimum": 1
+    "properties": {
+      "durationMinutes": {
+        "type": "integer",
+        "description": "How long it runs, in minutes.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

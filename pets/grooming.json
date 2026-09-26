@@ -3,18 +3,19 @@
   "folder": "pets",
   "description": "Washing, trimming and nail care for pets, at a salon or at home.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "species": {
-      "type": "array",
-      "description": "The animals taken, such as dog or cat.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10
-    },
-    "homeVisits": {
-      "type": "boolean",
-      "description": "True when the seller comes to the buyer's place."
+    "properties": {
+      "species": {
+        "type": "array",
+        "description": "The animals taken, such as dog or cat.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "homeVisits": {
+        "type": "boolean",
+        "description": "True when the seller comes to the buyer's place."
+      }
     }
   },
   "reviewFields": {},

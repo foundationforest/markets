@@ -3,18 +3,19 @@
   "folder": "food",
   "description": "Home-cooked meals, picked up or delivered.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "cuisines": {
-      "type": "array",
-      "description": "Kinds of food cooked.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10
-    },
-    "delivers": {
-      "type": "boolean",
-      "description": "True when the seller delivers. False or absent: picked up."
+    "properties": {
+      "cuisines": {
+        "type": "array",
+        "description": "Kinds of food cooked.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      },
+      "delivers": {
+        "type": "boolean",
+        "description": "True when the seller delivers. False or absent: picked up."
+      }
     }
   },
   "reviewFields": {},

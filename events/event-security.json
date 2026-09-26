@@ -1,15 +1,16 @@
 {
-  "name": "security",
+  "name": "event-security",
   "folder": "events",
   "description": "Guards and door staff for events and places.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "headcount": {
-      "type": "integer",
-      "description": "How many people the seller provides.",
-      "minimum": 1
+    "properties": {
+      "headcount": {
+        "type": "integer",
+        "description": "How many people the seller provides.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

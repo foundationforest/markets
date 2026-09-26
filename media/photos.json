@@ -4,14 +4,15 @@
   "description": "Photos to view or license, from the person who took them.",
   "sides": "two",
   "labels": { "seller": "creator", "buyer": "viewer" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "license": {
-      "type": "string",
-      "description": "What the viewer may do with it.",
-      "knownValues": ["personal", "commercial"],
-      "maxLength": 64
+    "properties": {
+      "license": {
+        "type": "string",
+        "description": "What the viewer may do with it.",
+        "knownValues": ["personal", "commercial"],
+        "maxLength": 64
+      }
     }
   },
   "reviewFields": {},

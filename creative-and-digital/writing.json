@@ -3,19 +3,20 @@
   "folder": "creative-and-digital",
   "description": "Articles, copy and other text, written to order.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "deliveryDays": {
-      "type": "integer",
-      "description": "Days from the start of the deal to delivery.",
-      "minimum": 1
-    },
-    "languages": {
-      "type": "array",
-      "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
-      "items": { "type": "string", "format": "language" },
-      "maxLength": 10
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      }
     }
   },
   "reviewFields": {},

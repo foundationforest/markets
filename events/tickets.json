@@ -3,18 +3,19 @@
   "folder": "events",
   "description": "Tickets to concerts, games, shows and other events, resold.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "event": {
-      "type": "string",
-      "description": "Which event, with its date and place as printed on the ticket.",
-      "maxLength": 300
-    },
-    "quantity": {
-      "type": "integer",
-      "description": "How many tickets.",
-      "minimum": 1
+    "properties": {
+      "event": {
+        "type": "string",
+        "description": "Which event, with its date and place as printed on the ticket.",
+        "maxLength": 300
+      },
+      "quantity": {
+        "type": "integer",
+        "description": "How many tickets.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

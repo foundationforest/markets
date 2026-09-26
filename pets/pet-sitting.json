@@ -3,14 +3,15 @@
   "folder": "pets",
   "description": "Looking after pets at their home or the sitter's, and dog walking.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "species": {
-      "type": "array",
-      "description": "The animals taken, such as dog or cat.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10
+    "properties": {
+      "species": {
+        "type": "array",
+        "description": "The animals taken, such as dog or cat.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10
+      }
     }
   },
   "reviewFields": {},

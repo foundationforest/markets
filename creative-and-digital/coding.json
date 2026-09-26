@@ -3,19 +3,20 @@
   "folder": "creative-and-digital",
   "description": "Code written to order: apps, sites, scripts and fixes.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "deliveryDays": {
-      "type": "integer",
-      "description": "Days from the start of the deal to delivery.",
-      "minimum": 1
-    },
-    "stack": {
-      "type": "array",
-      "description": "Languages, frameworks and tools the seller works in.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 20
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      },
+      "stack": {
+        "type": "array",
+        "description": "Languages, frameworks and tools the seller works in.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 20
+      }
     }
   },
   "reviewFields": {},

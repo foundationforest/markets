@@ -4,26 +4,27 @@
   "description": "Courses taught over several sessions, online or in person, to one person or many.",
   "sides": "two",
   "labels": { "seller": "teacher", "buyer": "student" },
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "subjects": {
-      "type": "array",
-      "description": "What is taught or sought.",
-      "items": { "type": "string", "maxLength": 64 },
-      "maxLength": 10,
-      "minLength": 1
-    },
-    "languages": {
-      "type": "array",
-      "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
-      "items": { "type": "string", "format": "language" },
-      "maxLength": 10
-    },
-    "sessions": {
-      "type": "integer",
-      "description": "How many sessions the offer includes.",
-      "minimum": 1
+    "properties": {
+      "subjects": {
+        "type": "array",
+        "description": "What is taught or sought.",
+        "items": { "type": "string", "maxLength": 64 },
+        "maxLength": 10,
+        "minLength": 1
+      },
+      "languages": {
+        "type": "array",
+        "description": "Languages it is offered in, as BCP 47 tags such as en or es.",
+        "items": { "type": "string", "format": "language" },
+        "maxLength": 10
+      },
+      "sessions": {
+        "type": "integer",
+        "description": "How many sessions the offer includes.",
+        "minimum": 1
+      }
     }
   },
   "reviewFields": {},

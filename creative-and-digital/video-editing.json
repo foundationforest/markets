@@ -3,18 +3,19 @@
   "folder": "creative-and-digital",
   "description": "Cutting and finishing video from the buyer's footage.",
   "sides": "two",
-  "money": true,
   "evidenceTypes": ["escrow"],
   "offerFields": {
-    "deliveryDays": {
-      "type": "integer",
-      "description": "Days from the start of the deal to delivery.",
-      "minimum": 1
-    },
-    "revisions": {
-      "type": "integer",
-      "description": "How many rounds of changes are included.",
-      "minimum": 0
+    "properties": {
+      "deliveryDays": {
+        "type": "integer",
+        "description": "Days from the start of the deal to delivery.",
+        "minimum": 1
+      },
+      "revisions": {
+        "type": "integer",
+        "description": "How many rounds of changes are included.",
+        "minimum": 0
+      }
     }
   },
   "reviewFields": {},
