@@ -73,8 +73,8 @@ So the fields stay suggestions:
   (`condition`, `deliveryDays`, `languages`), copy its definition exactly. Every field here has one
   definition across all files, so an app can treat it alike everywhere.
 - **`knownValues`, not `enum`.** Known values suggest words; `enum` refuses any other.
-- **Leave out `required`.** The format allows it, but a required field makes an offer without it
-  invalid, and these files suggest. No market here uses it.
+- **No `required`.** A block holds only `properties`. Every field is a suggestion, so `check.sh`
+  refuses a list of required fields.
 
 ### Ratings
 
@@ -107,7 +107,8 @@ Add one line under its folder in [`directory.md`](directory.md), in the shape in
 End it the way the other lines do: `Two-sided.`, `One-sided.`, or `Two-sided: host and guest.` when
 the file has labels. A new folder gets a `## folder` heading and one sentence on what's in it.
 
-The foundation's index reads only markets that have a line here.
+The foundation's index reads only markets that have a line here. `check.sh` fails a file with no
+line, and a line that points at no market file.
 
 ## 4. Check, then open a pull request
 
@@ -116,7 +117,7 @@ The foundation's index reads only markets that have a line here.
 ```
 
 Fix whatever it prints, until it says every file passes. Then open a pull request with the file and
-its line. It is merged when `check.sh` passes.
+its line. The pull request runs `check.sh` again, and is merged when it passes.
 
 ## Changing a market
 

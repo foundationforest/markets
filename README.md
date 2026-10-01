@@ -59,7 +59,7 @@ This repo adds two things to a name:
 
 Nothing here allows, forbids or approves a market or a deal.
 
-- An offer may leave out any field its market suggests, and carry others.
+- No field is required. An offer may leave out any field its market suggests, and carry others.
 - A review may use rating names its market doesn't list.
 - Evidence weighs; it never rejects. A review with no evidence under it is still a review, and an
   index weighs it less.
@@ -68,9 +68,6 @@ Nothing here allows, forbids or approves a market or a deal.
   offer by offer.
 - A name that isn't in this directory is still a market. It just isn't one the directory
   recommends.
-
-The format has one way to turn a suggestion into a rule: a field block may list some of its fields
-as `required`. No market here does.
 
 ## How indexes and apps use this directory
 
@@ -104,24 +101,28 @@ a commit: `https://raw.githubusercontent.com/foundationforest/markets/<commit>/d
 ## Propose a market
 
 Anyone may. Add `<folder>/<name>.json` and its line in `directory.md`, run `./check.sh`, and open a
-pull request. It is merged when `check.sh` passes; nothing else is judged. Step by step, with every
-key explained: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+pull request. Every pull request runs `check.sh` again, and is merged when it passes; nothing else
+is judged. Step by step, with every key explained: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## The format and the check
 
 - [`schema/market.json`](schema/market.json) is the market file's format, a JSON Schema (draft
-  2020-12). The field definitions inside `offerFields` and `reviewFields` use AT Protocol lexicon
-  field syntax: `type`, `description`, `maxLength`, `knownValues`, `format` and so on.
+  2020-12).
+- The field definitions inside `offerFields` and `reviewFields` still use AT Protocol lexicon field
+  syntax: `type`, `description`, `maxLength`, `knownValues`, `format` and so on. Forest's own
+  records now use JSON Schema. Moving market fields to JSON Schema too is the first item of the
+  Markets phase; until then they keep their current syntax.
 - `./check.sh` checks every market file. It needs Node 22 and npm, and installs its one
   dependency, the ajv validator, at the version locked in `package-lock.json`, on its first run.
-  For each file it checks:
-  1. the file against the schema;
-  2. that each name a field block lists as `required` is one of that block's fields, the one rule a
-     JSON Schema can't state;
-  3. that the file sits at `<folder>/<name>.json`;
-  4. that no other file has the same name.
+  It checks:
+  1. each file against the schema;
+  2. that each file sits at `<folder>/<name>.json`;
+  3. that no two files share a name;
+  4. that every file has its line in `directory.md`, and every line there points at a market file
+     of the name it lists.
 
-  It prints what fails and exits 1, or exits 0 when every file passes.
+  It prints what fails and exits 1, or exits 0 when everything passes. A GitHub Actions workflow,
+  `.github/workflows/check.yml`, runs it on every pull request.
 
 ## What's here
 
@@ -131,6 +132,7 @@ key explained: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | [`directory.md`](directory.md) | The list: every market, by folder, with one line each |
 | [`schema/market.json`](schema/market.json) | The market file's format |
 | `check.sh`, `package.json`, `package-lock.json` | The check, and the validator it uses |
+| `.github/workflows/check.yml` | Runs the check on every pull request |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose a market or a change to one |
 | [`CLAUDE.md`](CLAUDE.md) | Rules for AI sessions working here |
 | [`LICENSE`](LICENSE) | CC0 1.0 |

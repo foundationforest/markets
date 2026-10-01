@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # Checks every market file here (<folder>/<name>.json; schema/ is not a folder of markets):
 #   1. against schema/market.json;
-#   2. each name a field block lists as required is one of that block's fields (a JSON Schema
-#      cannot state this);
-#   3. the file sits at <folder>/<name>.json, with its own folder and name;
-#   4. no two files share a name.
+#   2. the file sits at <folder>/<name>.json, with its own folder and name;
+#   3. no two files share a name;
+#   4. directory.md has a line for it, and every line there points at a market file of that name.
 # Needs Node 22 and npm; installs the locked validator (ajv) into node_modules/ on first run.
-# Exit 0 when every file passes, 1 when any fails.
+# Exit 0 when everything passes, 1 when anything fails.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -53,45 +52,46 @@ function say(e) {
 const repeats = (e) => e.keyword === 'if' || e.keyword === 'propertyNames' || e.schemaPath.startsWith('#/properties/ratings/contains/')
 
 const files = process.argv.slice(2)
-const seen = new Map()
-let failed = 0
+const problems = new Map()
+const report = (where, error) => problems.set(where, [...(problems.get(where) ?? []), error])
 
+// directory.md's market lines, read as indexes read them: - [`name`](folder/name.json): ...
+const lines = new Map()
+readFileSync('directory.md', 'utf8').split('\n').forEach((text, i) => {
+  const line = /^- \[`([^`]+)`\]\(([^)\s]+\.json)\)/.exec(text)
+  if (line) lines.set(line[2], { name: line[1], at: i + 1 })
+})
+
+const seen = new Map()
 for (const file of files) {
-  const errors = []
   let market
   try {
     market = JSON.parse(readFileSync(file, 'utf8'))
   } catch (e) {
-    errors.push(`not JSON: ${e.message}`)
+    report(file, `not JSON: ${e.message}`)
+  }
+  if (market !== undefined && !validate(market)) for (const e of validate.errors) if (!repeats(e)) report(file, say(e))
+
+  const named = typeof market?.name === 'string'
+  if (named && typeof market.folder === 'string') {
+    const path = `${market.folder}/${market.name}.json`
+    if (file !== path) report(file, `must live at ${path}`)
+    if (seen.has(market.name)) report(file, `name "${market.name}" is already used by ${seen.get(market.name)}`)
+    else seen.set(market.name, file)
   }
 
-  if (errors.length === 0) {
-    if (!validate(market)) for (const e of validate.errors) if (!repeats(e)) errors.push(say(e))
-
-    for (const key of ['offerFields', 'reviewFields']) {
-      const block = market?.[key]
-      if (!Array.isArray(block?.required)) continue
-      const props = block.properties !== null && typeof block.properties === 'object' ? block.properties : {}
-      for (const name of block.required) {
-        if (!Object.hasOwn(props, name)) errors.push(`/${key}/required: ${JSON.stringify(name)} is not one of this block's fields`)
-      }
-    }
-
-    if (typeof market?.name === 'string' && typeof market?.folder === 'string') {
-      const path = `${market.folder}/${market.name}.json`
-      if (file !== path) errors.push(`must live at ${path}`)
-      if (seen.has(market.name)) errors.push(`name "${market.name}" is already used by ${seen.get(market.name)}`)
-      else seen.set(market.name, file)
-    }
-  }
-
-  if (errors.length) {
-    failed = 1
-    console.error(`${file}:`)
-    for (const error of errors) console.error(`  - ${error}`)
-  }
+  const listed = lines.get(file)
+  if (!listed) report(file, 'has no line in directory.md')
+  else if (named && listed.name !== market.name) report('directory.md', `line ${listed.at} lists \`${listed.name}\`, but ${file} names "${market.name}"`)
+}
+for (const [path, { name, at }] of lines) {
+  if (!files.includes(path)) report('directory.md', `line ${at}: \`${name}\` points at ${path}, which is not a market file here`)
 }
 
-if (!failed) console.log(`all ${files.length} market files pass`)
-process.exit(failed)
+for (const [where, errors] of problems) {
+  console.error(`${where}:`)
+  for (const error of errors) console.error(`  - ${error}`)
+}
+if (problems.size === 0) console.log(`all ${files.length} market files pass, each with its line in directory.md`)
+process.exit(problems.size ? 1 : 0)
 EOF

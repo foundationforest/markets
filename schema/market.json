@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/schema/market.json",
   "title": "Market file",
-  "description": "One market in the Forest markets directory: its name, its sides, and what offers, reviews and deals there usually look like. It suggests and restricts no deal. One rule is not written here, since a JSON Schema cannot state it: each name in a field block's `required` must be one of that block's `properties`. check.sh checks it.",
+  "description": "One market in the Forest markets directory: its name, its sides, and what offers, reviews and deals there usually look like. Every field is a suggestion: it restricts no deal.",
   "type": "object",
   "required": ["name", "folder", "description", "sides", "evidenceTypes", "offerFields", "ratings", "howDealsGo"],
   "additionalProperties": false,
@@ -97,7 +97,7 @@
       "pattern": "^[^\\r\\n]*\\S[^\\r\\n]*$"
     },
     "fieldBlock": {
-      "description": "Flat fields added to a base record, in AT Protocol lexicon field syntax. A market adds fields; it never adds a shape, nests anything, or redefines a base field.",
+      "description": "Flat fields added to a base record, in AT Protocol lexicon field syntax. A market adds fields; it never adds a shape, nests anything, redefines a base field, or makes a field required.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -105,10 +105,6 @@
           "type": "object",
           "propertyNames": { "pattern": "^[a-z][A-Za-z0-9]*$" },
           "additionalProperties": { "$ref": "#/$defs/field" }
-        },
-        "required": {
-          "type": "array",
-          "items": { "type": "string" }
         }
       }
     },
