@@ -1,110 +1,138 @@
-# Markets: how they work and how to add one (version 1)
+# markets
 
-Context, not control. This guide will keep evolving.
+The Forest Foundation's directory of markets: recommended market names, each with a file of
+suggestions for what dealing there usually looks like. The list is [`directory.md`](directory.md).
 
 ## What a market is
 
-A market is a context where strangers meet and accountability matters. Money usually moves there; it doesn't have to. Plumbing is a market. Tennis partners is a market. A person holds one profile per market and side, tied to one real human, and that profile's record follows them forever in that market.
+A market is a label. On Forest, a profile lives in one market, on one side of it, and its badge is
+one line on the registry under a label: one verified human per line, and at most one line per
+human per label. The recommended label is `market/role`, such as `plumbing/seller`, `stays/buyer`
+or `tennis/peer`. A label is free text and the registry accepts any, so anyone can start a market
+just by using a name.
 
-## How a profile is named
+This repo adds two things to a name:
 
-A profile's badge is made from the person's secret and a scope: `market/role`.
+1. **A recommended spelling**, so one trade doesn't split into several names: `plumbing`, and not
+   also `plumber` and `plumbers`.
+2. **A file of suggestions** at `<folder>/<name>.json`:
+   - `description`: what the market is, in one line.
+   - `sides`: `two` (a seller and a buyer) or `one` (peers, like tennis partners). The roles come
+     from it: `seller` and `buyer`, or `peer`.
+   - `labels`: plainer words for the two sides, when there are better ones: host and guest,
+     teacher and student.
+   - `offerFields`: fields an offer here usually carries, such as a plumber's arrival window.
+   - `reviewFields`: extra fields a review here may carry.
+   - `ratings`: the rating names reviews here usually use. `overall` is always one; plumbing adds
+     `punctuality`, stays adds `location` and `cleanliness`.
+   - `evidenceTypes`: what can show a deal here happened. `escrow` is the one defined so far.
+   - `howDealsGo`: how deals here usually go, in plain words: what done looks like, which escrow
+     options people tend to turn on and why, what to check before paying.
+   - `folder`: where the file sits. Folders are only for finding markets. No label contains one, so
+     they can be reorganized any time.
 
-- **market**: one word or a hyphenated few, lowercase, unique across the whole directory: `plumbing`, `video-editing`, `car-rental`.
-- **role**: a market is two-sided or one-sided. Two-sided markets use the words `seller` and `buyer`. One-sided markets use `peer`. These three words are fixed forever; a market file may give plainer labels for people to see (stays: host and guest; media: creator and viewer).
+`home/plumbing.json`:
 
-Examples: `plumbing/seller`, `electronics/buyer`, `tennis/peer`.
+```json
+{
+  "name": "plumbing",
+  "folder": "home",
+  "description": "Pipes, taps, drains, toilets and water heaters: fixing and fitting.",
+  "sides": "two",
+  "evidenceTypes": ["escrow"],
+  "offerFields": {
+    "properties": {
+      "appointmentWindowHours": {
+        "type": "integer",
+        "description": "How wide the arrival window is, in hours: the seller arrives within this many hours of the booked time.",
+        "minimum": 0
+      }
+    }
+  },
+  "reviewFields": {},
+  "ratings": ["overall", "punctuality"],
+  "howDealsGo": "The buyer books a visit and pays into escrow. Done is the job working when the plumber leaves, and the buyer releases then. A timer to the seller, set past the visit, pays for work done if the buyer goes quiet. Before paying, agree whether parts are in the price."
+}
+```
 
-A market's name is frozen the day the first badge exists in it. To change one, open a new market; the old one stays with its badges, and indexes show one as the continuation of the other. Folders are not in the badge, so they can be reorganized any time.
+## Every field is a suggestion
 
-## Folders
+Nothing here allows, forbids or approves a market or a deal.
 
-Folders exist so people and AIs can find a market. They say what a deal is about. Version 1: home, vehicles, property, electronics, fashion, education, health-and-beauty, food, events, travel-and-stays, transport, business, creative-and-digital, media, pets, sports, community. More whenever needed.
+- No field is required. An offer may leave out any field its market suggests, and carry others.
+- A review may use rating names its market doesn't list.
+- Evidence weighs; it never rejects. A review with no evidence under it is still a review, and an
+  index weighs it less.
+- Labels are words for pages. Badges and offers still say `seller` and `buyer`.
+- No file sets a price, a deadline, or any amount of money or time. The people in a deal set those,
+  offer by offer.
+- A name that isn't in this directory is still a market. It just isn't one the directory
+  recommends.
 
-## The one rule for a new market
+## How indexes and apps use this directory
 
-**Two kinds of dealing are two markets when reputation in one says nothing about the other.**
+Everything here is public and released under CC0: anyone may copy it, change it or build on it,
+with no permission needed.
 
-- Car sales and car rental: two markets.
-- Online tutoring and in-person tutoring: one market; where it happens is a field on the offer.
-- Phones and laptops: one market, `electronics`; an honest phone seller is an honest laptop seller.
+**Indexes** decide which markets they show and which badges they count. The foundation's index, in
+[foundationforest/services](https://github.com/foundationforest/services), reads this repo over
+HTTPS when it starts, from `main` or a commit it is pinned to:
 
-## What a market file says
+1. It reads `directory.md` and takes each line shaped ``- [`name`](folder/name.json): ...``.
+   Nothing else on the page.
+2. It fetches each file those lines link, and refuses one whose `name` and `folder` don't match its
+   path, or that lacks what it reads.
+3. It counts a badge only under `market/role`, with the market a name listed here, byte for byte,
+   and the role one the market's sides allow. A badge under any other label counts for nothing
+   there.
+4. Its pages show each market's description and how deals go, call the two sides by their labels,
+   and show the review fields a market names.
 
-- name, folder, one-line description
-- sides: two or one; labels when the market has better words than seller and buyer
-- evidence types that apply (the escrow receipt for anything with money; title, tracking, check-in later)
-- the fields an offer here usually carries (appointment window, delivery days, condition, ships, dates)
-- the fields a review here may carry beyond the standard (a match result, later)
-- the rating names commonly used (overall always; a hotel adds location and cleanliness; a plumber adds punctuality)
-- how deals here usually go, in plain words: what done looks like, which escrow options people here tend to turn on and why, what a buyer should check before paying
+So for the foundation's index, a market missing from `directory.md` has no counted badges, even
+though nothing here forbids it. Another index may read this directory differently, or not at all.
 
-A market file never sets money or time values. It suggests; the people in the deal decide.
+**Apps** can use the same files: offer fields to build an offer form, ratings to suggest what a
+reviewer rates, labels and how deals go for their pages, and `schema/market.json` to check a file
+before using it.
 
-## Reviews
+**A fixed version.** `main` changes as markets are added. To read a version that never moves, read
+a commit: `https://raw.githubusercontent.com/foundationforest/markets/<commit>/directory.md`.
 
-One shape everywhere. Who it's about; the deal it was about (optional); ratings, each a number 1.0 to 10.0 with one decimal, `overall` by convention; text; photos or short video. A market may add fields, the way it adds fields to offers. A review sits on a profile that lives in one market, so the market is known.
+## Propose a market
 
-A profile shows two things, never blended: its rating (the quality people report, weighted by what backs each review) and its standing (verified deals, who vouched, how credible the reviewers are).
+Anyone may. Add `<folder>/<name>.json` and its line in `directory.md`, run `./check.sh`, and open a
+pull request. Every pull request runs `check.sh` again, and is merged when it passes; nothing else
+is judged. Step by step, with every key explained: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-## Escrow, in this design
+## The format and the check
 
-Money goes in, and comes out only when both sides agree. Options, off by default, chosen when the escrow is made: an arbiter, a timer. That's the whole program.
+- [`schema/market.json`](schema/market.json) is the market file's format, a JSON Schema (draft
+  2020-12).
+- The field definitions inside `offerFields` and `reviewFields` still use AT Protocol lexicon field
+  syntax: `type`, `description`, `maxLength`, `knownValues`, `format` and so on. Forest's own
+  records now use JSON Schema. Moving market fields to JSON Schema too is the first item of the
+  Markets phase; until then they keep their current syntax.
+- `./check.sh` checks every market file. It needs Node 22 and npm, and installs its one
+  dependency, the ajv validator, at the version locked in `package-lock.json`, on its first run.
+  It checks:
+  1. each file against the schema;
+  2. that each file sits at `<folder>/<name>.json`;
+  3. that no two files share a name;
+  4. that every file has its line in `directory.md`, and every line there points at a market file
+     of the name it lists.
 
-Everything other escrows bolt on lives outside it here, because the enforcer is the permanent record and two reputations at stake:
-- an inspection period is simply the time before you release;
-- "delivered" is a claim the seller writes in their own folder, timestamped; the buyer's silence after it is visible to every index;
-- milestones are several escrows; the app groups them;
-- a deposit or hold is an escrow released back;
-- mediation is the arbiter, when both want one.
+  It prints what fails and exits 1, or exits 0 when everything passes. A GitHub Actions workflow,
+  `.github/workflows/check.yml`, runs it on every pull request.
 
-Stuck money hurts both sides, and both records show it. A market's "how deals here usually go" is where it says which options people tend to turn on.
+## What's here
 
-## Location
-
-An offer may carry a point (coordinates rounded to the precision the seller chooses, about 1 km by default) and an area name. Indexes answer "within 5 km." Being found by distance means revealing that much, and you set how much.
-
-## Proving your reputation across markets
-
-Later, in the foundation: two proofs a person makes about their own profiles, never naming one. A chosen set ("I hold badges in five markets with these ratings") or everything ("and there is nothing else"). Indexes and apps check them. Until they exist, profiles are simply separate.
-
-## How to add a market
-
-1. Check the directory. If a market already covers this dealing, use it, and add a field to its offers if something is missing.
-2. Is it a context where strangers meet and accountability matters, with a start and an end to each interaction? If not, it isn't a market here.
-3. Apply the one rule: would reputation from an existing market carry over? If yes, it's the same market.
-4. Name it: lowercase, unique, the name you'd still use in twenty years.
-5. Two-sided or one-sided? Give labels only if seller and buyer aren't the natural words.
-6. Which evidence can prove a deal happened, even evidence that doesn't exist yet?
-7. What do people rate? Name the ratings.
-8. Write "how deals here usually go" in plain words.
-9. Pick a folder. Folders can move; the name can't.
-10. Open a pull request with the file. It's merged when it validates and the name isn't taken. No other test.
-
-## Examples (version 1)
-
-| Folder | Markets |
+| Path | What it is |
 |---|---|
-| home | plumbing, electrical, cleaning, gardening, handyman, moving, painting |
-| vehicles | cars, motorcycles, car-rental, bikes |
-| property | property-sales, property-rentals, venues |
-| travel-and-stays | stays (host, guest) |
-| electronics | electronics, appliances |
-| fashion | clothing, shoes, accessories |
-| education | tutoring, courses, music-lessons |
-| creative-and-digital | design, video-editing, coding, writing, translation, photography |
-| media | photos, videos, films, short-form, news (creator, viewer; free or paid) |
-| business | consulting, accounting, legal-advice |
-| food | private-chef, catering, meals |
-| transport | rides, deliveries, freight, chauffeur |
-| events | tickets, experiences, event-staff, event-security |
-| health-and-beauty | hairdressing, massage, personal-training |
-| pets | pet-sitting, grooming, pet-training |
-| sports | tennis (one-sided), running-partners (one-sided) |
-| community | study-partners (one-sided) |
-
-## Foundation versus apps
-
-| The foundation, now | The foundation, later | Apps |
-|---|---|---|
-| registry, escrow, shapes, keys, host, carrier, index, issuer, this directory | proof circuits, cards for AI chats (MCP Apps), distance search, more evidence types | chat, ramps, pools, proof buttons, milestone grouping, review nudges |
+| `<folder>/<name>.json` | One market each |
+| [`directory.md`](directory.md) | The list: every market, by folder, with one line each |
+| [`schema/market.json`](schema/market.json) | The market file's format |
+| `check.sh`, `package.json`, `package-lock.json` | The check, and the validator it uses |
+| `.github/workflows/check.yml` | Runs the check on every pull request |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose a market or a change to one |
+| [`CLAUDE.md`](CLAUDE.md) | Rules for AI sessions working here |
+| [`LICENSE`](LICENSE) | CC0 1.0 |

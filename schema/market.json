@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/schema/market.json",
+  "title": "Market file",
+  "description": "One market in the Forest markets directory: its name, its sides, and what offers, reviews and deals there usually look like. Every field is a suggestion: it restricts no deal.",
+  "type": "object",
+  "required": ["name", "folder", "description", "sides", "evidenceTypes", "offerFields", "ratings", "howDealsGo"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "The market's recommended spelling. A badge's label is `name/role`, such as `plumbing/seller`.",
+      "$ref": "#/$defs/slug"
+    },
+    "folder": {
+      "description": "The folder the file sits in, `<folder>/<name>.json`. Folders are for finding a market and are in no label.",
+      "$ref": "#/$defs/slug"
+    },
+    "description": {
+      "description": "What the market is, in one line.",
+      "type": "string",
+      "$ref": "#/$defs/line",
+      "maxLength": 300
+    },
+    "sides": {
+      "description": "`two`: a seller and a buyer. `one`: peers. A market's roles come from it: `seller` and `buyer`, or `peer`.",
+      "enum": ["two", "one"]
+    },
+    "labels": {
+      "description": "Two-sided markets only. The plain words pages use for the two sides, such as host and guest. Badges and offers still say seller and buyer.",
+      "type": "object",
+      "required": ["seller", "buyer"],
+      "additionalProperties": false,
+      "properties": {
+        "seller": { "type": "string", "$ref": "#/$defs/line", "maxLength": 64 },
+        "buyer": { "type": "string", "$ref": "#/$defs/line", "maxLength": 64 }
+      }
+    },
+    "evidenceTypes": {
+      "description": "The evidence that can show a deal here happened. `escrow` is the one defined so far. Indexes weigh a deal by it; it never makes a record invalid.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/slug" },
+      "uniqueItems": true
+    },
+    "offerFields": {
+      "description": "The extra fields an offer in this market usually carries.",
+      "type": "object",
+      "$ref": "#/$defs/fieldBlock",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "propertyNames": {
+            "not": { "enum": ["direction", "description", "price", "terms", "availability", "remote", "location", "expires", "createdAt"] }
+          }
+        }
+      }
+    },
+    "reviewFields": {
+      "description": "The extra fields a review of a profile in this market may carry.",
+      "type": "object",
+      "$ref": "#/$defs/fieldBlock",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "propertyNames": {
+            "not": { "enum": ["subject", "ratings", "text", "media", "dealId", "createdAt"] }
+          }
+        }
+      }
+    },
+    "ratings": {
+      "description": "The rating names reviews here usually use, `overall` always among them. A review may use other names too.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$", "maxLength": 64 },
+      "contains": { "const": "overall" },
+      "uniqueItems": true
+    },
+    "howDealsGo": {
+      "description": "How deals here usually go, in plain words. Lines allowed.",
+      "type": "string",
+      "pattern": "\\S",
+      "maxLength": 3000
+    }
+  },
+  "dependentSchemas": {
+    "labels": { "type": "object", "properties": { "sides": { "const": "two" } } }
+  },
+  "$defs": {
+    "slug": {
+      "description": "Lowercase letters and digits, words joined by single hyphens.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "line": {
+      "description": "One line of text that is not only spaces.",
+      "type": "string",
+      "pattern": "^[^\\r\\n]*\\S[^\\r\\n]*$"
+    },
+    "fieldBlock": {
+      "description": "Flat fields added to a base record, in AT Protocol lexicon field syntax. A market adds fields; it never adds a shape, nests anything, redefines a base field, or makes a field required.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "properties": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][A-Za-z0-9]*$" },
+          "additionalProperties": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "field": {
+      "description": "A string, an integer, a boolean, or an array of one of those.",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["string", "integer", "boolean", "array"] }
+      },
+      "allOf": [
+        { "if": { "$ref": "#/$defs/isString" }, "then": { "$ref": "#/$defs/stringField" } },
+        { "if": { "$ref": "#/$defs/isInteger" }, "then": { "$ref": "#/$defs/integerField" } },
+        { "if": { "$ref": "#/$defs/isBoolean" }, "then": { "$ref": "#/$defs/booleanField" } },
+        { "if": { "$ref": "#/$defs/isArray" }, "then": { "$ref": "#/$defs/arrayField" } }
+      ]
+    },
+    "item": {
+      "description": "An array's items: a string, an integer or a boolean.",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["string", "integer", "boolean"] }
+      },
+      "allOf": [
+        { "if": { "$ref": "#/$defs/isString" }, "then": { "$ref": "#/$defs/stringField" } },
+        { "if": { "$ref": "#/$defs/isInteger" }, "then": { "$ref": "#/$defs/integerField" } },
+        { "if": { "$ref": "#/$defs/isBoolean" }, "then": { "$ref": "#/$defs/booleanField" } }
+      ]
+    },
+    "isString": { "type": "object", "required": ["type"], "properties": { "type": { "const": "string" } } },
+    "isInteger": { "type": "object", "required": ["type"], "properties": { "type": { "const": "integer" } } },
+    "isBoolean": { "type": "object", "required": ["type"], "properties": { "type": { "const": "boolean" } } },
+    "isArray": { "type": "object", "required": ["type"], "properties": { "type": { "const": "array" } } },
+    "stringField": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "format": { "enum": ["datetime", "uri", "at-uri", "did", "handle", "at-identifier", "nsid", "cid", "language", "tid", "record-key"] },
+        "default": { "type": "string" },
+        "minLength": { "type": "integer" },
+        "maxLength": { "type": "integer" },
+        "minGraphemes": { "type": "integer" },
+        "maxGraphemes": { "type": "integer" },
+        "enum": { "type": "array", "items": { "type": "string" } },
+        "const": { "type": "string" },
+        "knownValues": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "integerField": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "default": { "type": "integer" },
+        "minimum": { "type": "integer" },
+        "maximum": { "type": "integer" },
+        "enum": { "type": "array", "items": { "type": "integer" } },
+        "const": { "type": "integer" }
+      }
+    },
+    "booleanField": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "default": { "type": "boolean" },
+        "const": { "type": "boolean" }
+      }
+    },
+    "arrayField": {
+      "type": "object",
+      "required": ["items"],
+      "properties": {
+        "description": { "type": "string" },
+        "items": { "$ref": "#/$defs/item" },
+        "minLength": { "type": "integer" },
+        "maxLength": { "type": "integer" }
+      }
+    }
+  }
+}
