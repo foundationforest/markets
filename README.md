@@ -19,7 +19,7 @@ This repo adds two things to a name:
    - `description`: what the market is, in one line.
    - `sides`: `two` (a seller and a buyer) or `one` (peers, like tennis partners). The roles come
      from it: `seller` and `buyer`, or `peer`.
-   - `labels`: plainer words for the two sides, when there are better ones: host and guest,
+   - `roleNames`: plainer words for the two sides, when there are better ones: host and guest,
      teacher and student.
    - `offerFields`: fields an offer here usually carries, such as a plumber's arrival window.
    - `reviewFields`: extra fields a review here may carry.
@@ -63,7 +63,7 @@ Nothing here allows, forbids or approves a market or a deal.
 - A review may use rating names its market doesn't list.
 - Evidence weighs; it never rejects. A review with no evidence under it is still a review, and an
   index weighs it less.
-- Labels are words for pages. Badges and offers still say `seller` and `buyer`.
+- Role names are words for pages. Badges and offers still say `seller` and `buyer`.
 - No file sets a price, a deadline, or any amount of money or time. The people in a deal set those,
   offer by offer.
 - A name that isn't in this directory is still a market. It just isn't one the directory
@@ -85,15 +85,15 @@ HTTPS when it starts, from `main` or a commit it is pinned to:
 3. It counts a badge only under `market/role`, with the market a name listed here, byte for byte,
    and the role one the market's sides allow. A badge under any other label counts for nothing
    there.
-4. Its pages show each market's description and how deals go, call the two sides by their labels,
-   and show the review fields a market names.
+4. Its pages show each market's description and how deals go, call the two sides by their role
+   names, and show the review fields a market names.
 
 So for the foundation's index, a market missing from `directory.md` has no counted badges, even
 though nothing here forbids it. Another index may read this directory differently, or not at all.
 
 **Apps** can use the same files: offer fields to build an offer form, ratings to suggest what a
-reviewer rates, labels and how deals go for their pages, and `schema/market.json` to check a file
-before using it.
+reviewer rates, role names and how deals go for their pages, and `schema/market.json` to check a
+file before using it.
 
 **A fixed version.** `main` changes as markets are added. To read a version that never moves, read
 a commit: `https://raw.githubusercontent.com/foundationforest/markets/<commit>/directory.md`.
@@ -123,6 +123,10 @@ is judged. Step by step, with every key explained: [`CONTRIBUTING.md`](CONTRIBUT
 
   It prints what fails and exits 1, or exits 0 when everything passes. A GitHub Actions workflow,
   `.github/workflows/check.yml`, runs it on every pull request.
+- `.github/workflows/auto-merge.yml` turns on GitHub's auto-merge for a pull request that only adds
+  or changes market files and their lines in `directory.md`, and drops no name listed there. GitHub
+  merges it once the check passes. A pull request that changes anything else waits for a person,
+  since it could change the check itself.
 
 ## What's here
 
@@ -133,6 +137,7 @@ is judged. Step by step, with every key explained: [`CONTRIBUTING.md`](CONTRIBUT
 | [`schema/market.json`](schema/market.json) | The market file's format |
 | `check.sh`, `package.json`, `package-lock.json` | The check, and the validator it uses |
 | `.github/workflows/check.yml` | Runs the check on every pull request |
+| `.github/workflows/auto-merge.yml` | Merges a pull request that only changes markets, once the check passes |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose a market or a change to one |
 | [`CLAUDE.md`](CLAUDE.md) | Rules for AI sessions working here |
 | [`LICENSE`](LICENSE) | CC0 1.0 |

@@ -1,0 +1,62 @@
+# Turns on GitHub's auto-merge for a pull request that only adds or changes market files and their
+# lines in directory.md, and drops no name directory.md lists. GitHub then merges it once the check
+# workflow passes. Any other change waits for a person: a pull request can rewrite check.sh, so
+# check.sh passing can't vouch for a change to check.sh itself.
+#
+# It runs on pull_request_target, so it is always this file as it is on main, never a pull request's
+# copy. It reads the pull request's files as data and runs none of them.
+# It needs two repo settings: "Allow auto-merge" on, and the check job required on main.
+
+name: auto-merge
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    if: ${{ !github.event.pull_request.draft && github.event.pull_request.base.ref == github.event.repository.default_branch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE: origin/${{ github.event.pull_request.base.ref }}
+        run: |
+          git fetch --no-tags origin "$HEAD"
+          from=$(git merge-base "$BASE" "$HEAD")
+
+          why=()
+          market='^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*\.json$'
+          while IFS= read -r path; do
+            if [ "$path" != directory.md ] && { [[ ! $path =~ $market ]] || [[ $path == schema/* ]]; }; then
+              why+=("it changes $path")
+            fi
+          done < <(git diff --name-only --no-renames "$from" "$HEAD")
+
+          # Market names on directory.md's lines, read as check.sh reads them.
+          names() { git show "$1:directory.md" | sed -nE 's/^- \[`([^`]+)`\]\([^)[:space:]]+\.json\).*/\1/p' | sort -u; }
+          for name in $(comm -23 <(names "$from") <(names "$HEAD")); do
+            why+=("it drops \`$name\` from directory.md")
+          done
+
+          if [ ${#why[@]} -eq 0 ]; then
+            gh pr merge "$PR" --auto --merge --match-head-commit "$HEAD"
+          else
+            printf '::notice::Left for a person to merge: %s\n' "${why[@]}"
+            gh pr merge "$PR" --disable-auto || true
+          fi

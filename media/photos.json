@@ -3,7 +3,7 @@
   "folder": "media",
   "description": "Photos to view or license, from the person who took them.",
   "sides": "two",
-  "labels": { "seller": "creator", "buyer": "viewer" },
+  "roleNames": { "seller": "creator", "buyer": "viewer" },
   "evidenceTypes": ["escrow"],
   "offerFields": {
     "properties": {

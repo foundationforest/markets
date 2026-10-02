@@ -3,7 +3,7 @@
   "folder": "education",
   "description": "Courses taught over several sessions, online or in person, to one person or many.",
   "sides": "two",
-  "labels": { "seller": "teacher", "buyer": "student" },
+  "roleNames": { "seller": "teacher", "buyer": "student" },
   "evidenceTypes": ["escrow"],
   "offerFields": {
     "properties": {

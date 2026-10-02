@@ -3,7 +3,7 @@
   "folder": "property",
   "description": "Homes and rooms rented to live in.",
   "sides": "two",
-  "labels": { "seller": "landlord", "buyer": "tenant" },
+  "roleNames": { "seller": "landlord", "buyer": "tenant" },
   "evidenceTypes": ["escrow"],
   "offerFields": {
     "properties": {

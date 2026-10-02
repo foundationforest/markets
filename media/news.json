@@ -3,7 +3,7 @@
   "folder": "media",
   "description": "Reporting and analysis, from the person who wrote or filmed it.",
   "sides": "two",
-  "labels": { "seller": "creator", "buyer": "viewer" },
+  "roleNames": { "seller": "creator", "buyer": "viewer" },
   "evidenceTypes": ["escrow"],
   "offerFields": {
     "properties": {

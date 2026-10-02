@@ -27,7 +27,7 @@ Create `<folder>/<name>.json`, with these keys in this order. Nothing else may b
 | `folder` | yes | The folder the file sits in, written the same way. Use one from `directory.md`, or start a new one. |
 | `description` | yes | What the market is: one line, at most 300 characters. |
 | `sides` | yes | `"two"`, a seller and a buyer, or `"one"`, peers. |
-| `labels` | no | Two-sided markets only: `{ "seller": "...", "buyer": "..." }`, each one line of at most 64 characters. Only when seller and buyer aren't the natural words, as with host and guest. |
+| `roleNames` | no | Two-sided markets only: `{ "seller": "...", "buyer": "..." }`, each one line of at most 64 characters. Only when seller and buyer aren't the natural words, as with host and guest. |
 | `evidenceTypes` | yes | Slugs, each once: `["escrow"]` where money usually moves through an escrow, `[]` for none. |
 | `offerFields` | yes | `{ "properties": { ... } }`, the fields an offer here usually carries, or `{}` for none. |
 | `reviewFields` | no | The same shape, for fields a review here may carry. Every file so far has `{}`. |
@@ -105,7 +105,7 @@ Add one line under its folder in [`directory.md`](directory.md), in the shape in
 ```
 
 End it the way the other lines do: `Two-sided.`, `One-sided.`, or `Two-sided: host and guest.` when
-the file has labels. A new folder gets a `## folder` heading and one sentence on what's in it.
+the file has `roleNames`. A new folder gets a `## folder` heading and one sentence on what's in it.
 
 The foundation's index reads only markets that have a line here. `check.sh` fails a file with no
 line, and a line that points at no market file.
