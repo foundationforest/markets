@@ -3,7 +3,7 @@
   "folder": "media",
   "description": "Films and documentaries, from the people who made them.",
   "sides": "two",
-  "labels": { "seller": "creator", "buyer": "viewer" },
+  "roleNames": { "seller": "creator", "buyer": "viewer" },
   "evidenceTypes": ["escrow"],
   "offerFields": {
     "properties": {

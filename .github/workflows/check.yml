@@ -1,5 +1,6 @@
 # Runs ./check.sh on every pull request: each market file against schema/market.json, its path,
-# its name, and its line in directory.md. A proposal is merged when this passes.
+# its name, and its line in directory.md.
+# It must pass before the foundation reviews and merges a pull request.
 
 name: check
 

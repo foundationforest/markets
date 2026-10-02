@@ -3,7 +3,7 @@
   "folder": "transport",
   "description": "Rides in someone's car, across town or between cities.",
   "sides": "two",
-  "labels": { "seller": "driver", "buyer": "rider" },
+  "roleNames": { "seller": "driver", "buyer": "rider" },
   "evidenceTypes": ["escrow"],
   "offerFields": {
     "properties": {

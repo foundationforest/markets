@@ -33,7 +33,7 @@ const PLAIN = {
   '#/properties/howDealsGo/pattern': 'must not be empty',
   '#/properties/ratings/items/pattern': 'must be a camelCase name',
   '#/properties/ratings/contains': 'must include "overall"',
-  '#/dependentSchemas/labels/properties/sides/const': 'must be "two" in a file with labels',
+  '#/dependentSchemas/roleNames/properties/sides/const': 'must be "two" in a file with roleNames',
 }
 function say(e) {
   const at = e.instancePath || 'the file'

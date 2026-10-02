@@ -3,7 +3,7 @@
   "folder": "travel-and-stays",
   "description": "Rooms, flats and houses to stay in while away.",
   "sides": "two",
-  "labels": { "seller": "host", "buyer": "guest" },
+  "roleNames": { "seller": "host", "buyer": "guest" },
   "evidenceTypes": ["escrow"],
   "offerFields": {
     "properties": {

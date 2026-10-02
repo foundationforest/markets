@@ -3,7 +3,7 @@
   "folder": "media",
   "description": "Short clips made to watch in one go on a phone.",
   "sides": "two",
-  "labels": { "seller": "creator", "buyer": "viewer" },
+  "roleNames": { "seller": "creator", "buyer": "viewer" },
   "evidenceTypes": ["escrow"],
   "offerFields": {},
   "reviewFields": {},

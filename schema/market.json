@@ -8,7 +8,7 @@
   "additionalProperties": false,
   "properties": {
     "name": {
-      "description": "The market's recommended spelling. A badge's label is `name/role`, such as `plumbing/seller`.",
+      "description": "The market's recommended spelling. A profile's label is `name/role`, such as `plumbing/seller`.",
       "$ref": "#/$defs/slug"
     },
     "folder": {
@@ -25,8 +25,8 @@
       "description": "`two`: a seller and a buyer. `one`: peers. A market's roles come from it: `seller` and `buyer`, or `peer`.",
       "enum": ["two", "one"]
     },
-    "labels": {
-      "description": "Two-sided markets only. The plain words pages use for the two sides, such as host and guest. Badges and offers still say seller and buyer.",
+    "roleNames": {
+      "description": "Two-sided markets only. The plain words pages use for the two sides, such as host and guest. Labels and offers still say seller and buyer.",
       "type": "object",
       "required": ["seller", "buyer"],
       "additionalProperties": false,
@@ -82,7 +82,7 @@
     }
   },
   "dependentSchemas": {
-    "labels": { "type": "object", "properties": { "sides": { "const": "two" } } }
+    "roleNames": { "type": "object", "properties": { "sides": { "const": "two" } } }
   },
   "$defs": {
     "slug": {

@@ -1,7 +1,7 @@
 # Proposing a market
 
-Anyone may propose a market, or a change to one. You need git, Node 22 and npm. A proposal is
-merged when `./check.sh` passes; nothing else is judged.
+Anyone may propose a market, or a change to one. You need git, Node 22 and npm. The foundation
+reviews and merges pull requests, and `./check.sh` must pass first.
 
 ## 1. Before you write a file
 
@@ -27,7 +27,7 @@ Create `<folder>/<name>.json`, with these keys in this order. Nothing else may b
 | `folder` | yes | The folder the file sits in, written the same way. Use one from `directory.md`, or start a new one. |
 | `description` | yes | What the market is: one line, at most 300 characters. |
 | `sides` | yes | `"two"`, a seller and a buyer, or `"one"`, peers. |
-| `labels` | no | Two-sided markets only: `{ "seller": "...", "buyer": "..." }`, each one line of at most 64 characters. Only when seller and buyer aren't the natural words, as with host and guest. |
+| `roleNames` | no | Two-sided markets only: `{ "seller": "...", "buyer": "..." }`, each one line of at most 64 characters. Only when seller and buyer aren't the natural words, as with host and guest. |
 | `evidenceTypes` | yes | Slugs, each once: `["escrow"]` where money usually moves through an escrow, `[]` for none. |
 | `offerFields` | yes | `{ "properties": { ... } }`, the fields an offer here usually carries, or `{}` for none. |
 | `reviewFields` | no | The same shape, for fields a review here may carry. Every file so far has `{}`. |
@@ -39,8 +39,9 @@ are good models. [`schema/market.json`](schema/market.json) is the exact format.
 
 ### The name
 
-Pick the name you'd still use in twenty years. A badge carries its label as text and a line on the
-registry never changes, so renaming a market here leaves every existing badge under the old name.
+Pick the name you'd still use in twenty years. A profile's label holds the name as text, and a line
+on the registry never changes, so renaming a market here leaves every existing profile under the
+old name.
 
 Avoid a name that could mean another trade: `pet-training`, not `training`; `event-security`, not
 `security`.
@@ -105,7 +106,7 @@ Add one line under its folder in [`directory.md`](directory.md), in the shape in
 ```
 
 End it the way the other lines do: `Two-sided.`, `One-sided.`, or `Two-sided: host and guest.` when
-the file has labels. A new folder gets a `## folder` heading and one sentence on what's in it.
+the file has `roleNames`. A new folder gets a `## folder` heading and one sentence on what's in it.
 
 The foundation's index reads only markets that have a line here. `check.sh` fails a file with no
 line, and a line that points at no market file.
@@ -117,7 +118,8 @@ line, and a line that points at no market file.
 ```
 
 Fix whatever it prints, until it says every file passes. Then open a pull request with the file and
-its line. The pull request runs `check.sh` again, and is merged when it passes.
+its line. The pull request runs `check.sh` again. Once it passes, the foundation reviews the pull
+request and merges it.
 
 ## Changing a market
 
@@ -126,6 +128,6 @@ The same way: edit the file, run `./check.sh`, open a pull request.
 - **Adding or rewording** a field, a rating name or the text is an ordinary change.
 - **Moving** a market to another folder is free: change `folder`, move the file, and update its line
   in `directory.md`.
-- **Renaming** makes a new market. Badges keep the old name, and the foundation's index stops
+- **Renaming** makes a new market. Profiles keep the old name, and the foundation's index stops
   counting them once the old name leaves `directory.md`. So add the new file next to the old one,
   rather than renaming the old one.
