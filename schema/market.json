@@ -8,7 +8,7 @@
   "additionalProperties": false,
   "properties": {
     "name": {
-      "description": "The market's recommended spelling. A badge's label is `name/role`, such as `plumbing/seller`.",
+      "description": "The market's recommended spelling. A profile's label is `name/role`, such as `plumbing/seller`.",
       "$ref": "#/$defs/slug"
     },
     "folder": {
@@ -26,7 +26,7 @@
       "enum": ["two", "one"]
     },
     "roleNames": {
-      "description": "Two-sided markets only. The plain words pages use for the two sides, such as host and guest. Badges and offers still say seller and buyer.",
+      "description": "Two-sided markets only. The plain words pages use for the two sides, such as host and guest. Labels and offers still say seller and buyer.",
       "type": "object",
       "required": ["seller", "buyer"],
       "additionalProperties": false,

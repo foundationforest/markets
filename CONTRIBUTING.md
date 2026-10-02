@@ -39,8 +39,9 @@ are good models. [`schema/market.json`](schema/market.json) is the exact format.
 
 ### The name
 
-Pick the name you'd still use in twenty years. A badge carries its label as text and a line on the
-registry never changes, so renaming a market here leaves every existing badge under the old name.
+Pick the name you'd still use in twenty years. A profile's label holds the name as text, and a line
+on the registry never changes, so renaming a market here leaves every existing profile under the
+old name.
 
 Avoid a name that could mean another trade: `pet-training`, not `training`; `event-security`, not
 `security`.
@@ -127,6 +128,6 @@ The same way: edit the file, run `./check.sh`, open a pull request.
 - **Adding or rewording** a field, a rating name or the text is an ordinary change.
 - **Moving** a market to another folder is free: change `folder`, move the file, and update its line
   in `directory.md`.
-- **Renaming** makes a new market. Badges keep the old name, and the foundation's index stops
+- **Renaming** makes a new market. Profiles keep the old name, and the foundation's index stops
   counting them once the old name leaves `directory.md`. So add the new file next to the old one,
   rather than renaming the old one.

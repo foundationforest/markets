@@ -5,10 +5,10 @@ suggestions for what dealing there usually looks like. The list is [`directory.m
 
 ## What a market is
 
-A market is a label. On Forest, a profile lives in one market, on one side of it, and its badge is
-one line on the registry under a label: one verified human per line, and at most one line per
-human per label. The recommended label is `market/role`, such as `plumbing/seller`, `stays/buyer`
-or `tennis/peer`. A label is free text and the registry accepts any, so anyone can start a market
+A market is a name. On Forest, a profile lives in one market, on one side of it, and a profile's
+label is `name/role`, such as `plumbing/seller`, `stays/buyer` or `tennis/peer`. Each profile has
+one line on the registry, under its label: one verified human per line, and at most one line per
+human per label. A label is free text and the registry accepts any, so anyone can start a market
 just by using a name.
 
 This repo adds two things to a name:
@@ -57,13 +57,15 @@ This repo adds two things to a name:
 
 ## Every field is a suggestion
 
-Nothing here allows, forbids or approves a market or a deal.
+Every field in a market file is a suggestion to indexes and apps, never a rule, and nothing here
+allows, forbids or approves a market or a deal. Even `sides` only suggests: whether a market counts
+as one-sided or two-sided for reviews is each index's choice.
 
 - No field is required. An offer may leave out any field its market suggests, and carry others.
 - A review may use rating names its market doesn't list.
 - Evidence weighs; it never rejects. A review with no evidence under it is still a review, and an
   index weighs it less.
-- Role names are words for pages. Badges and offers still say `seller` and `buyer`.
+- Role names are words for pages. Labels and offers still say `seller` and `buyer`.
 - No file sets a price, a deadline, or any amount of money or time. The people in a deal set those,
   offer by offer.
 - A name that isn't in this directory is still a market. It just isn't one the directory
@@ -74,7 +76,7 @@ Nothing here allows, forbids or approves a market or a deal.
 Everything here is public and released under CC0: anyone may copy it, change it or build on it,
 with no permission needed.
 
-**Indexes** decide which markets they show and which badges they count. The foundation's index, in
+**Indexes** decide which markets they show and which profiles they count. The foundation's index, in
 [foundationforest/services](https://github.com/foundationforest/services), reads this repo over
 HTTPS when it starts, from `main` or a commit it is pinned to:
 
@@ -82,13 +84,13 @@ HTTPS when it starts, from `main` or a commit it is pinned to:
    Nothing else on the page.
 2. It fetches each file those lines link, and refuses one whose `name` and `folder` don't match its
    path, or that lacks what it reads.
-3. It counts a badge only under `market/role`, with the market a name listed here, byte for byte,
-   and the role one the market's sides allow. A badge under any other label counts for nothing
-   there.
+3. It counts a profile only when its label is `name/role`, with the name one listed here, byte for
+   byte, and the role one the market's sides allow. A profile under any other label counts for
+   nothing there.
 4. Its pages show each market's description and how deals go, call the two sides by their role
    names, and show the review fields a market names.
 
-So for the foundation's index, a market missing from `directory.md` has no counted badges, even
+So for the foundation's index, a market missing from `directory.md` has no counted profiles, even
 though nothing here forbids it. Another index may read this directory differently, or not at all.
 
 **Apps** can use the same files: offer fields to build an offer form, ratings to suggest what a
