@@ -101,8 +101,9 @@ a commit: `https://raw.githubusercontent.com/foundationforest/markets/<commit>/d
 ## Propose a market
 
 Anyone may. Add `<folder>/<name>.json` and its line in `directory.md`, run `./check.sh`, and open a
-pull request. Every pull request runs `check.sh` again, and is merged when it passes; nothing else
-is judged. Step by step, with every key explained: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+pull request. Every pull request runs `check.sh` again, and it must pass. Then the foundation
+reviews the pull request and merges it. Step by step, with every key explained:
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## The format and the check
 
@@ -123,10 +124,6 @@ is judged. Step by step, with every key explained: [`CONTRIBUTING.md`](CONTRIBUT
 
   It prints what fails and exits 1, or exits 0 when everything passes. A GitHub Actions workflow,
   `.github/workflows/check.yml`, runs it on every pull request.
-- `.github/workflows/auto-merge.yml` turns on GitHub's auto-merge for a pull request that only adds
-  or changes market files and their lines in `directory.md`, and drops no name listed there. GitHub
-  merges it once the check passes. A pull request that changes anything else waits for a person,
-  since it could change the check itself.
 
 ## What's here
 
@@ -137,7 +134,6 @@ is judged. Step by step, with every key explained: [`CONTRIBUTING.md`](CONTRIBUT
 | [`schema/market.json`](schema/market.json) | The market file's format |
 | `check.sh`, `package.json`, `package-lock.json` | The check, and the validator it uses |
 | `.github/workflows/check.yml` | Runs the check on every pull request |
-| `.github/workflows/auto-merge.yml` | Merges a pull request that only changes markets, once the check passes |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose a market or a change to one |
 | [`CLAUDE.md`](CLAUDE.md) | Rules for AI sessions working here |
 | [`LICENSE`](LICENSE) | CC0 1.0 |

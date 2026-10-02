@@ -1,7 +1,7 @@
 # Proposing a market
 
-Anyone may propose a market, or a change to one. You need git, Node 22 and npm. A proposal is
-merged when `./check.sh` passes; nothing else is judged.
+Anyone may propose a market, or a change to one. You need git, Node 22 and npm. The foundation
+reviews and merges pull requests, and `./check.sh` must pass first.
 
 ## 1. Before you write a file
 
@@ -117,7 +117,8 @@ line, and a line that points at no market file.
 ```
 
 Fix whatever it prints, until it says every file passes. Then open a pull request with the file and
-its line. The pull request runs `check.sh` again, and is merged when it passes.
+its line. The pull request runs `check.sh` again. Once it passes, the foundation reviews the pull
+request and merges it.
 
 ## Changing a market
 

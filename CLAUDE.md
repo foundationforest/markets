@@ -2,7 +2,7 @@ This repo is `markets`: the Forest Foundation's directory of recommended market 
 
 Rules:
 - Files suggest and never restrict. Nothing here allows, forbids or approves a market or a deal. Every field is a suggestion: the format has no `required`. No file sets a money or time value.
-- Anyone may propose a market. A proposal is merged when `./check.sh` passes; nothing else is judged.
+- Anyone may propose a market. The foundation reviews and merges pull requests; `./check.sh` must pass first.
 - The format is `schema/market.json`. `./check.sh` validates every market file against it, then checks that each file sits at `<folder>/<name>.json`, that no two files share a name, that every file has its line in `directory.md`, and that every line points at a market file of the name it lists. `.github/workflows/check.yml` runs it on every pull request. Nothing here depends on the forest repo.
 - Market fields use AT Protocol lexicon field syntax for now. Moving them to JSON Schema, like forest's records, is the first item of the Markets phase; don't change the syntax before then.
 - The schema's lists of base offer and review fields copy forest's record shapes. When forest's change, update the lists.
