@@ -11,7 +11,7 @@ this list is the one we recommend, and anyone can grow it. The list is
 
 A market is a name. On Forest, a profile lives in one market, on one side of it, and a profile's
 label is `name/role`, such as `plumbing/seller`, `stays/buyer` or `tennis/peer`. The
-[registry](https://github.com/foundationforest/standard/tree/main/registry) allows one line per
+[registry](https://github.com/foundationforest/standard/tree/main/registry) allows one row per
 verified human per label, per issuer. A label is free text and the registry accepts any, so anyone
 can start a market just by using a name.
 
