@@ -1,15 +1,19 @@
 # markets
 
-The Forest Foundation's directory of markets: recommended market names, each with a file of
-suggestions for what dealing there usually looks like. The list is [`directory.md`](directory.md).
+Part of [Forest](https://github.com/foundationforest). This is the open list of markets: a
+recommended name for each kind of dealing, with a file of suggestions for what offers, reviews and
+deals there usually look like. Apps and indexes read these files so that a tutor profile means the
+same thing in every app and index that uses them. Nothing here is required: any name is a market;
+this list is the one we recommend, and anyone can grow it. The list is
+[`directory.md`](directory.md).
 
 ## What a market is
 
 A market is a name. On Forest, a profile lives in one market, on one side of it, and a profile's
-label is `name/role`, such as `plumbing/seller`, `stays/buyer` or `tennis/peer`. Each profile has
-one line on the registry, under its label: one verified human per line, and at most one line per
-human per label. A label is free text and the registry accepts any, so anyone can start a market
-just by using a name.
+label is `name/role`, such as `plumbing/seller`, `stays/buyer` or `tennis/peer`. The
+[registry](https://github.com/foundationforest/standard/tree/main/registry) allows one line per
+verified human per label, per issuer. A label is free text and the registry accepts any, so anyone
+can start a market just by using a name.
 
 This repo adds two things to a name:
 
@@ -76,22 +80,12 @@ as one-sided or two-sided for reviews is each index's choice.
 Everything here is public and released under CC0: anyone may copy it, change it or build on it,
 with no permission needed.
 
-**Indexes** decide which markets they show and which profiles they count. The foundation's index, in
-[foundationforest/services](https://github.com/foundationforest/services), reads this repo over
-HTTPS when it starts, from `main` or a commit it is pinned to:
-
-1. It reads `directory.md` and takes each line shaped ``- [`name`](folder/name.json): ...``.
-   Nothing else on the page.
-2. It fetches each file those lines link, and refuses one whose `name` and `folder` don't match its
-   path, or that lacks what it reads.
-3. It counts a profile only when its label is `name/role`, with the name one listed here, byte for
-   byte, and the role one the market's sides allow. A profile under any other label counts for
-   nothing there.
-4. Its pages show each market's description and how deals go, call the two sides by their role
-   names, and show the review fields a market names.
-
-So for the foundation's index, a market missing from `directory.md` has no counted profiles, even
-though nothing here forbids it. Another index may read this directory differently, or not at all.
+**Indexes** decide which markets they show and which profiles they count. The Open Forest
+Foundation's index counts a profile only when its label uses a name listed here, byte for byte, and
+a role its sides allow; a market missing from `directory.md` has no counted profiles there, though
+nothing here forbids it. How it reads this repo, and how often, is in
+[services/index](https://github.com/foundationforest/services/tree/main/index). Another index may
+read this list differently, or not at all.
 
 **Apps** can use the same files: offer fields to build an offer form, ratings to suggest what a
 reviewer rates, role names and how deals go for their pages, and `schema/market.json` to check a

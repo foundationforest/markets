@@ -1,7 +1,7 @@
 # Proposing a market
 
-Anyone may propose a market, or a change to one. You need git, Node 22 and npm. The foundation
-reviews and merges pull requests, and `./check.sh` must pass first.
+Anyone may propose a market, or a change to one. You need git, Node 22 and npm. The Open Forest
+Foundation reviews and merges pull requests, and `./check.sh` must pass first.
 
 ## 1. Before you write a file
 
