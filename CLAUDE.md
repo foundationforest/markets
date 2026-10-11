@@ -1,4 +1,4 @@
-This repo is `markets`: the Forest Foundation's directory of recommended market names. One file per market at `<folder>/<name>.json`, listed in `directory.md`. `README.md` says what a market is and how indexes and apps use the directory; `CONTRIBUTING.md` says how to propose one.
+This repo is `markets`: the Open Forest Foundation's directory of recommended market names. One file per market at `<folder>/<name>.json`, listed in `directory.md`. `README.md` says what a market is and how indexes and apps use the directory; `CONTRIBUTING.md` says how to propose one.
 
 Rules:
 - Files suggest and never restrict. Nothing here allows, forbids or approves a market or a deal. Every field is a suggestion: the format has no `required`. No file sets a money or time value.
