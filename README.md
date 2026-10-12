@@ -10,10 +10,12 @@ this list is the one we recommend, and anyone can grow it. The list is
 ## What a market is
 
 A market is a name. On Forest, a profile lives in one market, on one side of it, and a profile's
-label is `name/role`, such as `plumbing/seller`, `stays/buyer` or `tennis/peer`. The
+label is `name/role`, such as `plumbing/seller`, `stays/buyer` or `tennis/peer`. A role is a side
+of a market: seller or buyer, or peer when there are no sides. Apps show it in the market's own
+words, like tutor or landlord. The
 [registry](https://github.com/foundationforest/standard/tree/main/registry) allows one row per
-verified human per label, per issuer. A label is free text and the registry accepts any, so anyone
-can start a market just by using a name.
+verified human per label, per issuer; a row is one line in the registry. A label is free text and
+the registry accepts any, so anyone can start a market just by using a name.
 
 This repo adds two things to a name:
 
@@ -29,7 +31,8 @@ This repo adds two things to a name:
    - `reviewFields`: extra fields a review here may carry.
    - `ratings`: the rating names reviews here usually use. `overall` is always one; plumbing adds
      `punctuality`, stays adds `location` and `cleanliness`.
-   - `evidenceTypes`: what can show a deal here happened. `escrow` is the one defined so far.
+   - `evidenceTypes`: the evidence a review here can carry: what backs it, like a paid deal. `escrow`
+     is the one defined so far.
    - `howDealsGo`: how deals here usually go, in plain words: what done looks like, which escrow
      options people tend to turn on and why, what to check before paying.
    - `folder`: where the file sits. Folders are only for finding markets. No label contains one, so
@@ -98,17 +101,19 @@ a commit: `https://raw.githubusercontent.com/foundationforest/markets/<commit>/d
 
 Anyone may. Add `<folder>/<name>.json` and its line in `directory.md`, run `./check.sh`, and open a
 pull request. Every pull request runs `check.sh` again, and it must pass. Then the foundation
-reviews the pull request and merges it. Step by step, with every key explained:
+reviews the pull request and merges it. The review checks two things: the proposal passes
+`./check.sh`, and it is not a duplicate of a market already listed. It never judges whether a market
+deserves to exist. Step by step, with every key explained:
 [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## The format and the check
 
 - [`schema/market.json`](schema/market.json) is the market file's format, a JSON Schema (draft
   2020-12).
-- The field definitions inside `offerFields` and `reviewFields` still use AT Protocol lexicon field
-  syntax: `type`, `description`, `maxLength`, `knownValues`, `format` and so on. Forest's own
-  records now use JSON Schema. Moving market fields to JSON Schema too is the first item of the
-  Markets phase; until then they keep their current syntax.
+- The field definitions inside `offerFields` and `reviewFields` still use a field syntax borrowed
+  from AT Protocol, a social-network standard: `type`, `description`, `maxLength`, `knownValues`,
+  `format` and so on. Forest's own records now use JSON Schema. Moving market fields to JSON Schema
+  too is a later code change; until then they keep their current syntax.
 - `./check.sh` checks every market file. It needs Node 22 and npm, and installs its one
   dependency, the ajv validator, at the version locked in `package-lock.json`, on its first run.
   It checks:
