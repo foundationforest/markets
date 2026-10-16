@@ -22,6 +22,9 @@ A name says what the dealing is, in the words people use, so the list alone tell
 Usually two words, sometimes one. Add the second word when the first could mean another dealing. A
 topic is never in a name; it is a field.
 
+From the first set: `car-rental`, `tennis-matches`, `sports-coaching`, `home-cleaning`, `tutoring`,
+`electronics`.
+
 Spelling: lowercase letters, digits and single hyphens, at most 64 characters, no other market's
 name.
 
@@ -144,7 +147,7 @@ A market writes its schedules as templates, with times relative to the deal:
 
 ```text
 {
-  "windows": [ { "from": "payment" | "when", "offset": "+3d" | "-24h", "payerShare": 0 to 10000 } ],
+  "windows": [ { "from": "payment" | "<a moment field>", "offset": "+3d" | "-24h", "payerShare": 0 to 10000 } ],
   "end": "pay" | "refund",
   "arbiter": true | false
 }
@@ -152,9 +155,9 @@ A market writes its schedules as templates, with times relative to the deal:
 
 - `windows`, in order, at least one. The first opens when the money goes in, and each next one when
   the one before closes. A window closes at `offset`, hours (`h`) or days (`d`) after (`+`) or
-  before (`-`) its `from`: `payment`, when the money went in, or `when`, the time the deal is for,
-  such as a session's start. Until it closes, the payer may take back alone `payerShare` out of
-  10,000.
+  before (`-`) its `from`: `payment`, when the money went in, or the name of one of the market's own
+  `moment` fields in `offer`, whose time in the deal's post is the time the deal is for (its start,
+  when it holds a span). Until it closes, the payer may take back alone `payerShare` out of 10,000.
 - `end`: what happens when the last window closes and nobody stopped: `pay`, everything to the
   recipient, or `refund`, everything back to the payer.
 - `arbiter`: whether the deal names an arbiter, who may close a stopped escrow at any split. The two
@@ -178,14 +181,14 @@ Two schedules, as two markets might have written them. For things sent by post:
 The payer takes nothing back alone. Either side may stop within 14 days of paying, and then the
 arbiter closes it; if nobody stops, it pays.
 
-For a booked session:
+For a booked session, in a market whose offer has a moment field `session`:
 
 ```json
 "payment": {
   "booked": {
     "windows": [
-      { "from": "when", "offset": "-24h", "payerShare": 10000 },
-      { "from": "when", "offset": "+48h", "payerShare": 0 }
+      { "from": "session", "offset": "-24h", "payerShare": 10000 },
+      { "from": "session", "offset": "+48h", "payerShare": 0 }
     ],
     "end": "pay",
     "arbiter": false
@@ -202,8 +205,8 @@ either side [objected](https://github.com/foundationforest/standard/blob/main/es
 first. The objection is the stop, and an arbiter, if any, is named at the start. So a schedule runs
 there when it has one window, from `payment`, with an offset of whole days and a `payerShare` of 0:
 the app turns it into the timer, which pays the recipient for `pay` and the payer for `refund`. The
-first example runs on devnet; the second does not. Several windows, a window from `when`, and a
-`payerShare` above 0 wait for the next escrow version, which is not written yet. It is to take the
+first example runs on devnet; the second does not. Several windows, a window from a moment field,
+and a `payerShare` above 0 wait for the next escrow version, which is not written yet. It is to take the
 absolute times: `windows`, each with its `until` and `payerShare`, and `end`.
 
 ## Propose
@@ -220,4 +223,5 @@ absolute times: `windows`, each with its `until` and `payerShare`, and `end`.
    types, each name against its file's name, and `directory.json` against the files, and writes
    [`directory.md`](../directory.md) from `directory.json`. Fix what it prints until it passes, and
    commit the `directory.md` it writes.
-4. Open a pull request. The Open Forest Foundation reviews it and merges it.
+4. Open a pull request. The check runs on it again, and must pass; then the Open Forest Foundation
+   reviews it and merges it.

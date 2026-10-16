@@ -147,8 +147,9 @@
       "additionalProperties": false,
       "properties": {
         "from": {
-          "description": "What the window's close counts from: payment, when the money went in, or when, the time the deal is for.",
-          "enum": ["payment", "when"]
+          "description": "What the window's close counts from: payment, when the money went in, or the name of one of the market's moment fields in offer, the time the deal is for.",
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]{0,63}$"
         },
         "offset": {
           "description": "Hours (h) or days (d) after (+) or before (-) it, when the window closes.",

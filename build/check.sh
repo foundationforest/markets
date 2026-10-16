@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Checks the markets directory:
 #   1. every markets/*.json against build/market.schema.json, each field's type against
-#      build/types.json, and each role's word once per market;
+#      build/types.json, each role's word once per market, and each window's from: payment, or a
+#      moment field in the market's offer;
 #   2. each market's name equal to its file's name, which also keeps every name unique;
 #   3. directory.json listing exactly the market files, each with the name, description and roles
 #      its file has;
@@ -85,6 +86,7 @@ const PLAIN = {
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
   '#/properties/howDealsGo/pattern': 'must not be empty',
   '#/$defs/window/properties/offset/pattern': 'must be a sign, a whole number and h or d, such as "+3d" or "-24h"',
+  '#/$defs/window/properties/from/pattern': 'must be "payment" or the name of a moment field in offer',
 }
 function say(e) {
   const at = e.instancePath || 'the file'
@@ -132,6 +134,19 @@ for (const file of files) {
   const words = Array.isArray(market?.roles) ? market.roles.map((r) => r?.role) : []
   for (const word of new Set(words.filter((w, i) => typeof w === 'string' && words.indexOf(w) !== i))) {
     report(where, `the role "${word}" is listed twice`)
+  }
+  // A window counts from payment, or from one of the market's own moment fields.
+  const offer = typeof market?.offer === 'object' && market.offer !== null ? market.offer : {}
+  const schedules = typeof market?.payment === 'object' && market.payment !== null ? Object.entries(market.payment) : []
+  for (const [name, schedule] of schedules) {
+    const windows = Array.isArray(schedule?.windows) ? schedule.windows : []
+    windows.forEach((window, i) => {
+      const from = window?.from
+      if (typeof from !== 'string' || from === 'payment' || !/^[a-z][a-zA-Z0-9]{0,63}$/.test(from)) return
+      if (!Object.hasOwn(offer, from) || offer[from]?.type !== 'moment') {
+        report(where, `/payment/${name}/windows/${i}/from "${from}" is not a moment field in offer`)
+      }
+    })
   }
   const fields = [['/offer', market?.offer], ['/review/fields', market?.review?.fields]]
   for (const [at, block] of fields) {
