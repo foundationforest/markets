@@ -6,7 +6,6 @@
     { "role": "buyer", "posts": "requests" }
   ],
   "offer": {
-    "title": { "type": "text", "description": "The item in a few words, such as Levi's 501 jeans.", "required": true, "roles": ["seller"] },
     "description": { "type": "text", "description": "The item and anything to know about it.", "required": true },
     "price": { "type": "money", "description": "The price of the item, without shipping." },
     "payment": { "type": "choice", "description": "How the item may be paid: direct, shipped, or both.", "values": ["direct", "shipped"], "many": true },
