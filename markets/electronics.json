@@ -1,0 +1,33 @@
+{
+  "name": "electronics",
+  "description": "People sell phones, laptops, consoles and other electronics they own, picked up in person or shipped.",
+  "roles": [
+    { "role": "seller", "posts": "offers" },
+    { "role": "buyer", "posts": "requests" }
+  ],
+  "offer": {
+    "description": { "type": "text", "description": "The item for sale, or the item looked for." },
+    "price": { "type": "money", "description": "The price of the item, without shipping." },
+    "payment": { "type": "words", "description": "How the item may be paid: direct, shipped, or both." },
+    "kind": { "type": "choice", "description": "What kind of item it is.", "values": ["phone", "laptop", "tablet", "desktop", "console", "camera", "audio", "tv", "watch", "other"] },
+    "model": { "type": "text", "description": "The brand and model, such as iPhone 13 128 GB." },
+    "condition": { "type": "choice", "description": "The item's condition.", "values": ["new", "like-new", "good", "fair", "for-parts"] },
+    "delivery": { "type": "choice", "description": "Picked up, shipped, or either.", "values": ["pickup", "shipped", "either"] },
+    "place": { "type": "place", "description": "Where the item can be picked up, or ships from." },
+    "photo": { "type": "blob", "description": "A photo of the item." }
+  },
+  "review": {
+    "shared": ["subject", "score", "text", "offer", "evidence"],
+    "fields": {
+      "asDescribed": { "type": "choice", "description": "In a review of the seller: whether the item was as the post said.", "values": ["yes", "no"] }
+    }
+  },
+  "payment": {
+    "shipped": {
+      "windows": [ { "from": "payment", "offset": "+14d", "payerShare": 0 } ],
+      "end": "pay",
+      "arbiter": true
+    }
+  },
+  "howDealsGo": "The seller and the buyer agree in messages on the price and on pickup or shipping, and pay outside Forest. At a pickup the buyer checks the item before paying. Each may review the other. A review of the person who wrote the post names it."
+}

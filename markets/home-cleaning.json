@@ -1,0 +1,28 @@
+{
+  "name": "home-cleaning",
+  "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
+  "roles": [
+    { "role": "cleaner", "posts": "offers" },
+    { "role": "client", "posts": "requests" }
+  ],
+  "offer": {
+    "description": { "type": "text", "description": "The cleaning offered, or the home and the cleaning it needs." },
+    "price": { "type": "money", "description": "The price per hour or per visit." },
+    "payment": { "type": "words", "description": "How a visit may be paid: direct, visit, or both." },
+    "place": { "type": "place", "description": "Where the cleaner works from, or where the home is." },
+    "distanceKm": { "type": "number", "description": "How far from the place the cleaner will travel, in kilometres." },
+    "frequency": { "type": "words", "description": "How often: once, weekly, biweekly (every two weeks), monthly." },
+    "supplies": { "type": "choice", "description": "Who brings the cleaning supplies.", "values": ["cleaner", "client"] }
+  },
+  "review": {
+    "shared": ["subject", "score", "text", "offer", "evidence"]
+  },
+  "payment": {
+    "visit": {
+      "windows": [ { "from": "payment", "offset": "+7d", "payerShare": 0 } ],
+      "end": "pay",
+      "arbiter": false
+    }
+  },
+  "howDealsGo": "The cleaner and the client agree in messages on the home, the hours, how often and who brings supplies, and pay outside Forest, usually per visit. Each may review the other. A review of the person who wrote the post names it."
+}

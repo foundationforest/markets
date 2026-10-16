@@ -1,0 +1,27 @@
+{
+  "name": "tutoring",
+  "description": "Tutors help students with school subjects one on one, paid per hour, in person or online.",
+  "roles": [
+    { "role": "tutor", "posts": "offers" },
+    { "role": "student", "posts": "requests" }
+  ],
+  "offer": {
+    "description": { "type": "text", "description": "The help offered, or the help looked for." },
+    "price": { "type": "money", "description": "The price per hour." },
+    "payment": { "type": "words", "description": "How a session may be paid: direct, session, or both." },
+    "subjects": { "type": "words", "description": "The school subjects, such as maths or chemistry." },
+    "levels": { "type": "words", "description": "The school levels: primary, secondary, university." },
+    "place": { "type": "place", "description": "Where sessions are held, or online. A tutor who does both writes two posts." }
+  },
+  "review": {
+    "shared": ["subject", "score", "text", "offer", "evidence"]
+  },
+  "payment": {
+    "session": {
+      "windows": [ { "from": "payment", "offset": "+7d", "payerShare": 0 } ],
+      "end": "pay",
+      "arbiter": false
+    }
+  },
+  "howDealsGo": "The tutor and the student, or a parent for a child, agree in messages on the subject, the times and the place, and pay outside Forest. After a session each may review the other. A review of the person who wrote the post names it."
+}
