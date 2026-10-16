@@ -9,9 +9,8 @@
     "description": { "type": "text", "description": "The cleaning offered, or the home and the cleaning it needs." },
     "price": { "type": "money", "description": "The price per hour or per visit." },
     "payment": { "type": "words", "description": "How a visit may be paid: direct, visit, or both." },
-    "place": { "type": "place", "description": "Where the cleaner works from, or where the home is." },
-    "distanceKm": { "type": "number", "description": "How far from the place the cleaner will travel, in kilometres." },
-    "frequency": { "type": "words", "description": "How often: once, weekly, biweekly (every two weeks), monthly." },
+    "place": { "type": "place", "description": "Where the cleaner works from and how far they go, or where the home is." },
+    "frequency": { "type": "choice", "description": "How often the home is cleaned; biweekly is every two weeks.", "values": ["once", "weekly", "biweekly", "monthly"], "many": true },
     "supplies": { "type": "choice", "description": "Who brings the cleaning supplies.", "values": ["cleaner", "client"] }
   },
   "review": {
@@ -24,5 +23,5 @@
       "arbiter": false
     }
   },
-  "howDealsGo": "The cleaner and the client agree in messages on the home, the hours, how often and who brings supplies, and pay outside Forest, usually per visit. Each may review the other. A review of the person who wrote the post names it."
+  "howDealsGo": "The cleaner and the client agree in messages on the home, the hours, how often and who brings supplies, and pay outside Forest, usually per visit. Each may review the other. Each review names the post."
 }

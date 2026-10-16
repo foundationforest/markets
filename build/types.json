@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/types.json",
   "title": "Types",
-  "description": "The eight types a market's fields are, as a post or a review holds their values. A record holds only whole numbers, so numbers, money and coordinates are decimal text. build/README.md says what a program does with each.",
+  "description": "The nine types a market's fields are, as a post or a review holds their values. A record holds only whole numbers, so numbers, money and coordinates are decimal text. build/README.md says what a program does with each.",
   "$defs": {
     "text": {
       "description": "Text. Searched and shown.",
@@ -29,7 +29,7 @@
       "type": "string"
     },
     "place": {
-      "description": "Online, or a point rounded to precisionKm kilometres, with the name of its area. Searched by how near it is.",
+      "description": "Online, or a point rounded to precisionKm kilometres, with the name of its area, online too if it says so, and how far from it the person goes. Searched by how near it is.",
       "oneOf": [
         {
           "type": "object",
@@ -63,6 +63,15 @@
               "description": "The name people know the area by, such as a town or a district.",
               "type": "string",
               "minLength": 1
+            },
+            "online": {
+              "description": "The person deals online too.",
+              "const": true
+            },
+            "reachKm": {
+              "description": "How many kilometres from the point the person goes.",
+              "type": "integer",
+              "minimum": 0
             }
           }
         }
@@ -135,6 +144,46 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 9007199254740991
+        }
+      }
+    },
+    "hours": {
+      "description": "When a person is free, every week: slots on weekdays, in one time zone. Filtered by day and time.",
+      "$defs": {
+        "time": {
+          "description": "A time of day, HH:MM.",
+          "type": "string",
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      },
+      "type": "object",
+      "required": ["zone", "slots"],
+      "additionalProperties": false,
+      "properties": {
+        "zone": {
+          "description": "The time zone the times are in, by its name, such as Europe/Madrid.",
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_+-]*(/[A-Za-z0-9_+-]+)*$"
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["days", "from", "to"],
+            "additionalProperties": false,
+            "properties": {
+              "days": {
+                "description": "The weekdays the slot is on.",
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] }
+              },
+              "from": { "description": "When the slot starts.", "$ref": "#/$defs/hours/$defs/time" },
+              "to": { "description": "When the slot ends.", "$ref": "#/$defs/hours/$defs/time" }
+            }
+          }
         }
       }
     }

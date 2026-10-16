@@ -1,0 +1,35 @@
+{
+  "name": "clothing",
+  "description": "People sell clothes and shoes they own, picked up in person or shipped.",
+  "roles": [
+    { "role": "seller", "posts": "offers" },
+    { "role": "buyer", "posts": "requests" }
+  ],
+  "offer": {
+    "description": { "type": "text", "description": "The item for sale, or the item looked for." },
+    "price": { "type": "money", "description": "The price of the item, without shipping." },
+    "payment": { "type": "words", "description": "How the item may be paid: direct, shipped, or both." },
+    "kind": { "type": "choice", "description": "What kind of item it is.", "values": ["top", "shirt", "knitwear", "trousers", "jeans", "shorts", "skirt", "dress", "suit", "jacket", "coat", "sportswear", "swimwear", "shoes", "trainers", "boots", "sandals", "other"] },
+    "wearer": { "type": "choice", "description": "Who the item is made for.", "values": ["women", "men", "unisex", "girls", "boys", "baby"] },
+    "size": { "type": "text", "description": "The size on the label, with its system, such as EU 38, UK 10 or M." },
+    "brand": { "type": "text", "description": "The brand, if any." },
+    "condition": { "type": "choice", "description": "The item's condition; new is never worn, without tags.", "values": ["new-with-tags", "new", "like-new", "good", "fair"] },
+    "delivery": { "type": "choice", "description": "Picked up, shipped, or either.", "values": ["pickup", "shipped", "either"] },
+    "place": { "type": "place", "description": "Where the item can be picked up, or ships from." },
+    "photos": { "type": "blob", "description": "Photos of the item.", "many": true }
+  },
+  "review": {
+    "shared": ["subject", "score", "text", "offer", "evidence"],
+    "fields": {
+      "asDescribed": { "type": "choice", "description": "In a review of the seller: whether the item was as the post said.", "values": ["yes", "no"] }
+    }
+  },
+  "payment": {
+    "shipped": {
+      "windows": [ { "from": "payment", "offset": "+14d", "payerShare": 0 } ],
+      "end": "pay",
+      "arbiter": true
+    }
+  },
+  "howDealsGo": "The seller and the buyer agree in messages on the price, the size and on pickup or shipping, and pay outside Forest. At a pickup the buyer checks the item before paying. Each may review the other. Each review names the post."
+}

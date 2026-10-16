@@ -1,11 +1,11 @@
 {
   "markets": [
     {
-      "name": "car-rental",
-      "description": "Owners let someone use their car for a day or a week, for money.",
+      "name": "clothing",
+      "description": "People sell clothes and shoes they own, picked up in person or shipped.",
       "roles": [
-        { "role": "owner", "posts": "offers" },
-        { "role": "renter", "posts": "requests" }
+        { "role": "seller", "posts": "offers" },
+        { "role": "buyer", "posts": "requests" }
       ]
     },
     {
@@ -21,6 +21,22 @@
       "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
       "roles": [
         { "role": "cleaner", "posts": "offers" },
+        { "role": "client", "posts": "requests" }
+      ]
+    },
+    {
+      "name": "home-repair",
+      "description": "People fix things in other people's homes, such as plumbing, electrical work and small repairs, paid per hour or per job.",
+      "roles": [
+        { "role": "repairer", "posts": "offers" },
+        { "role": "client", "posts": "requests" }
+      ]
+    },
+    {
+      "name": "software-development",
+      "description": "People write software for others, remotely, paid per job.",
+      "roles": [
+        { "role": "developer", "posts": "offers" },
         { "role": "client", "posts": "requests" }
       ]
     },
