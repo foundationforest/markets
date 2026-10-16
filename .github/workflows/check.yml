@@ -1,6 +1,6 @@
-# Runs ./check.sh on every pull request: each market file against schema/market.json, its path,
-# its name, and its line in directory.md.
-# It must pass before the foundation reviews and merges a pull request.
+# Runs build/check.sh on every pull request: every market file against build/market.schema.json
+# and build/types.json, directory.json against the files, and directory.md as directory.json
+# writes it.
 
 name: check
 
@@ -20,4 +20,5 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: ./check.sh
+          cache-dependency-path: build/package-lock.json
+      - run: build/check.sh

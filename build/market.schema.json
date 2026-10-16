@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
+  "title": "Market file",
+  "description": "One market, at markets/<name>.json: its name, its roles, the fields of its posts and reviews, its payment schedules and how its deals go. build/README.md explains each part.",
+  "type": "object",
+  "required": ["name", "description", "roles", "offer", "review", "payment", "howDealsGo"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "The market's name, the first half of each of its labels, market/role.",
+      "$ref": "#/$defs/word"
+    },
+    "description": {
+      "description": "What the dealing is, in one line.",
+      "$ref": "#/$defs/line"
+    },
+    "roles": {
+      "description": "The roles a profile here can hold, one profile each. Labels use these words.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/role" }
+    },
+    "offer": {
+      "description": "The fields of a post here, by name. The shared names keep their type: description is text, price is money, payment is words.",
+      "$ref": "#/$defs/fields",
+      "type": "object",
+      "properties": {
+        "description": { "type": "object", "properties": { "type": { "const": "text" } } },
+        "price": { "type": "object", "properties": { "type": { "const": "money" } } },
+        "payment": { "type": "object", "properties": { "type": { "const": "words" } } }
+      }
+    },
+    "review": {
+      "description": "The shared review fields a review here holds, by name, and any fields the market adds.",
+      "type": "object",
+      "required": ["shared"],
+      "additionalProperties": false,
+      "properties": {
+        "shared": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["subject", "score", "text", "offer", "evidence"] }
+        },
+        "fields": {
+          "$ref": "#/$defs/fields",
+          "type": "object",
+          "propertyNames": { "not": { "enum": ["subject", "score", "text", "offer", "evidence"] } }
+        }
+      }
+    },
+    "payment": {
+      "description": "The market's escrow schedules, by name. Direct payment is always allowed and is not listed here.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/word", "not": { "const": "direct" } },
+      "additionalProperties": { "$ref": "#/$defs/schedule" }
+    },
+    "howDealsGo": {
+      "description": "How a deal here goes, in plain text. Lines allowed.",
+      "type": "string",
+      "pattern": "\\S"
+    }
+  },
+  "$defs": {
+    "word": {
+      "description": "Lowercase letters, digits and single hyphens, at most 64 characters.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "line": {
+      "description": "One line of text that is not only spaces.",
+      "type": "string",
+      "pattern": "^[^\\r\\n]*\\S[^\\r\\n]*$"
+    },
+    "role": {
+      "type": "object",
+      "required": ["role", "posts"],
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "description": "The role's word, the second half of its labels.",
+          "$ref": "#/$defs/word"
+        },
+        "posts": {
+          "description": "What this role's posts are: offers, requests, or just posts.",
+          "enum": ["offers", "requests", "posts"]
+        }
+      }
+    },
+    "fields": {
+      "description": "Fields by name. A name is a key in a record: a lowercase letter, then letters and digits, at most 64 characters.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]{0,63}$" },
+      "additionalProperties": { "$ref": "#/$defs/field" }
+    },
+    "field": {
+      "type": "object",
+      "required": ["type", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "One of the eight types in build/types.json.",
+          "enum": ["text", "number", "words", "choice", "place", "money", "moment", "blob"]
+        },
+        "description": {
+          "description": "What the field holds, in one line.",
+          "$ref": "#/$defs/line"
+        },
+        "values": {
+          "description": "For a choice: the values to choose from.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/line" }
+        }
+      },
+      "if": { "properties": { "type": { "const": "choice" } } },
+      "then": { "required": ["values"] },
+      "else": { "not": { "required": ["values"] } }
+    },
+    "schedule": {
+      "description": "An escrow schedule, with times relative to the deal. The app turns each window into an absolute time.",
+      "type": "object",
+      "required": ["windows", "end", "arbiter"],
+      "additionalProperties": false,
+      "properties": {
+        "windows": {
+          "description": "In order. At least one: the end comes when the last window closes.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/window" }
+        },
+        "end": {
+          "description": "If nobody stopped by the time the last window closes: pay, all to the recipient, or refund, all to the payer.",
+          "enum": ["pay", "refund"]
+        },
+        "arbiter": {
+          "description": "Whether the deal names an arbiter, who may close a stopped escrow.",
+          "type": "boolean"
+        }
+      }
+    },
+    "window": {
+      "type": "object",
+      "required": ["from", "offset", "payerShare"],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "description": "What the window's close counts from: payment, when the money went in, or the name of one of the market's moment fields in offer, the time the deal is for.",
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]{0,63}$"
+        },
+        "offset": {
+          "description": "Hours (h) or days (d) after (+) or before (-) it, when the window closes.",
+          "type": "string",
+          "pattern": "^[+-](0|[1-9][0-9]*)[dh]$"
+        },
+        "payerShare": {
+          "description": "The share, out of 10,000, the payer may take back alone until the window closes.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      }
+    }
+  }
+}
