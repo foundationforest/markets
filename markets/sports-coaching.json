@@ -6,15 +6,15 @@
     { "role": "student", "posts": "requests" }
   ],
   "offer": {
-    "description": { "type": "text", "description": "The coaching offered, or the coaching looked for." },
+    "description": { "type": "text", "description": "The coaching: what is taught, and how.", "required": true },
     "price": { "type": "money", "description": "The price of one session, per person." },
-    "payment": { "type": "words", "description": "How a session may be paid: direct, session, or both." },
-    "sport": { "type": "choice", "description": "The sports coached, or the sport looked for.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "basketball", "volleyball", "rugby", "hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics", "other"], "many": true },
-    "levels": { "type": "choice", "description": "The levels coached, or the student's level.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
+    "payment": { "type": "choice", "description": "How a session may be paid: direct, session, or both.", "values": ["direct", "session"], "many": true },
+    "sports": { "type": "choice", "description": "The sports the coaching is for.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "basketball", "volleyball", "rugby", "hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics", "other"], "many": true },
+    "levels": { "type": "choice", "description": "The levels the coaching is for.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
     "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one." },
     "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
     "place": { "type": "place", "description": "Where sessions are held, online, or both." },
-    "hours": { "type": "hours", "description": "When the coach can hold sessions, or when the student is free, each week." }
+    "hours": { "type": "hours", "description": "When sessions can be held, each week." }
   },
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"]
@@ -26,5 +26,5 @@
       "arbiter": false
     }
   },
-  "howDealsGo": "The coach and the student, or a parent for a child, agree in messages on the sport, the times and the place, and pay outside Forest. After a session each may review the other. Each review names the post."
+  "howDealsGo": "The coach and the student, or a parent for a child, agree in messages on the sport, the times and the place, and pay direct or by the session schedule. After a session each may review the other. Each review names the post."
 }

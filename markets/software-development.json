@@ -6,27 +6,27 @@
     { "role": "client", "posts": "requests" }
   ],
   "offer": {
-    "description": { "type": "text", "description": "The work offered, or the job and what the software must do." },
+    "description": { "type": "text", "description": "The work: what the software does, and how it is built.", "required": true },
     "price": { "type": "money", "description": "The price of the job: the developer's asking price, or the client's budget." },
-    "payment": { "type": "words", "description": "How the job may be paid: direct, job, or both." },
+    "payment": { "type": "choice", "description": "How the job may be paid: direct, job, or both.", "values": ["direct", "job"], "many": true },
     "kind": { "type": "choice", "description": "What kind of software.", "values": ["website", "web-app", "mobile-app", "desktop-app", "backend", "data", "automation", "game", "embedded", "smart-contract", "other"], "many": true },
     "stack": { "type": "words", "description": "Languages and tools, such as python, react or postgres." },
-    "due": { "type": "moment", "description": "When the job is due, or a span from its start to when it is due." },
-    "portfolio": { "type": "text", "description": "Links to past work, such as a repository or a site." }
+    "due": { "type": "moment", "description": "When the job is due, or a span from its start to when it is due.", "roles": ["client"] },
+    "portfolio": { "type": "text", "description": "Links to past work, such as a repository or a site.", "roles": ["developer"] }
   },
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"],
     "fields": {
-      "onTime": { "type": "choice", "description": "In a review of the developer: whether the work was handed over when agreed.", "values": ["yes", "no"] },
-      "asAgreed": { "type": "choice", "description": "In a review of the developer: whether the software did what was agreed.", "values": ["yes", "no"] }
+      "onTime": { "type": "choice", "description": "Whether the work was handed over when agreed.", "values": ["yes", "no"], "roles": ["developer"] },
+      "asAgreed": { "type": "choice", "description": "Whether the software did what was agreed.", "values": ["yes", "no"], "roles": ["developer"] }
     }
   },
   "payment": {
     "job": {
-      "windows": [ { "from": "end", "offset": "+14d", "payerShare": 0 } ],
+      "windows": [ { "from": "dealEnd", "offset": "+14d", "payerShare": 0 } ],
       "end": "pay",
       "arbiter": true
     }
   },
-  "howDealsGo": "The client and the developer agree in messages on what the software must do, the price and when it is due, and pay outside Forest, per job. The developer works remotely and hands the work over as agreed. Each may review the other. Each review names the post."
+  "howDealsGo": "The client and the developer agree in messages on what the software must do, the price and when it is due, and pay per job, direct or by the job schedule. The developer works remotely and hands the work over as agreed. Each may review the other. Each review names the post."
 }

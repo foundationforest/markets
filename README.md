@@ -1,38 +1,43 @@
 # markets
 
-Part of [Forest](https://github.com/foundationforest). The shared standard for what people post
-and review. [The standard](https://github.com/foundationforest/standard) defines no field of an
-offer or a review: every shape lives here. Public domain ([CC0](LICENSE)).
+Part of [Forest](https://github.com/foundationforest). The shared standard for what people post and review.
 
-## What it is
+[The standard](https://github.com/foundationforest/standard) defines how profiles, proofs, folders and escrows work, and names no fields of an offer or a review. Every market's shape lives here, in one file per market, so any trade can exist without building a new platform for it. Public domain ([CC0](LICENSE)).
 
-A market is a name people hold a profile in, one profile per role. Each market has one offer shape,
-a way reviews work, a way deals go and a way payment works, all in one file.
+## What a market is
+
+A market is a trade or space people hold a profile in, one profile per role, labelled `<market>/<role>`, such as `tutoring/tutor`, `electronics/seller`, or `tennis-matches/player`.
+
+One file in [`markets/`](markets/) defines everything an app, an AI or an index needs to work in that market:
+- **Roles:** which sides exist in the market, and whether each role publishes offers, requests, or posts.
+- **Offer shape:** the typed fields of a post, written at `offer/<id>` in a profile's folder as [the standard says](https://github.com/foundationforest/standard/blob/main/records/README.md#folders).
+- **Review shape:** the typed fields of a review, written at `review/<id>` in a profile's folder.
+- **Payment schedules and how deals go:** how a deal moves from agreement to completion, including standard [escrow](https://github.com/foundationforest/standard/blob/main/escrows/README.md) schedule templates when money is locked in advance.
+
+## Why markets are narrow
+
+A person holds one profile per market and role, and nothing public links their profiles. A reputation earned as `tennis-matches/player` says nothing about them as `tutoring/tutor` unless they choose to show it, with a reputation proof: a score carried from hidden profiles onto a new one, without naming them. So a market is as narrow as the dealing people look for, and never widened to pool reputation; pooling is the person's choice, deal by deal. Reviews name the post they are about, so inside one market an index can still tell plumbing work from painting.
 
 ## How it works
 
-- A profile's label is `market/role`.
-- Each role says whether its posts are offers, requests, or just posts. Every post is written at
-  `offer/<id>` in the profile's folder, as
-  [the standard says](https://github.com/foundationforest/standard/blob/main/records/README.md#folders).
-- An index reads [`directory.json`](directory.json) and each market file at one commit. It reads
-  posts by their fields' types, and counts only the roles a market lists.
-- Anyone can propose a market here, and anyone can run a directory of their own.
+1. **Propose.** Anyone can propose a new market or improve an existing one by adding or editing a file in [`markets/`](markets/) (see [`build/README.md`](build/README.md)).
+2. **Check and list.** [`build/check.sh`](build/check.sh) checks every market file against the schema and types, and writes [`directory.json`](directory.json) and [`directory.md`](directory.md) from the files.
+3. **Read.** Apps, AIs and indexes read `directory.json` and each market file at one commit to know which fields to ask for, how to render posts, and how to check records. The foundation's index on devnet reads it.
 
-## Where the markets are
+## Where things live
 
-In [`markets/`](markets/), one file each. [`directory.md`](directory.md) lists them for people,
-written from `directory.json`; the foundation's index on devnet reads it every hour.
-
-## Build one
-
-The manual: [`build/README.md`](build/README.md).
+| Path | What it is |
+|---|---|
+| [`markets/`](markets/) | One JSON file per market |
+| [`directory.json`](directory.json) | The machine-readable list of markets, written by `build/check.sh` |
+| [`directory.md`](directory.md) | The human-readable list of markets, written by `build/check.sh` |
+| [`build/README.md`](build/README.md) | The manual for writing and checking a market file |
+| [`build/types.json`](build/types.json) | The field types every market builds from |
+| [`build/market.schema.json`](build/market.schema.json) | The JSON Schema every market file must pass |
 
 ## Who decides what
 
-- **The proposer** writes the market's file.
-- **This directory** lists it. The Open Forest Foundation reviews and merges each pull request.
-- **An index** chooses which directory it reads, at which commit, and how it weighs what it reads.
-- **The standard's escrow** defines the schedule format it runs
-  ([escrows](https://github.com/foundationforest/standard/blob/main/escrows/README.md)); a market's
-  schedules are templates of it.
+- **Anyone** can propose a market here, or run a directory of their own.
+- **This directory** is kept by the Open Forest Foundation, which reviews and merges pull requests so one trade does not split into ten names.
+- **An index** chooses which directory it reads, at which commit, which markets it lists, and how it weighs what it reads.
+- **The standard's escrow** defines the schedule format it runs ([escrows](https://github.com/foundationforest/standard/blob/main/escrows/README.md)); a market's schedules are templates of it.

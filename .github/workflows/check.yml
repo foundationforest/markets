@@ -1,10 +1,12 @@
-# Runs build/check.sh on every pull request: every market file against build/market.schema.json
-# and build/types.json, directory.json against the files, and directory.md as directory.json
-# writes it.
+# Runs build/check.sh on every pull request and every push to main: every market file against
+# build/market.schema.json and build/types.json, and directory.json and directory.md as the market
+# files write them.
 
 name: check
 
 on:
+  push:
+    branches: [main]
   pull_request:
 
 permissions:
