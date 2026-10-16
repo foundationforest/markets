@@ -1,7 +1,8 @@
 # Directory
 
-Every market in [`directory.json`](directory.json), one line each. [`build/check.sh`](build/check.sh)
-writes this file from it. What a market is: [`README.md`](README.md).
+Every market in [`markets/`](markets/), one line each. [`build/check.sh`](build/check.sh) writes
+this file and [`directory.json`](directory.json) from the market files; nobody edits either by
+hand. What a market is: [`README.md`](README.md).
 
 - [`clothing`](markets/clothing.json): People sell clothes and shoes they own, picked up in person or shipped. Roles: seller (offers), buyer (requests).
 - [`electronics`](markets/electronics.json): People sell phones, laptops, consoles and other electronics they own, picked up in person or shipped. Roles: seller (offers), buyer (requests).

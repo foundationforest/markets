@@ -64,16 +64,26 @@ A field is `{ "type", "description" }`: one of the [types](#types), and what it 
 It may add:
 
 - `"values"`, for a `choice` and only for one: the list to choose from.
-- `"many": true`: the field holds a list of its type, such as several photos.
+- `"many": true`: the field holds a list of its type, such as several photos. Never on `words`,
+  which is a list already.
 - `"required": true`: an app asks for it. Nothing enforces it.
+- `"roles"`: the market's roles the field is for, one or more of its `role` words. In `offer`, only
+  posts by those roles hold the field. In `review.fields`, only reviews of a profile in those roles
+  hold it. Left out, the field is for every role.
 
 ```json
 "offer": {
   "description": { "type": "text", "description": "What the session covers.", "required": true },
   "price": { "type": "money", "description": "The price of one session." },
-  "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true }
+  "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true },
+  "degrees": { "type": "text", "description": "Degrees or certificates the teacher holds.", "roles": ["teacher"] }
 },
-"review": { "shared": ["subject", "score", "text", "offer", "evidence"] }
+"review": {
+  "shared": ["subject", "score", "text", "offer", "evidence"],
+  "fields": {
+    "prepared": { "type": "choice", "description": "Whether the teacher came prepared.", "values": ["yes", "no"], "roles": ["teacher"] }
+  }
+}
 ```
 
 Only `subject` defines a review, so `review.shared` always holds it; everything else is optional.
@@ -81,10 +91,9 @@ Only `subject` defines a review, so `review.shared` always holds it; everything 
 A field's name is a key in a record, so it is a lowercase letter, then letters and digits, at most
 64 characters: `startTime`, not `start-time`.
 
-For `howDealsGo`, write how deals go today: the two sides agree in messages, pay outside Forest,
-and each review names the post. On devnet the escrow runs, but the app has no money screens, so
-people pay outside Forest today; a market's schedules are what apps offer when they do. No index on
-devnet reads a review's `evidence` yet.
+For `howDealsGo`, write how a deal in the market goes, never what an app does today: the sides
+agree in messages; in a market with money, they pay direct or by one of its schedules; and each
+review names the post.
 
 ## Types
 
@@ -126,12 +135,13 @@ A few names mean the same in every market, and keep their type, so a program fin
 
 On posts, in `offer`:
 
-- `description` (text): the first text shown. An app shows a post by it, so it must know which text
-  comes first.
-- `price` (money): the money to range and pay. A post may hold other money, so a program must know
-  which one to sort by and to pay.
-- `payment` (words): how the deal may be paid: `direct`, and which of the market's schedules. An app
-  offers only these, so it must find them.
+- `description` (text, never `many`): the first text shown. An app shows a post by it, so it must
+  know which text comes first.
+- `price` (money, never `many`): the money to range and pay. A post may hold other money, so a
+  program must know which one to sort by and to pay.
+- `payment` (choice, always `many`): how the deal may be paid. Its `values` are `direct`, then the
+  market's schedule names in the order `payment` lists them, and `check.sh` checks that they are.
+  An app offers only these, so it must find them.
 
 On reviews, in `review.shared`:
 
@@ -143,7 +153,7 @@ On reviews, in `review.shared`:
 - `offer` (text): the post's address, `<profile address>/offer/<id>`, whoever wrote it. An index
   ties the review to the post it is about.
 - `evidence` (text): a receipt address or a payment signature. An index weighs the review by what
-  backs it.
+  backs it. No index on devnet reads it yet.
 
 ## Payment
 
@@ -169,7 +179,7 @@ times relative to the deal:
 
 ```text
 {
-  "windows": [ { "from": "payment" | "start" | "end", "offset": "+3d" | "-24h", "payerShare": 0 to 10000 } ],
+  "windows": [ { "from": "payment" | "dealStart" | "dealEnd", "offset": "+3d" | "-24h", "payerShare": 0 to 10000 } ],
   "end": "pay" | "refund",
   "arbiter": true | false
 }
@@ -177,9 +187,11 @@ times relative to the deal:
 
 - `windows`, in order, at least one. The first opens when the money goes in, and each next one when
   the one before closes. A window closes at `offset`, hours (`h`) or days (`d`) after (`+`) or
-  before (`-`) its `from`: `payment`, when the money went in, or `start` or `end`, the deal's span
-  as the app sets it when it makes the escrow: from the post when it names a time, else as agreed
-  in messages. Until it closes, the payer may take back alone `payerShare` out of 10,000.
+  before (`-`) its `from`: `payment`, when the money went in, or `dealStart` or `dealEnd`, when the
+  deal starts and ends, as the app sets them when it makes the escrow: from the post when it names
+  a time, else as agreed in messages. When a post names a single time rather than a span, or the
+  sides agree on one, `dealStart` equals `dealEnd`. Until the window closes, the payer may take back
+  alone `payerShare` out of 10,000.
 - `end`: what happens when the last window closes and nobody stopped: `pay`, everything to the
   recipient, or `refund`, everything back to the payer.
 - `arbiter`: whether the deal names an arbiter, who may close a stopped escrow at any split. The two
@@ -209,8 +221,8 @@ For a booked session:
 "payment": {
   "booked": {
     "windows": [
-      { "from": "start", "offset": "-24h", "payerShare": 10000 },
-      { "from": "end", "offset": "+48h", "payerShare": 0 }
+      { "from": "dealStart", "offset": "-24h", "payerShare": 10000 },
+      { "from": "dealEnd", "offset": "+48h", "payerShare": 0 }
     ],
     "end": "pay",
     "arbiter": false
@@ -222,28 +234,24 @@ Until 24 hours before the session starts, the payer may take it all back alone. 
 hours after it ends, nothing alone. Then it pays, unless someone stopped.
 
 **On devnet today**, the [escrow](https://github.com/foundationforest/standard/tree/main/escrows)
-takes one timer: a number of whole days after the money is in, then everything to one side, unless
-either side [objected](https://github.com/foundationforest/standard/blob/main/escrows/solana/README.md#the-arbiter-and-the-timer)
+runs, though no app offers money screens yet. It takes one timer: a number of whole days after the
+money is in, then everything to one side, unless either side
+[objected](https://github.com/foundationforest/standard/blob/main/escrows/solana/README.md#the-arbiter-and-the-timer)
 first. The objection is the stop, and an arbiter, if any, is named at the start. So a schedule runs
 there when it has one window, from `payment`, with an offset of whole days and a `payerShare` of 0:
 the app turns it into the timer, which pays the recipient for `pay` and the payer for `refund`. The
-first example runs on devnet; the second does not. Several windows, a window from `start` or
-`end`, and a `payerShare` above 0 wait for the next escrow version, which is not written yet. It is
-to take the absolute times: `windows`, each with its `until` and `payerShare`, and `end`.
+first example runs on devnet; the second does not. Several windows, a window from `dealStart` or
+`dealEnd`, and a `payerShare` above 0 wait for the next escrow version, which is not written yet.
+It is to take the absolute times: `windows`, each with its `until` and `payerShare`, and `end`.
 
 ## Propose
 
 1. Write `markets/<name>.json`.
-2. Add the market to [`directory.json`](../directory.json), with the same `name`, `description` and
-   `roles` as its file:
-
-   ```json
-   { "markets": [ { "name": "...", "description": "...", "roles": [ { "role": "...", "posts": "..." } ] } ] }
-   ```
-
-3. Run `build/check.sh` (Node 22 and npm). It checks each market file against the format and the
-   types, each name against its file's name, and `directory.json` against the files, and writes
-   [`directory.md`](../directory.md) from `directory.json`. Fix what it prints until it passes, and
-   commit the `directory.md` it writes.
+2. Run `build/check.sh` (Node 22 and npm). It checks each market file against the format and the
+   types, and each name against its file's name. Once they all pass, it writes
+   [`directory.json`](../directory.json) and [`directory.md`](../directory.md) from the market
+   files, sorted by name. Fix what it prints until it passes. Nobody edits either directory file by
+   hand.
+3. Commit the market file and the directory files the check wrote.
 4. Open a pull request. The check runs on it again, and must pass; then the Open Forest Foundation
    reviews it and merges it.

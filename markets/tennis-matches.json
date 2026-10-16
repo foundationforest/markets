@@ -5,7 +5,7 @@
     { "role": "player", "posts": "posts" }
   ],
   "offer": {
-    "description": { "type": "text", "description": "The match the player wants to play." },
+    "description": { "type": "text", "description": "The match the player wants to play.", "required": true },
     "place": { "type": "place", "description": "Where to play: a court, or the area to find one in." },
     "time": { "type": "moment", "description": "When to play: a time, or a span when the player is free." },
     "level": { "type": "choice", "description": "The player's level.", "values": ["beginner", "intermediate", "advanced", "competitive"] },

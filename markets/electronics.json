@@ -6,20 +6,21 @@
     { "role": "buyer", "posts": "requests" }
   ],
   "offer": {
-    "description": { "type": "text", "description": "The item for sale, or the item looked for." },
+    "title": { "type": "text", "description": "The item in a few words, such as Nintendo Switch OLED with two games.", "required": true, "roles": ["seller"] },
+    "description": { "type": "text", "description": "The item and anything to know about it.", "required": true },
     "price": { "type": "money", "description": "The price of the item, without shipping." },
-    "payment": { "type": "words", "description": "How the item may be paid: direct, shipped, or both." },
+    "payment": { "type": "choice", "description": "How the item may be paid: direct, shipped, or both.", "values": ["direct", "shipped"], "many": true },
     "kind": { "type": "choice", "description": "What kind of item it is.", "values": ["phone", "laptop", "tablet", "desktop", "console", "camera", "audio", "tv", "watch", "other"] },
     "model": { "type": "text", "description": "The brand and model, such as iPhone 13 128 GB." },
     "condition": { "type": "choice", "description": "The item's condition.", "values": ["new", "like-new", "good", "fair", "for-parts"] },
     "delivery": { "type": "choice", "description": "Picked up, shipped, or either.", "values": ["pickup", "shipped", "either"] },
-    "place": { "type": "place", "description": "Where the item can be picked up, or ships from." },
-    "photos": { "type": "blob", "description": "Photos of the item.", "many": true }
+    "place": { "type": "place", "description": "Where the item is picked up, or ships from or to." },
+    "photos": { "type": "blob", "description": "Photos of the item.", "many": true, "roles": ["seller"] }
   },
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"],
     "fields": {
-      "asDescribed": { "type": "choice", "description": "In a review of the seller: whether the item was as the post said.", "values": ["yes", "no"] }
+      "asDescribed": { "type": "choice", "description": "Whether the item was as the post said.", "values": ["yes", "no"], "roles": ["seller"] }
     }
   },
   "payment": {
@@ -29,5 +30,5 @@
       "arbiter": true
     }
   },
-  "howDealsGo": "The seller and the buyer agree in messages on the price and on pickup or shipping, and pay outside Forest. At a pickup the buyer checks the item before paying. Each may review the other. Each review names the post."
+  "howDealsGo": "The seller and the buyer agree in messages on the price and on pickup or shipping, and pay direct or by the shipped schedule. At a pickup the buyer checks the item before paying. Each may review the other. Each review names the post."
 }

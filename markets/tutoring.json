@@ -6,13 +6,13 @@
     { "role": "student", "posts": "requests" }
   ],
   "offer": {
-    "description": { "type": "text", "description": "The help offered, or the help looked for." },
+    "description": { "type": "text", "description": "The tutoring: what is taught, and how.", "required": true },
     "price": { "type": "money", "description": "The price per hour." },
-    "payment": { "type": "words", "description": "How a session may be paid: direct, session, or both." },
-    "subjects": { "type": "choice", "description": "The school subjects taught, or the subject looked for.", "values": ["maths", "physics", "chemistry", "biology", "english", "french", "spanish", "german", "italian", "chinese", "latin", "history", "geography", "economics", "computer-science", "literature", "philosophy", "music", "art", "other"], "many": true },
-    "levels": { "type": "choice", "description": "The school levels taught, or the student's level.", "values": ["primary", "secondary", "university"], "many": true },
+    "payment": { "type": "choice", "description": "How a session may be paid: direct, session, or both.", "values": ["direct", "session"], "many": true },
+    "subjects": { "type": "choice", "description": "The school subjects the tutoring is for.", "values": ["maths", "physics", "chemistry", "biology", "english", "french", "spanish", "german", "italian", "chinese", "latin", "history", "geography", "economics", "computer-science", "literature", "philosophy", "music", "art", "other"], "many": true },
+    "levels": { "type": "choice", "description": "The school levels the tutoring is for.", "values": ["primary", "secondary", "university"], "many": true },
     "place": { "type": "place", "description": "Where sessions are held, online, or both." },
-    "hours": { "type": "hours", "description": "When the tutor can teach, or when the student is free, each week." }
+    "hours": { "type": "hours", "description": "When sessions can be held, each week." }
   },
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"]
@@ -24,5 +24,5 @@
       "arbiter": false
     }
   },
-  "howDealsGo": "The tutor and the student, or a parent for a child, agree in messages on the subject, the times and the place, and pay outside Forest. After a session each may review the other. Each review names the post."
+  "howDealsGo": "The tutor and the student, or a parent for a child, agree in messages on the subject, the times and the place, and pay direct or by the session schedule. After a session each may review the other. Each review names the post."
 }

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Checks the markets directory:
+# Checks the markets and writes the directory:
 #   1. every markets/*.json against build/market.schema.json, each field's type against
-#      build/types.json, and each role's word once per market;
+#      build/types.json, each role's word once per market, each field's roles among the market's
+#      roles, and offer.payment's values: "direct", then the market's schedule names;
 #   2. each market's name equal to its file's name, which also keeps every name unique;
-#   3. directory.json listing exactly the market files, each with the name, description and roles
-#      its file has;
-#   4. directory.md as directory.json writes it: when it is stale, rewrites it and fails, so the
-#      new copy gets committed.
+#   3. when every market passes, directory.json and directory.md as the market files write them,
+#      sorted by name: when either is stale, rewrites it and fails, so the new copy gets committed.
+#      Nobody edits either by hand.
 # Needs Node 22 and npm; installs the locked validator (ajv) into build/node_modules on first run.
 # Exit 0 when everything passes, 1 when anything fails.
 set -euo pipefail
@@ -50,26 +50,6 @@ const schema = readJson('build/market.schema.json')
 if (types === undefined || schema === undefined) finish()
 ajv.compile(types)
 const validateMarket = ajv.compile(schema)
-const validateDirectory = ajv.compile({
-  type: 'object',
-  required: ['markets'],
-  additionalProperties: false,
-  properties: {
-    markets: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['name', 'description', 'roles'],
-        additionalProperties: false,
-        properties: {
-          name: { $ref: `${schema.$id}#/properties/name` },
-          description: { $ref: `${schema.$id}#/properties/description` },
-          roles: { $ref: `${schema.$id}#/properties/roles` },
-        },
-      },
-    },
-  },
-})
 
 // The types are the names types.json defines. The schema lists them too, for anyone who reads it
 // alone; the two lists must agree, so a field's type is checked once, against types.json.
@@ -86,6 +66,9 @@ const PLAIN = {
   '#/properties/howDealsGo/pattern': 'must not be empty',
   '#/$defs/window/properties/offset/pattern': 'must be a sign, a whole number and h or d, such as "+3d" or "-24h"',
   '#/properties/review/properties/shared/contains': 'must hold "subject": only it defines a review',
+  '#/properties/offer/properties/description/not': 'must not hold "many": description is a shared name, and a post holds one',
+  '#/properties/offer/properties/price/not': 'must not hold "many": price is a shared name, and a post holds one',
+  '#/properties/offer/properties/payment/required': 'must hold "many": true: payment is a shared name',
 }
 function say(e) {
   const at = e.instancePath || 'the file'
@@ -105,6 +88,7 @@ function say(e) {
     return `${at} must be ${JSON.stringify(e.params.allowedValue)}: ${e.instancePath.split('/')[2]} is a shared name`
   }
   if (e.keyword === 'not' && e.schemaPath.endsWith('/else/not')) return `${at}: "values" is only for a choice`
+  if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
   if (e.keyword === 'const' && /^\/(offer|review\/fields)\/[^/]+\/(many|required)$/.test(e.instancePath)) return `${at} must be true, or left out`
   if (e.keyword === 'required') return `${at}: "${e.params.missingProperty}" is missing`
   if (e.keyword === 'additionalProperties') return `${at}: unknown key "${e.params.additionalProperty}"`
@@ -122,12 +106,12 @@ const repeats = (e) =>
 
 // 1 and 2: each market file.
 const files = existsSync(root('markets')) ? readdirSync(root('markets')).filter((f) => f.endsWith('.json')).sort() : []
-const markets = new Map()
+const markets = []
 for (const file of files) {
   const where = `markets/${file}`
   const market = readJson(where)
   if (market === undefined) continue
-  markets.set(file.slice(0, -'.json'.length), market)
+  markets.push(market)
   if (!validateMarket(market)) for (const e of validateMarket.errors) if (!repeats(e)) report(where, say(e))
 
   if (typeof market?.name === 'string' && `${market.name}.json` !== file) {
@@ -144,40 +128,35 @@ for (const file of files) {
       if (typeof field?.type === 'string' && !typeNames.includes(field.type)) {
         report(where, `${at}/${name}/type "${field.type}" is not a type: build/types.json has ${typeNames.join(', ')}`)
       }
+      for (const role of Array.isArray(field?.roles) ? field.roles : []) {
+        if (typeof role === 'string' && !words.includes(role)) {
+          report(where, `${at}/${name}/roles: "${role}" is not a role here: the roles are ${words.join(', ')}`)
+        }
+      }
+    }
+  }
+  // payment, a shared name: an app offers only its values, so they are direct and the schedules.
+  const pay = market?.offer?.payment
+  const schedules = market?.payment
+  if (pay?.type === 'choice' && typeof schedules === 'object' && schedules !== null && !Array.isArray(schedules)) {
+    const values = ['direct', ...Object.keys(schedules)]
+    if (!isDeepStrictEqual(pay.values, values)) {
+      report(where, `/offer/payment/values must be ${JSON.stringify(values)}: "direct", then the schedules in "payment", in order`)
     }
   }
 }
 
-// 3: directory.json lists exactly the files.
-const directory = readJson('directory.json')
-const listed = directory !== undefined && validateDirectory(directory) ? directory.markets : null
-if (directory !== undefined && listed === null) for (const e of validateDirectory.errors) if (!repeats(e)) report('directory.json', say(e))
-if (listed) {
-  const seen = new Set()
-  for (const entry of listed) {
-    if (seen.has(entry.name)) {
-      report('directory.json', `lists "${entry.name}" twice`)
-      continue
-    }
-    seen.add(entry.name)
-    const market = markets.get(entry.name)
-    if (!files.includes(`${entry.name}.json`)) report('directory.json', `lists "${entry.name}", which has no file markets/${entry.name}.json`)
-    else if (market !== undefined) {
-      for (const key of ['description', 'roles']) {
-        if (!isDeepStrictEqual(entry[key], market[key])) report('directory.json', `"${entry.name}": ${key} not the same as in markets/${entry.name}.json`)
-      }
-    }
-  }
-  for (const file of files) {
-    if (!seen.has(file.slice(0, -'.json'.length))) report(`markets/${file}`, 'is not in directory.json')
-  }
-
-  // 4: directory.md, written from directory.json.
+// 3: directory.json and directory.md, written from the market files once they all pass.
+if (problems.size === 0) {
+  const listed = markets
+    .map(({ name, description, roles }) => ({ name, description, roles: roles.map(({ role, posts }) => ({ role, posts })) }))
+    .sort((a, b) => (a.name < b.name ? -1 : 1))
   const lines = [
     '# Directory',
     '',
-    'Every market in [`directory.json`](directory.json), one line each. [`build/check.sh`](build/check.sh)',
-    'writes this file from it. What a market is: [`README.md`](README.md).',
+    'Every market in [`markets/`](markets/), one line each. [`build/check.sh`](build/check.sh) writes',
+    'this file and [`directory.json`](directory.json) from the market files; nobody edits either by',
+    'hand. What a market is: [`README.md`](README.md).',
     '',
   ]
   if (listed.length === 0) lines.push('No markets yet.')
@@ -185,16 +164,21 @@ if (listed) {
     const end = /[.!?]$/.test(description) ? '' : '.'
     lines.push(`- [\`${name}\`](markets/${name}.json): ${description}${end} Roles: ${roles.map((r) => `${r.role} (${r.posts})`).join(', ')}.`)
   }
-  const md = `${lines.join('\n')}\n`
-  const current = existsSync(root('directory.md')) ? readFileSync(root('directory.md'), 'utf8') : null
-  if (md !== current) {
-    writeFileSync(root('directory.md'), md)
-    report('directory.md', 'was stale: rewritten from directory.json; commit it')
+  const written = {
+    'directory.json': `${JSON.stringify({ markets: listed }, null, 2)}\n`,
+    'directory.md': `${lines.join('\n')}\n`,
+  }
+  for (const [where, text] of Object.entries(written)) {
+    const current = existsSync(root(where)) ? readFileSync(root(where), 'utf8') : null
+    if (text !== current) {
+      writeFileSync(root(where), text)
+      report(where, 'was stale: rewritten from the market files; commit it')
+    }
   }
 }
 
 if (problems.size === 0) {
-  console.log(`${files.length} market files: each passes, directory.json lists exactly them, and directory.md is current`)
+  console.log(`${files.length} market files: each passes, and directory.json and directory.md are current`)
 }
 finish()
 EOF

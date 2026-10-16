@@ -22,13 +22,13 @@
       "items": { "$ref": "#/$defs/role" }
     },
     "offer": {
-      "description": "The fields of a post here, by name. The shared names keep their type: description is text, price is money, payment is words.",
+      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money, payment is a choice of many.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
-        "description": { "type": "object", "properties": { "type": { "const": "text" } } },
-        "price": { "type": "object", "properties": { "type": { "const": "money" } } },
-        "payment": { "type": "object", "properties": { "type": { "const": "words" } } }
+        "description": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } },
+        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } },
+        "payment": { "type": "object", "required": ["many"], "properties": { "type": { "const": "choice" } } }
       }
     },
     "review": {
@@ -117,17 +117,32 @@
           "items": { "$ref": "#/$defs/line" }
         },
         "many": {
-          "description": "The field holds a list of its type. Left out otherwise.",
+          "description": "The field holds a list of its type. Never for words, which is a list already. Left out otherwise.",
           "const": true
         },
         "required": {
           "description": "An app asks for the field; nothing enforces it. Left out otherwise.",
           "const": true
+        },
+        "roles": {
+          "description": "The market's roles the field is for: in offer, the roles whose posts hold it; in review.fields, the roles of the profile the review is about. Left out: every role.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/word" }
         }
       },
-      "if": { "properties": { "type": { "const": "choice" } } },
-      "then": { "required": ["values"] },
-      "else": { "not": { "required": ["values"] } }
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "choice" } } },
+          "then": { "required": ["values"] },
+          "else": { "not": { "required": ["values"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "words" } } },
+          "then": { "not": { "required": ["many"] } }
+        }
+      ]
     },
     "schedule": {
       "description": "An escrow schedule, with times relative to the deal. The app turns each window into an absolute time.",
@@ -157,8 +172,8 @@
       "additionalProperties": false,
       "properties": {
         "from": {
-          "description": "What the window's close counts from: payment, when the money went in, or start or end, the deal's span as the app sets it when it makes the escrow: from the post when it names a time, else as agreed in messages.",
-          "enum": ["payment", "start", "end"]
+          "description": "What the window's close counts from: payment, when the money went in, or dealStart or dealEnd, when the deal starts and ends, as the app sets them when it makes the escrow: from the post when it names a time, else as agreed in messages. For a single time, dealStart equals dealEnd.",
+          "enum": ["payment", "dealStart", "dealEnd"]
         },
         "offset": {
           "description": "Hours (h) or days (d) after (+) or before (-) it, when the window closes.",
