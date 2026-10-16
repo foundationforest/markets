@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/types.json",
+  "title": "Types",
+  "description": "The eight types a market's fields are, as a post or a review holds their values. A record holds only whole numbers, so numbers, money and coordinates are decimal text. build/README.md says what a program does with each.",
+  "$defs": {
+    "text": {
+      "description": "Text. Searched and shown.",
+      "type": "string"
+    },
+    "number": {
+      "description": "A number, written as decimal text, such as \"3\" or \"2.5\". Filtered by range.",
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "words": {
+      "description": "A list of short words. Filtered by them.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[^\\r\\n]*$"
+      }
+    },
+    "choice": {
+      "description": "One of the values the market lists for the field. Filtered by it.",
+      "type": "string"
+    },
+    "place": {
+      "description": "Online, or a point rounded to precisionKm kilometres, with the name of its area. Searched by how near it is.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["online"],
+          "additionalProperties": false,
+          "properties": {
+            "online": { "const": true }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["lat", "lon", "precisionKm", "area"],
+          "additionalProperties": false,
+          "properties": {
+            "lat": {
+              "description": "Latitude in degrees, decimal text from -90 to 90.",
+              "type": "string",
+              "pattern": "^-?(90(\\.0+)?|[1-8]?[0-9](\\.[0-9]+)?)$"
+            },
+            "lon": {
+              "description": "Longitude in degrees, decimal text from -180 to 180.",
+              "type": "string",
+              "pattern": "^-?(180(\\.0+)?|(1[0-7][0-9]|[1-9]?[0-9])(\\.[0-9]+)?)$"
+            },
+            "precisionKm": {
+              "description": "How many kilometres the point is rounded to.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "area": {
+              "description": "The name people know the area by, such as a town or a district.",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "money": {
+      "description": "An amount of one currency, and what it is for. Printed and paid.",
+      "type": "object",
+      "required": ["amount", "currency"],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "description": "Decimal text, such as \"25\" or \"12.50\".",
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "currency": {
+          "description": "A three-letter currency code, such as USD.",
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "per": {
+          "description": "What the amount is for, such as hour or night. Absent: the whole deal.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "moment": {
+      "description": "A time, or a span from one time to another, in RFC 3339 with its zone. Filtered by time.",
+      "$defs": {
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+        }
+      },
+      "oneOf": [
+        { "$ref": "#/$defs/moment/$defs/time" },
+        {
+          "type": "object",
+          "required": ["from", "to"],
+          "additionalProperties": false,
+          "properties": {
+            "from": { "$ref": "#/$defs/moment/$defs/time" },
+            "to": { "$ref": "#/$defs/moment/$defs/time" }
+          }
+        }
+      ]
+    },
+    "blob": {
+      "description": "Bytes on the folder's hosts, named as the standard names a blob. Fetched and shown.",
+      "type": "object",
+      "required": ["sha256", "mimeType", "size"],
+      "additionalProperties": false,
+      "properties": {
+        "sha256": {
+          "description": "The SHA-256 of the bytes, in lowercase hex.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mimeType": {
+          "description": "Their media type, type/subtype in lower case, at most 255 characters.",
+          "type": "string",
+          "maxLength": 255,
+          "pattern": "^[a-z0-9][a-z0-9!#$&^_.+-]*/[a-z0-9][a-z0-9!#$&^_.+-]*$"
+        },
+        "size": {
+          "description": "How many bytes.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    }
+  }
+}
