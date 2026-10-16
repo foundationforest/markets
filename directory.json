@@ -1,3 +1,51 @@
 {
-  "markets": []
+  "markets": [
+    {
+      "name": "car-rental",
+      "description": "Owners let someone use their car for a day or a week, for money.",
+      "roles": [
+        { "role": "owner", "posts": "offers" },
+        { "role": "renter", "posts": "requests" }
+      ]
+    },
+    {
+      "name": "electronics",
+      "description": "People sell phones, laptops, consoles and other electronics they own, picked up in person or shipped.",
+      "roles": [
+        { "role": "seller", "posts": "offers" },
+        { "role": "buyer", "posts": "requests" }
+      ]
+    },
+    {
+      "name": "home-cleaning",
+      "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
+      "roles": [
+        { "role": "cleaner", "posts": "offers" },
+        { "role": "client", "posts": "requests" }
+      ]
+    },
+    {
+      "name": "sports-coaching",
+      "description": "Coaches teach a sport one on one or in small groups, paid per session, in person or online.",
+      "roles": [
+        { "role": "coach", "posts": "offers" },
+        { "role": "student", "posts": "requests" }
+      ]
+    },
+    {
+      "name": "tennis-matches",
+      "description": "Tennis players find someone to play a match with, for no money.",
+      "roles": [
+        { "role": "player", "posts": "posts" }
+      ]
+    },
+    {
+      "name": "tutoring",
+      "description": "Tutors help students with school subjects one on one, paid per hour, in person or online.",
+      "roles": [
+        { "role": "tutor", "posts": "offers" },
+        { "role": "student", "posts": "requests" }
+      ]
+    }
+  ]
 }

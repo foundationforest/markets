@@ -1,0 +1,29 @@
+{
+  "name": "sports-coaching",
+  "description": "Coaches teach a sport one on one or in small groups, paid per session, in person or online.",
+  "roles": [
+    { "role": "coach", "posts": "offers" },
+    { "role": "student", "posts": "requests" }
+  ],
+  "offer": {
+    "description": { "type": "text", "description": "The coaching offered, or the coaching looked for." },
+    "price": { "type": "money", "description": "The price of one session, per person." },
+    "payment": { "type": "words", "description": "How a session may be paid: direct, session, or both." },
+    "sport": { "type": "words", "description": "The sport, such as tennis or swimming." },
+    "levels": { "type": "words", "description": "The levels coached: beginner, intermediate, advanced, competitive." },
+    "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one." },
+    "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
+    "place": { "type": "place", "description": "Where sessions are held, or online. A coach who does both writes two posts." }
+  },
+  "review": {
+    "shared": ["subject", "score", "text", "offer", "evidence"]
+  },
+  "payment": {
+    "session": {
+      "windows": [ { "from": "payment", "offset": "+7d", "payerShare": 0 } ],
+      "end": "pay",
+      "arbiter": false
+    }
+  },
+  "howDealsGo": "The coach and the student, or a parent for a child, agree in messages on the sport, the times and the place, and pay outside Forest. After a session each may review the other. A review of the person who wrote the post names it."
+}

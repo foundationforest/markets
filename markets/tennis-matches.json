@@ -1,0 +1,24 @@
+{
+  "name": "tennis-matches",
+  "description": "Tennis players find someone to play a match with, for no money.",
+  "roles": [
+    { "role": "player", "posts": "posts" }
+  ],
+  "offer": {
+    "description": { "type": "text", "description": "The match the player wants to play." },
+    "place": { "type": "place", "description": "Where to play: a court, or the area to find one in." },
+    "time": { "type": "moment", "description": "When to play: a time, or a span when the player is free." },
+    "level": { "type": "choice", "description": "The player's level.", "values": ["beginner", "intermediate", "advanced", "competitive"] },
+    "format": { "type": "choice", "description": "Singles, doubles, or either.", "values": ["singles", "doubles", "either"] },
+    "court": { "type": "text", "description": "Whether a court is booked, and any fee to share." }
+  },
+  "review": {
+    "shared": ["subject", "score", "text", "offer"],
+    "fields": {
+      "showedUp": { "type": "choice", "description": "Whether the player came to the match as agreed.", "values": ["yes", "no"] },
+      "level": { "type": "choice", "description": "The level the reviewer would put the player at.", "values": ["beginner", "intermediate", "advanced", "competitive"] }
+    }
+  },
+  "payment": {},
+  "howDealsGo": "Two players agree in messages on a time and a court. No money passes between them; a court fee, if any, they share as they agree, outside Forest. After the match each may review the other. A review of the player who wrote the post names it."
+}
