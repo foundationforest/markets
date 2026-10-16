@@ -38,9 +38,11 @@
       "additionalProperties": false,
       "properties": {
         "shared": {
+          "description": "Only subject defines a review, so it is always here; everything else is optional.",
           "type": "array",
           "uniqueItems": true,
-          "items": { "enum": ["subject", "score", "text", "offer", "evidence"] }
+          "items": { "enum": ["subject", "score", "text", "offer", "evidence"] },
+          "contains": { "const": "subject" }
         },
         "fields": {
           "$ref": "#/$defs/fields",
@@ -100,8 +102,8 @@
       "additionalProperties": false,
       "properties": {
         "type": {
-          "description": "One of the eight types in build/types.json.",
-          "enum": ["text", "number", "words", "choice", "place", "money", "moment", "blob"]
+          "description": "One of the nine types in build/types.json.",
+          "enum": ["text", "number", "words", "choice", "place", "money", "moment", "blob", "hours"]
         },
         "description": {
           "description": "What the field holds, in one line.",
@@ -113,6 +115,14 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/line" }
+        },
+        "many": {
+          "description": "The field holds a list of its type. Left out otherwise.",
+          "const": true
+        },
+        "required": {
+          "description": "An app asks for the field; nothing enforces it. Left out otherwise.",
+          "const": true
         }
       },
       "if": { "properties": { "type": { "const": "choice" } } },
@@ -147,9 +157,8 @@
       "additionalProperties": false,
       "properties": {
         "from": {
-          "description": "What the window's close counts from: payment, when the money went in, or the name of one of the market's moment fields in offer, the time the deal is for.",
-          "type": "string",
-          "pattern": "^[a-z][a-zA-Z0-9]{0,63}$"
+          "description": "What the window's close counts from: payment, when the money went in, or start or end, the deal's span as the app sets it when it makes the escrow: from the post when it names a time, else as agreed in messages.",
+          "enum": ["payment", "start", "end"]
         },
         "offset": {
           "description": "Hours (h) or days (d) after (+) or before (-) it, when the window closes.",

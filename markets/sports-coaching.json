@@ -9,11 +9,12 @@
     "description": { "type": "text", "description": "The coaching offered, or the coaching looked for." },
     "price": { "type": "money", "description": "The price of one session, per person." },
     "payment": { "type": "words", "description": "How a session may be paid: direct, session, or both." },
-    "sport": { "type": "words", "description": "The sport, such as tennis or swimming." },
-    "levels": { "type": "words", "description": "The levels coached: beginner, intermediate, advanced, competitive." },
+    "sport": { "type": "choice", "description": "The sports coached, or the sport looked for.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "basketball", "volleyball", "rugby", "hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics", "other"], "many": true },
+    "levels": { "type": "choice", "description": "The levels coached, or the student's level.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
     "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one." },
     "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
-    "place": { "type": "place", "description": "Where sessions are held, or online. A coach who does both writes two posts." }
+    "place": { "type": "place", "description": "Where sessions are held, online, or both." },
+    "hours": { "type": "hours", "description": "When the coach can hold sessions, or when the student is free, each week." }
   },
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"]
@@ -25,5 +26,5 @@
       "arbiter": false
     }
   },
-  "howDealsGo": "The coach and the student, or a parent for a child, agree in messages on the sport, the times and the place, and pay outside Forest. After a session each may review the other. A review of the person who wrote the post names it."
+  "howDealsGo": "The coach and the student, or a parent for a child, agree in messages on the sport, the times and the place, and pay outside Forest. After a session each may review the other. Each review names the post."
 }

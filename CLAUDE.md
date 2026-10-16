@@ -10,6 +10,8 @@ index, directory. Plain words, no em-dashes.
 ## How to work in this repo
 
 - One task per session. Open a pull request; never push to main.
+- A session never opens a pull request or acts in another repo, even to protect something live: it
+  flags it and waits.
 - Run `build/check.sh` before you push, and commit the `directory.md` it writes. Never edit
   `directory.md` by hand.
 - Market files are data. The manual, `build/README.md`, is the only prose that teaches how to build

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Checks the markets directory:
 #   1. every markets/*.json against build/market.schema.json, each field's type against
-#      build/types.json, each role's word once per market, and each window's from: payment, or a
-#      moment field in the market's offer;
+#      build/types.json, and each role's word once per market;
 #   2. each market's name equal to its file's name, which also keeps every name unique;
 #   3. directory.json listing exactly the market files, each with the name, description and roles
 #      its file has;
@@ -86,7 +85,7 @@ const PLAIN = {
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
   '#/properties/howDealsGo/pattern': 'must not be empty',
   '#/$defs/window/properties/offset/pattern': 'must be a sign, a whole number and h or d, such as "+3d" or "-24h"',
-  '#/$defs/window/properties/from/pattern': 'must be "payment" or the name of a moment field in offer',
+  '#/properties/review/properties/shared/contains': 'must hold "subject": only it defines a review',
 }
 function say(e) {
   const at = e.instancePath || 'the file'
@@ -106,16 +105,19 @@ function say(e) {
     return `${at} must be ${JSON.stringify(e.params.allowedValue)}: ${e.instancePath.split('/')[2]} is a shared name`
   }
   if (e.keyword === 'not' && e.schemaPath.endsWith('/else/not')) return `${at}: "values" is only for a choice`
+  if (e.keyword === 'const' && /^\/(offer|review\/fields)\/[^/]+\/(many|required)$/.test(e.instancePath)) return `${at} must be true, or left out`
   if (e.keyword === 'required') return `${at}: "${e.params.missingProperty}" is missing`
   if (e.keyword === 'additionalProperties') return `${at}: unknown key "${e.params.additionalProperty}"`
   if (e.keyword === 'enum') return `${at} must be one of ${e.params.allowedValues.map((v) => JSON.stringify(v)).join(', ')}`
   return `${at} ${e.message}`
 }
 // Errors that only repeat another: an "if" repeats its "then", a "propertyNames" its name's error,
-// and a field's type outside the schema's list is said once, by the check against types.json.
+// a "contains" each item it tried, and a field's type outside the schema's list is said once, by
+// the check against types.json.
 const repeats = (e) =>
   e.keyword === 'if' ||
   e.keyword === 'propertyNames' ||
+  e.schemaPath === '#/properties/review/properties/shared/contains/const' ||
   (e.keyword === 'enum' && /^\/(offer|review\/fields)\/[^/]+\/type$/.test(e.instancePath))
 
 // 1 and 2: each market file.
@@ -134,19 +136,6 @@ for (const file of files) {
   const words = Array.isArray(market?.roles) ? market.roles.map((r) => r?.role) : []
   for (const word of new Set(words.filter((w, i) => typeof w === 'string' && words.indexOf(w) !== i))) {
     report(where, `the role "${word}" is listed twice`)
-  }
-  // A window counts from payment, or from one of the market's own moment fields.
-  const offer = typeof market?.offer === 'object' && market.offer !== null ? market.offer : {}
-  const schedules = typeof market?.payment === 'object' && market.payment !== null ? Object.entries(market.payment) : []
-  for (const [name, schedule] of schedules) {
-    const windows = Array.isArray(schedule?.windows) ? schedule.windows : []
-    windows.forEach((window, i) => {
-      const from = window?.from
-      if (typeof from !== 'string' || from === 'payment' || !/^[a-z][a-zA-Z0-9]{0,63}$/.test(from)) return
-      if (!Object.hasOwn(offer, from) || offer[from]?.type !== 'moment') {
-        report(where, `/payment/${name}/windows/${i}/from "${from}" is not a moment field in offer`)
-      }
-    })
   }
   const fields = [['/offer', market?.offer], ['/review/fields', market?.review?.fields]]
   for (const [at, block] of fields) {

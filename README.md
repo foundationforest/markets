@@ -21,9 +21,8 @@ a way reviews work, a way deals go and a way payment works, all in one file.
 
 ## Where the markets are
 
-In [`markets/`](markets/), one file each. There are none yet. [`directory.md`](directory.md) lists
-them for people, written from `directory.json`; the foundation's index on devnet reads it every
-hour.
+In [`markets/`](markets/), one file each. [`directory.md`](directory.md) lists them for people,
+written from `directory.json`; the foundation's index on devnet reads it every hour.
 
 ## Build one
 
@@ -35,5 +34,5 @@ The manual: [`build/README.md`](build/README.md).
 - **This directory** lists it. The Open Forest Foundation reviews and merges each pull request.
 - **An index** chooses which directory it reads, at which commit, and how it weighs what it reads.
 - **The standard's escrow** defines the schedule format it runs
-  ([escrows](https://github.com/foundationforest/standard/tree/main/escrows)); a market's
+  ([escrows](https://github.com/foundationforest/standard/blob/main/escrows/README.md)); a market's
   schedules are templates of it.

@@ -22,8 +22,8 @@ A name says what the dealing is, in the words people use, so the list alone tell
 Usually two words, sometimes one. Add the second word when the first could mean another dealing. A
 topic is never in a name; it is a field.
 
-From the first set: `car-rental`, `tennis-matches`, `sports-coaching`, `home-cleaning`, `tutoring`,
-`electronics`.
+From the directory: `tennis-matches`, `sports-coaching`, `home-cleaning`, `home-repair`, `tutoring`,
+`software-development`, `electronics`, `clothing`.
 
 Spelling: lowercase letters, digits and single hyphens, at most 64 characters, no other market's
 name.
@@ -55,29 +55,40 @@ One file per market, `markets/<name>.json`, with these seven keys and no others:
 | `name` | The name ([Naming](#naming)). |
 | `description` | What the dealing is, in one line. |
 | `roles` | The roles ([Roles](#roles)). |
-| `offer` | The fields of a post, by name. Each is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line. A `choice` adds `"values"`, the list to choose from. |
+| `offer` | The fields of a post, by name, each a field as below. |
 | `review` | `{ "shared", "fields" }`: the [shared](#shared-names) review fields a review here holds, by name, and any fields the market adds, written as the offer's are (`fields` is left out when there are none). |
 | `payment` | The market's escrow schedules, by name ([Payment](#payment)). Direct payment is always allowed and is not listed. `{}` when there are none. |
 | `howDealsGo` | How a deal here goes, in plain text. |
 
+A field is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line.
+It may add:
+
+- `"values"`, for a `choice` and only for one: the list to choose from.
+- `"many": true`: the field holds a list of its type, such as several photos.
+- `"required": true`: an app asks for it. Nothing enforces it.
+
 ```json
 "offer": {
-  "description": { "type": "text", "description": "What the session covers." },
+  "description": { "type": "text", "description": "What the session covers.", "required": true },
   "price": { "type": "money", "description": "The price of one session." },
-  "level": { "type": "choice", "description": "The level taught.", "values": ["beginner", "advanced"] }
+  "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true }
 },
 "review": { "shared": ["subject", "score", "text", "offer", "evidence"] }
 ```
+
+Only `subject` defines a review, so `review.shared` always holds it; everything else is optional.
 
 A field's name is a key in a record, so it is a lowercase letter, then letters and digits, at most
 64 characters: `startTime`, not `start-time`.
 
 For `howDealsGo`, write how deals go today: the two sides agree in messages, pay outside Forest,
-and each review names the post. No index on devnet reads a review's `evidence` yet.
+and each review names the post. On devnet the escrow runs, but the app has no money screens, so
+people pay outside Forest today; a market's schedules are what apps offer when they do. No index on
+devnet reads a review's `evidence` yet.
 
 ## Types
 
-Every field is one of eight types, defined in [`types.json`](types.json). A program acts on a field
+Every field is one of nine types, defined in [`types.json`](types.json). A program acts on a field
 by its type, never by its name, except for the [shared names](#shared-names).
 
 | Type | A value | A program |
@@ -86,20 +97,28 @@ by its type, never by its name, except for the [shared names](#shared-names).
 | `number` | decimal text, such as `"2.5"` | filters by range |
 | `words` | a list of short words | filters by them |
 | `choice` | one of the field's `values` | filters by it |
-| `place` | `{ "lat", "lon", "precisionKm", "area" }`, or `{ "online": true }` | finds what is near |
+| `place` | `{ "lat", "lon", "precisionKm", "area" }`, with `"online": true` and `"reachKm"` if wanted, or `{ "online": true }` | finds what is near |
 | `money` | `{ "amount", "currency", "per" }` | prints it and pays it |
 | `moment` | a time, or `{ "from", "to" }` | filters by time |
 | `blob` | `{ "sha256", "mimeType", "size" }` | fetches it and shows it |
+| `hours` | `{ "zone", "slots": [ { "days", "from", "to" } ] }` | filters by day and time |
 
 - A record holds only whole numbers, so a number, an amount and a coordinate are decimal text.
 - `place`: `lat` and `lon` in degrees, rounded to `precisionKm` kilometres, a whole number. `area` is
-  the name people know the place by, such as a town.
+  the name people know the place by, such as a town. `"online": true` beside a point says the
+  person deals there and online too. `reachKm`, a whole number, is how far from the point the
+  person goes.
 - `money`: `currency` is a code such as `USD`. `per` is what the amount is for, such as `hour`, and
   is left out when it is for the whole deal.
 - `moment`: RFC 3339 with its zone, such as `2026-11-02T18:00:00+01:00`.
 - `blob`: bytes on the folder's hosts, named as
   [the standard names a blob](https://github.com/foundationforest/standard/blob/main/records/README.md#blobs):
   their SHA-256 in lowercase hex, their media type, and how many bytes.
+- `hours`: when a person is free, every week. `zone` is a time zone name, such as `Europe/Madrid`.
+  Each slot's `days` are weekday names, `monday` to `sunday`, and its `from` and `to` are `HH:MM`
+  in that zone, such as `"18:00"`.
+
+Use `choice` for a topic people filter by, and `words` only for open tags.
 
 ## Shared names
 
@@ -121,14 +140,15 @@ On reviews, in `review.shared`:
 - `score` (number): the rating, from `"1"` to `"10"` with at most one decimal, such as `"8.5"`. An
   index scores the profile by it.
 - `text` (text): what the reviewer says. An app shows it beside the score.
-- `offer` (text): the post's id in the subject's folder, the `<id>` of `offer/<id>`. An index ties
-  the review to the post it is about.
+- `offer` (text): the post's address, `<profile address>/offer/<id>`, whoever wrote it. An index
+  ties the review to the post it is about.
 - `evidence` (text): a receipt address or a payment signature. An index weighs the review by what
   backs it.
 
 ## Payment
 
-There are two ways to pay, and every deal may pay direct.
+There are two ways to pay, and every deal may pay direct. A market with no money has no evidence,
+so its reviews are unbacked.
 
 **Direct.** The payer sends a transfer with a memo naming the post. The transfer is the receipt,
 and its signature is what a review's `evidence` holds.
@@ -139,15 +159,17 @@ and its signature is what a review's `evidence` holds.
    full.
 2. **Selfish, by the schedule.** In each window, the payer may take back alone the share that window
    gives.
-3. **Stop,** by either side at any time, freezes everything: then only both sides agreeing, or the
-   arbiter, can close it. A generous move still can, as it always can.
+3. **Stop,** by either side at any time before the schedule ends, freezes everything: then only
+   both sides agreeing, or the arbiter, can close it. A generous move still can, as it always can.
 4. **The end.** If nobody stops, the schedule ends with its default when its last window closes.
 
-A market writes its schedules as templates, with times relative to the deal:
+A market writes its schedules as templates of the
+[schedule format](https://github.com/foundationforest/standard/blob/main/escrows/README.md), with
+times relative to the deal:
 
 ```text
 {
-  "windows": [ { "from": "payment" | "<a moment field>", "offset": "+3d" | "-24h", "payerShare": 0 to 10000 } ],
+  "windows": [ { "from": "payment" | "start" | "end", "offset": "+3d" | "-24h", "payerShare": 0 to 10000 } ],
   "end": "pay" | "refund",
   "arbiter": true | false
 }
@@ -155,9 +177,9 @@ A market writes its schedules as templates, with times relative to the deal:
 
 - `windows`, in order, at least one. The first opens when the money goes in, and each next one when
   the one before closes. A window closes at `offset`, hours (`h`) or days (`d`) after (`+`) or
-  before (`-`) its `from`: `payment`, when the money went in, or the name of one of the market's own
-  `moment` fields in `offer`, whose time in the deal's post is the time the deal is for (its start,
-  when it holds a span). Until it closes, the payer may take back alone `payerShare` out of 10,000.
+  before (`-`) its `from`: `payment`, when the money went in, or `start` or `end`, the deal's span
+  as the app sets it when it makes the escrow: from the post when it names a time, else as agreed
+  in messages. Until it closes, the payer may take back alone `payerShare` out of 10,000.
 - `end`: what happens when the last window closes and nobody stopped: `pay`, everything to the
   recipient, or `refund`, everything back to the payer.
 - `arbiter`: whether the deal names an arbiter, who may close a stopped escrow at any split. The two
@@ -181,14 +203,14 @@ Two schedules, as two markets might have written them. For things sent by post:
 The payer takes nothing back alone. Either side may stop within 14 days of paying, and then the
 arbiter closes it; if nobody stops, it pays.
 
-For a booked session, in a market whose offer has a moment field `session`:
+For a booked session:
 
 ```json
 "payment": {
   "booked": {
     "windows": [
-      { "from": "session", "offset": "-24h", "payerShare": 10000 },
-      { "from": "session", "offset": "+48h", "payerShare": 0 }
+      { "from": "start", "offset": "-24h", "payerShare": 10000 },
+      { "from": "end", "offset": "+48h", "payerShare": 0 }
     ],
     "end": "pay",
     "arbiter": false
@@ -196,8 +218,8 @@ For a booked session, in a market whose offer has a moment field `session`:
 }
 ```
 
-Until 24 hours before the session, the payer may take it all back alone. From then until 48 hours
-after it, nothing alone. Then it pays, unless someone stopped.
+Until 24 hours before the session starts, the payer may take it all back alone. From then until 48
+hours after it ends, nothing alone. Then it pays, unless someone stopped.
 
 **On devnet today**, the [escrow](https://github.com/foundationforest/standard/tree/main/escrows)
 takes one timer: a number of whole days after the money is in, then everything to one side, unless
@@ -205,9 +227,9 @@ either side [objected](https://github.com/foundationforest/standard/blob/main/es
 first. The objection is the stop, and an arbiter, if any, is named at the start. So a schedule runs
 there when it has one window, from `payment`, with an offset of whole days and a `payerShare` of 0:
 the app turns it into the timer, which pays the recipient for `pay` and the payer for `refund`. The
-first example runs on devnet; the second does not. Several windows, a window from a moment field,
-and a `payerShare` above 0 wait for the next escrow version, which is not written yet. It is to take the
-absolute times: `windows`, each with its `until` and `payerShare`, and `end`.
+first example runs on devnet; the second does not. Several windows, a window from `start` or
+`end`, and a `payerShare` above 0 wait for the next escrow version, which is not written yet. It is
+to take the absolute times: `windows`, each with its `until` and `payerShare`, and `end`.
 
 ## Propose
 

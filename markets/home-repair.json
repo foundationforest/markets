@@ -1,0 +1,34 @@
+{
+  "name": "home-repair",
+  "description": "People fix things in other people's homes, such as plumbing, electrical work and small repairs, paid per hour or per job.",
+  "roles": [
+    { "role": "repairer", "posts": "offers" },
+    { "role": "client", "posts": "requests" }
+  ],
+  "offer": {
+    "description": { "type": "text", "description": "The work offered, or what needs fixing." },
+    "price": { "type": "money", "description": "The price per hour or for the job." },
+    "payment": { "type": "words", "description": "How the job may be paid: direct, job, or both." },
+    "repairs": { "type": "choice", "description": "The kinds of work.", "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "tiling", "locks", "furniture-assembly", "small-repairs", "other"], "many": true },
+    "place": { "type": "place", "description": "Where the repairer works from and how far they go, or where the home is." },
+    "hours": { "type": "hours", "description": "When the repairer can come, or when the client is home, each week." },
+    "time": { "type": "moment", "description": "When the job is wanted: a time, or a span to fit it in." },
+    "licences": { "type": "text", "description": "Licences or certificates the repairer holds, such as for gas or electrical work." },
+    "photos": { "type": "blob", "description": "Photos of what needs fixing, or of past work.", "many": true }
+  },
+  "review": {
+    "shared": ["subject", "score", "text", "offer", "evidence"],
+    "fields": {
+      "onTime": { "type": "choice", "description": "In a review of the repairer: whether they came at the agreed time.", "values": ["yes", "no"] },
+      "fixed": { "type": "choice", "description": "In a review of the repairer: whether the job was done as agreed.", "values": ["yes", "no"] }
+    }
+  },
+  "payment": {
+    "job": {
+      "windows": [ { "from": "end", "offset": "+7d", "payerShare": 0 } ],
+      "end": "pay",
+      "arbiter": true
+    }
+  },
+  "howDealsGo": "The client and the repairer agree in messages on what needs fixing, when, and a price per hour or for the job, and pay outside Forest. Each may review the other. Each review names the post."
+}
