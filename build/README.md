@@ -42,8 +42,8 @@ A market's roles are a list of `{ "role", "posts" }`, one role or several:
 - `role` is any word, spelled as a name is. A person holds one profile per role, and its label is
   `<market>/<role>`, with these words.
 - `posts` says what the role's posts are: `offers` (what it gives), `requests` (what it looks for),
-  or `posts` (neither: just posts). Every post is a record at `offer/<id>` in its profile's folder
-  ([the standard's folders](https://github.com/foundationforest/standard/blob/main/records/README.md#folders));
+  or `posts` (neither: just posts). Every post is a record at `offer/<id>` in its profile's
+  [folder](https://github.com/foundationforest/standard/blob/main/records/README.md#folders);
   `posts` says how to read it.
 
 ## The file
@@ -153,7 +153,7 @@ On reviews, in `review.shared`:
 - `offer` (text): the post's address, `<profile address>/offer/<id>`, whoever wrote it. An index
   ties the review to the post it is about.
 - `evidence` (text): a receipt address or a payment signature. An index weighs the review by what
-  backs it. No index on devnet reads it yet.
+  backs it. The foundation's index does not read it.
 
 ## Payment
 
@@ -233,16 +233,14 @@ For a booked session:
 Until 24 hours before the session starts, the payer may take it all back alone. From then until 48
 hours after it ends, nothing alone. Then it pays, unless someone stopped.
 
-**On devnet today**, the [escrow](https://github.com/foundationforest/standard/tree/main/escrows)
-runs, though no app offers money screens yet. It takes one timer: a number of whole days after the
-money is in, then everything to one side, unless either side
-[objected](https://github.com/foundationforest/standard/blob/main/escrows/solana/README.md#the-arbiter-and-the-timer)
-first. The objection is the stop, and an arbiter, if any, is named at the start. So a schedule runs
-there when it has one window, from `payment`, with an offset of whole days and a `payerShare` of 0:
-the app turns it into the timer, which pays the recipient for `pay` and the payer for `refund`. The
-first example runs on devnet; the second does not. Several windows, a window from `dealStart` or
-`dealEnd`, and a `payerShare` above 0 wait for the next escrow version, which is not written yet.
-It is to take the absolute times: `windows`, each with its `until` and `payerShare`, and `end`.
+**What fits.** The [escrow](https://github.com/foundationforest/standard/blob/main/escrows/README.md#the-schedule)
+takes one to four windows, each an `until` and a `payerShare`, sorted by `until`, each later than
+the one before; an `end`; and an arbiter, if any. So a schedule fits when it has at most four
+windows and the times the app works out come out in that order. Both examples fit: the first has
+one window, and in the second, 24 hours before the start always comes before 48 hours after the
+end. A schedule with five windows or more does not fit, and neither does a deal whose times come
+out of order. Every `until` is fixed when the escrow opens, so a window from `payment` is exact
+only when the app opens the escrow and pays in one transaction. No app offers money screens yet.
 
 ## Propose
 

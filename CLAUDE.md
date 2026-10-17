@@ -18,4 +18,4 @@ index, directory. Plain words, no em-dashes.
   a market; the README says what this is and points to it.
 - The standard holds no content fields: what a post or a review holds is defined here, never in
   `foundationforest/standard`.
-- Say "on devnet" for what runs; never state anything as shipped.
+- Name no network, and never state anything as shipped.
