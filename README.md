@@ -24,7 +24,7 @@ A person holds one profile per market and role, and nothing public links their p
 
 1. **Propose.** Anyone can propose a new market or improve an existing one by adding or editing a file in [`markets/`](markets/) (see [`build/README.md`](build/README.md)).
 2. **Check and list.** [`build/check.sh`](build/check.sh) checks every market file against the schema and types, and writes [`directory.json`](directory.json) and [`directory.md`](directory.md) from the files.
-3. **Read.** Apps, AIs and indexes read `directory.json` and each market file at one commit to know which fields to ask for, how to render posts, and how to check records. The foundation's index reads it.
+3. **Read.** `directory.json` and each market file, read at one commit, tell an app, an AI or an index which fields to ask for, what a post's preview shows first, and how to check records.
 
 ## Where things live
 

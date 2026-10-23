@@ -17,6 +17,7 @@
     "photos": { "type": "blob", "description": "Photos of what needs fixing.", "many": true, "roles": ["client"] },
     "pastWork": { "type": "blob", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] }
   },
+  "preview": ["repairs", "description", "price", "place"],
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"],
     "fields": {

@@ -12,6 +12,7 @@
     "format": { "type": "choice", "description": "Singles, doubles, or either.", "values": ["singles", "doubles", "either"] },
     "court": { "type": "text", "description": "Whether a court is booked, and any fee to share." }
   },
+  "preview": ["description", "time", "place", "level"],
   "review": {
     "shared": ["subject", "score", "text", "offer"],
     "fields": {
