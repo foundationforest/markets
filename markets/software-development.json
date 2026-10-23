@@ -14,6 +14,7 @@
     "due": { "type": "moment", "description": "When the job is due, or a span from its start to when it is due.", "roles": ["client"] },
     "portfolio": { "type": "text", "description": "Links to past work, such as a repository or a site.", "roles": ["developer"] }
   },
+  "preview": ["kind", "description", "price"],
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"],
     "fields": {

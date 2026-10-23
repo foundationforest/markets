@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, its roles, the fields of its posts and reviews, its payment schedules and how its deals go. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, its roles, the fields of its posts and reviews, which post fields a preview shows first, its payment schedules and how its deals go. build/README.md explains each part.",
   "type": "object",
   "required": ["name", "description", "roles", "offer", "review", "payment", "howDealsGo"],
   "additionalProperties": false,
@@ -30,6 +30,13 @@
         "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } },
         "payment": { "type": "object", "required": ["many"], "properties": { "type": { "const": "choice" } } }
       }
+    },
+    "preview": {
+      "description": "The offer fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the first field of type place, of those the market has.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "description": "The name of one of the market's offer fields; build/check.sh checks that it is.", "type": "string" }
     },
     "review": {
       "description": "The shared review fields a review here holds, by name, and any fields the market adds.",

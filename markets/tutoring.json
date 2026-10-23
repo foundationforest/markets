@@ -14,6 +14,7 @@
     "place": { "type": "place", "description": "Where sessions are held, online, or both." },
     "hours": { "type": "hours", "description": "When sessions can be held, each week." }
   },
+  "preview": ["subjects", "description", "price", "place"],
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"]
   },

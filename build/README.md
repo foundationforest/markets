@@ -48,7 +48,8 @@ A market's roles are a list of `{ "role", "posts" }`, one role or several:
 
 ## The file
 
-One file per market, `markets/<name>.json`, with these seven keys and no others:
+One file per market, `markets/<name>.json`, with these eight keys and no others; all but `preview`
+are required:
 
 | Key | What it holds |
 |---|---|
@@ -56,6 +57,7 @@ One file per market, `markets/<name>.json`, with these seven keys and no others:
 | `description` | What the dealing is, in one line. |
 | `roles` | The roles ([Roles](#roles)). |
 | `offer` | The fields of a post, by name, each a field as below. |
+| `preview` | The `offer` fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. Left out, they are `description`, `price`, then the first field of type `place`, of those the market has. |
 | `review` | `{ "shared", "fields" }`: the [shared](#shared-names) review fields a review here holds, by name, and any fields the market adds, written as the offer's are (`fields` is left out when there are none). |
 | `payment` | The market's escrow schedules, by name ([Payment](#payment)). Direct payment is always allowed and is not listed. `{}` when there are none. |
 | `howDealsGo` | How a deal here goes, in plain text. |
@@ -78,6 +80,7 @@ It may add:
   "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true },
   "degrees": { "type": "text", "description": "Degrees or certificates the teacher holds.", "roles": ["teacher"] }
 },
+"preview": ["levels", "description", "price"],
 "review": {
   "shared": ["subject", "score", "text", "offer", "evidence"],
   "fields": {
@@ -90,6 +93,12 @@ Only `subject` defines a review, so `review.shared` always holds it; everything 
 
 A field's name is a key in a record, so it is a lowercase letter, then letters and digits, at most
 64 characters: `startTime`, not `start-time`.
+
+For `preview`, list what a person needs first to tell one post from another, most needed first.
+Each name is one of the market's `offer` fields, and `check.sh` checks that it is; a post's preview
+holds those of them the post has. It names content, never a screen shape. Write it only where the
+default is wrong, such as in a market with no price, or one where photos or a topic matter first,
+like the levels above.
 
 For `howDealsGo`, write how a deal in the market goes, never what an app does today: the sides
 agree in messages; in a market with money, they pay direct or by one of its schedules; and each
@@ -135,33 +144,35 @@ A few names mean the same in every market, and keep their type, so a program fin
 
 On posts, in `offer`:
 
-- `description` (text, never `many`): the first text shown. An app shows a post by it, so it must
-  know which text comes first.
+- `description` (text, never `many`): the post's main text. A post may hold other text, so a
+  program must know which is the main one.
 - `price` (money, never `many`): the money to range and pay. A post may hold other money, so a
   program must know which one to sort by and to pay.
 - `payment` (choice, always `many`): how the deal may be paid. Its `values` are `direct`, then the
   market's schedule names in the order `payment` lists them, and `check.sh` checks that they are.
-  An app offers only these, so it must find them.
+  The post allows only these, so a program must find them.
 
 On reviews, in `review.shared`:
 
-- `subject` (text): the address of the profile the review is about. An index counts the review for
-  that profile.
-- `score` (number): the rating, from `"1"` to `"10"` with at most one decimal, such as `"8.5"`. An
-  index scores the profile by it.
-- `text` (text): what the reviewer says. An app shows it beside the score.
-- `offer` (text): the post's address, `<profile address>/offer/<id>`, whoever wrote it. An index
-  ties the review to the post it is about.
-- `evidence` (text): a receipt address or a payment signature. An index weighs the review by what
-  backs it. The foundation's index does not read it.
+- `subject` (text): the address of the profile the review is about.
+- `score` (number): the rating, from `"1"` to `"10"` with at most one decimal, such as `"8.5"`.
+- `text` (text): what the reviewer says.
+- `offer` (text): the address of the post the review is about, `<profile address>/offer/<id>`,
+  whoever wrote it.
+- `evidence` (text): what backs the review, written `<chain>:<id>`. The chain is in
+  [CAIP-2](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md) form:
+  `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` for Solana devnet,
+  `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` for Solana mainnet, `eip155:<chain number>` for an EVM
+  chain. The id is an escrow address, or a transaction's signature or hash, on that chain. The
+  chain holds a colon itself, so the text splits at its last colon.
 
 ## Payment
 
 There are two ways to pay, and every deal may pay direct. A market with no money has no evidence,
 so its reviews are unbacked.
 
-**Direct.** The payer sends a transfer with a memo naming the post. The transfer is the receipt,
-and its signature is what a review's `evidence` holds.
+**Direct.** The payer sends a transfer with a memo naming the post. The transfer is the receipt: a
+review's `evidence` holds its chain and its signature or hash, `<chain>:<id>`.
 
 **Escrow.** The payer puts the money in, and a schedule says how it can leave. Four moves:
 

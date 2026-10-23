@@ -2,7 +2,8 @@
 # Checks the markets and writes the directory:
 #   1. every markets/*.json against build/market.schema.json, each field's type against
 #      build/types.json, each role's word once per market, each field's roles among the market's
-#      roles, and offer.payment's values: "direct", then the market's schedule names;
+#      roles, offer.payment's values: "direct", then the market's schedule names, and each name in
+#      preview one of the market's offer fields;
 #   2. each market's name equal to its file's name, which also keeps every name unique;
 #   3. when every market passes, directory.json and directory.md as the market files write them,
 #      sorted by name: when either is stale, rewrites it and fails, so the new copy gets committed.
@@ -142,6 +143,13 @@ for (const file of files) {
     const values = ['direct', ...Object.keys(schedules)]
     if (!isDeepStrictEqual(pay.values, values)) {
       report(where, `/offer/payment/values must be ${JSON.stringify(values)}: "direct", then the schedules in "payment", in order`)
+    }
+  }
+  // preview: each name one of the market's offer fields.
+  const offerNames = typeof market?.offer === 'object' && market.offer !== null ? Object.keys(market.offer) : []
+  for (const name of Array.isArray(market?.preview) ? market.preview : []) {
+    if (typeof name === 'string' && !offerNames.includes(name)) {
+      report(where, `/preview: "${name}" is not a field in "offer": the fields are ${offerNames.join(', ')}`)
     }
   }
 }

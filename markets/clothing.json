@@ -18,6 +18,7 @@
     "place": { "type": "place", "description": "Where the item is picked up, or ships from or to." },
     "photos": { "type": "blob", "description": "Photos of the item.", "many": true, "roles": ["seller"] }
   },
+  "preview": ["photos", "description", "price", "place"],
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"],
     "fields": {
