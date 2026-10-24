@@ -171,8 +171,8 @@ On reviews, in `review.shared`:
 There are two ways to pay, and every deal may pay direct. A market with no money has no evidence,
 so its reviews are unbacked.
 
-**Direct.** The payer sends a transfer with a memo naming the post. The transfer is the receipt: a
-review's `evidence` holds its chain and its signature or hash, `<chain>:<id>`.
+**Direct.** The payer sends a transfer. The transfer is the receipt, and a review's `evidence`
+names it: its chain and its signature or hash, `<chain>:<id>`.
 
 **Escrow.** The payer puts the money in, and a schedule says how it can leave. Four moves:
 
