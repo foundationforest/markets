@@ -62,7 +62,7 @@ are required:
 | `offer` | The fields of a post, by name, each a field as below. |
 | `preview` | The `offer` fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. Left out, they are `description`, `price`, then the first field of type `place`, of those the market has. |
 | `review` | `{ "shared", "fields" }`: the [shared](#shared-names) review fields a review here holds, by name, and any fields the market adds, written as the offer's are (`fields` is left out when there are none). |
-| `payment` | The market's escrow schedules, by name ([Payment](#payment)). Direct payment is always allowed and is not listed. `{}` when there are none. |
+| `payment` | The market's escrow schedules, by name ([Payment](#payment)). A post names `direct` in its `payment` field when it takes it. `{}` when there are none. |
 | `howDealsGo` | How a deal here goes, in plain text. |
 
 A field is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line.
@@ -184,8 +184,8 @@ names it: its chain and its signature or hash, `<chain>:<id>`.
 2. **Selfish, by the schedule.** In each window, the payer may take back alone the share that window
    gives.
 3. **Stop,** by either side before the schedule ends, freezes the ending by the clock; the payer's
-   take-back windows still run, since both agreed them at the start; after a stop only both
-   agreeing, the arbiter, or a side giving closes it.
+   take-back windows still run, since both agreed them at the start; after a stop, beyond those
+   windows, only both agreeing, the arbiter, or a side giving closes it.
 4. **The end.** If nobody stops, the schedule ends with its default when its last window closes.
 
 A market writes its schedules as templates of the
