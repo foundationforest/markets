@@ -77,7 +77,7 @@ function say(e) {
     const name = JSON.stringify(e.propertyName)
     if (at === '/payment') {
       return e.keyword === 'not'
-        ? `${at}: "direct" is always allowed and is not a schedule`
+        ? `${at}: "direct" is a value, not a schedule`
         : `${at}: ${name} is not a schedule name: lowercase letters, digits and single hyphens, at most 64 characters`
     }
     if (e.keyword === 'not') return `${at}: ${name} is a shared name: list it in "shared"`

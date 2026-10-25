@@ -171,7 +171,7 @@ On reviews, in `review.shared`:
 
 ## Payment
 
-There are two ways to pay, and every deal may pay direct. A market with no money has no evidence,
+There are two ways to pay; a post says which it takes. A market with no money has no evidence,
 so its reviews are unbacked.
 
 **Direct.** The payer sends a transfer. The transfer is the receipt, and a review's `evidence`
