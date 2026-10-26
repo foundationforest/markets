@@ -46,13 +46,14 @@ A market's roles are a list of `{ "role", "posts" }`, one role or several:
   `<market>/<role>`, with these words.
 - `posts` says what the role's posts are: `offers` (what it gives), `requests` (what it looks for),
   or `posts` (neither: just posts). Every post is a record at `offer/<id>` in its profile's
-  [folder](https://github.com/foundationforest/standard/blob/main/records/README.md#folders);
-  `posts` says how to read it.
+  [folder](https://github.com/foundationforest/standard/blob/main/records/README.md#folders),
+  requests included: a market has one path for posts, and `posts`, not the path, says how to read
+  one.
 
 ## The file
 
-One file per market, `markets/<name>.json`, with these eight keys and no others; all but `preview`
-are required:
+One file per market, `markets/<name>.json`, with these eight keys and no others; every key but
+`preview` must be there:
 
 | Key | What it holds |
 |---|---|
@@ -177,15 +178,18 @@ so its reviews are unbacked.
 **Direct.** The payer sends a transfer. The transfer is the receipt, and a review's `evidence`
 names it: its chain and its signature or hash, `<chain>:<id>`.
 
-**Escrow.** The payer puts the money in, and a schedule says how it can leave. Four moves:
+**Escrow.** The payer puts the money in, and a schedule says how it can leave. Four moves, which
+[the standard](https://github.com/foundationforest/standard/blob/main/escrows/README.md#the-moves)
+counts as seven:
 
 1. **Generous, always.** The payer pays the recipient in full, or the recipient refunds the payer in
    full.
 2. **Selfish, by the schedule.** In each window, the payer may take back alone the share that window
    gives.
-3. **Stop,** by either side before the schedule ends, freezes the ending by the clock; the payer's
-   take-back windows still run, since both agreed them at the start; after a stop, beyond those
-   windows, only both agreeing, the arbiter, or a side giving closes it.
+3. **Stop,** by either side before the schedule ends, freezes the ending by the clock and never
+   blocks a take-back: the payer's take-back windows still run, since both agreed them at the
+   start. After a stop, besides a take-back, only both agreeing, the arbiter, or a side giving
+   closes it.
 4. **The end.** If nobody stops, the schedule ends with its default when its last window closes.
 
 A market writes its schedules as templates of the
@@ -246,8 +250,8 @@ For a booked session:
 ```
 
 Until 24 hours before the session starts, the payer may take it all back alone. From then until 48
-hours after it ends, nothing alone. Then it pays, unless someone stopped; with `arbiter: false`, a
-stop holds the money until both agree once the last window has closed.
+hours after it ends, nothing alone. Then it pays, unless someone stopped; with `arbiter: false`,
+once the last window has closed, a stop holds the money until both agree or one gives.
 
 **What fits.** The [escrow](https://github.com/foundationforest/standard/blob/main/escrows/README.md#the-schedule)
 takes one to four windows, each an `until` and a `payerShare`, sorted by `until`, each later than
