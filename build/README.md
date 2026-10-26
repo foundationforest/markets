@@ -250,8 +250,8 @@ For a booked session:
 ```
 
 Until 24 hours before the session starts, the payer may take it all back alone. From then until 48
-hours after it ends, nothing alone. Then it pays, unless someone stopped; with `arbiter: false`, once
-the last window has closed, a stop holds the money until both agree or one gives.
+hours after it ends, nothing alone. Then it pays, unless someone stopped; with `arbiter: false`,
+once the last window has closed, a stop holds the money until both agree or one gives.
 
 **What fits.** The [escrow](https://github.com/foundationforest/standard/blob/main/escrows/README.md#the-schedule)
 takes one to four windows, each an `until` and a `payerShare`, sorted by `until`, each later than
