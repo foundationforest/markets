@@ -77,7 +77,7 @@ function say(e) {
     const name = JSON.stringify(e.propertyName)
     if (at === '/payment') {
       return e.keyword === 'not'
-        ? `${at}: "direct" is always allowed and is not a schedule`
+        ? `${at}: "direct" is a value, not a schedule`
         : `${at}: ${name} is not a schedule name: lowercase letters, digits and single hyphens, at most 64 characters`
     }
     if (e.keyword === 'not') return `${at}: ${name} is a shared name: list it in "shared"`
@@ -113,7 +113,8 @@ for (const file of files) {
   const market = readJson(where)
   if (market === undefined) continue
   markets.push(market)
-  if (!validateMarket(market)) for (const e of validateMarket.errors) if (!repeats(e)) report(where, say(e))
+  const errors = validateMarket(market) ? [] : validateMarket.errors
+  for (const e of errors) if (!repeats(e)) report(where, say(e))
 
   if (typeof market?.name === 'string' && `${market.name}.json` !== file) {
     report(where, `its name is "${market.name}", so it must be markets/${market.name}.json`)
@@ -137,9 +138,11 @@ for (const file of files) {
     }
   }
   // payment, a shared name: an app offers only its values, so they are direct and the schedules.
+  // Checked once every schedule name passes, so the values it asks for are right.
   const pay = market?.offer?.payment
   const schedules = market?.payment
-  if (pay?.type === 'choice' && typeof schedules === 'object' && schedules !== null && !Array.isArray(schedules)) {
+  const namesPass = !errors.some((e) => e.instancePath === '/payment' && e.propertyName !== undefined)
+  if (namesPass && pay?.type === 'choice' && typeof schedules === 'object' && schedules !== null && !Array.isArray(schedules)) {
     const values = ['direct', ...Object.keys(schedules)]
     if (!isDeepStrictEqual(pay.values, values)) {
       report(where, `/offer/payment/values must be ${JSON.stringify(values)}: "direct", then the schedules in "payment", in order`)

@@ -18,7 +18,7 @@ One file in [`markets/`](markets/) defines everything an app, an AI or an index 
 
 ## Why markets are narrow
 
-A person holds one profile per market and role, and nothing public links their profiles. A reputation earned as `tennis-matches/player` says nothing about them as `tutoring/tutor` unless they choose to show it, with a reputation proof: a score carried from hidden profiles onto a new one, without naming them. So a market is as narrow as the dealing people look for, and never widened to pool reputation; pooling is the person's choice, deal by deal. Reviews name the post they are about, so inside one market an index can still tell plumbing work from painting.
+A person holds one profile per market and role, and nothing public links their profiles. A review is about a profile in the same market as its writer; an index counts no other. A reputation earned as `tennis-matches/player` says nothing about them as `tutoring/tutor` unless they choose to show it, with a reputation proof: a score carried from hidden profiles onto a new one, without naming them. So a market is as narrow as the dealing people look for, and never widened to pool reputation; pooling is the person's choice, deal by deal. Reviews name the post they are about, so inside one market an index can still tell plumbing work from painting.
 
 ## How it works
 

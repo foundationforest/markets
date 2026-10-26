@@ -28,13 +28,16 @@ From the directory: `tennis-matches`, `sports-coaching`, `home-cleaning`, `home-
 Spelling: lowercase letters, digits and single hyphens, at most 64 characters, no other market's
 name.
 
+Once a market is merged, its name and its roles' words never change, since they are part of every
+profile's key; fields can be added, none is removed or retyped.
+
 ## Roles
 
 A market's roles are a list of `{ "role", "posts" }`, one role or several:
 
 ```json
 "roles": [
-  { "role": "teacher", "posts": "offers" },
+  { "role": "tutor", "posts": "offers" },
   { "role": "student", "posts": "requests" }
 ]
 ```
@@ -59,7 +62,7 @@ are required:
 | `offer` | The fields of a post, by name, each a field as below. |
 | `preview` | The `offer` fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. Left out, they are `description`, `price`, then the first field of type `place`, of those the market has. |
 | `review` | `{ "shared", "fields" }`: the [shared](#shared-names) review fields a review here holds, by name, and any fields the market adds, written as the offer's are (`fields` is left out when there are none). |
-| `payment` | The market's escrow schedules, by name ([Payment](#payment)). Direct payment is always allowed and is not listed. `{}` when there are none. |
+| `payment` | The market's escrow schedules, by name ([Payment](#payment)). A post names `direct` in its `payment` field when it takes it. `{}` when there are none. |
 | `howDealsGo` | How a deal here goes, in plain text. |
 
 A field is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line.
@@ -78,13 +81,13 @@ It may add:
   "description": { "type": "text", "description": "What the session covers.", "required": true },
   "price": { "type": "money", "description": "The price of one session." },
   "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true },
-  "degrees": { "type": "text", "description": "Degrees or certificates the teacher holds.", "roles": ["teacher"] }
+  "degrees": { "type": "text", "description": "Degrees or certificates the tutor holds.", "roles": ["tutor"] }
 },
 "preview": ["levels", "description", "price"],
 "review": {
   "shared": ["subject", "score", "text", "offer", "evidence"],
   "fields": {
-    "prepared": { "type": "choice", "description": "Whether the teacher came prepared.", "values": ["yes", "no"], "roles": ["teacher"] }
+    "prepared": { "type": "choice", "description": "Whether the tutor came prepared.", "values": ["yes", "no"], "roles": ["tutor"] }
   }
 }
 ```
@@ -149,12 +152,12 @@ On posts, in `offer`:
 - `price` (money, never `many`): the money to range and pay. A post may hold other money, so a
   program must know which one to sort by and to pay.
 - `payment` (choice, always `many`): how the deal may be paid. Its `values` are `direct`, then the
-  market's schedule names in the order `payment` lists them, and `check.sh` checks that they are.
-  The post allows only these, so a program must find them.
+  market's schedule names in the order `payment` lists them, and `check.sh` checks that they are;
+  `direct` is always among them. The post allows only these, so a program must find them.
 
 On reviews, in `review.shared`:
 
-- `subject` (text): the address of the profile the review is about.
+- `subject` (text): the address of the profile the review is about, in the same market.
 - `score` (number): the rating, from `"1"` to `"10"` with at most one decimal, such as `"8.5"`.
 - `text` (text): what the reviewer says.
 - `offer` (text): the address of the post the review is about, `<profile address>/offer/<id>`,
@@ -168,7 +171,7 @@ On reviews, in `review.shared`:
 
 ## Payment
 
-There are two ways to pay, and every deal may pay direct. A market with no money has no evidence,
+There are two ways to pay; a post says which it takes. A market with no money has no evidence,
 so its reviews are unbacked.
 
 **Direct.** The payer sends a transfer. The transfer is the receipt, and a review's `evidence`
@@ -180,8 +183,9 @@ names it: its chain and its signature or hash, `<chain>:<id>`.
    full.
 2. **Selfish, by the schedule.** In each window, the payer may take back alone the share that window
    gives.
-3. **Stop,** by either side at any time before the schedule ends, freezes everything: then only
-   both sides agreeing, or the arbiter, can close it. A generous move still can, as it always can.
+3. **Stop,** by either side before the schedule ends, freezes the ending by the clock; the payer's
+   take-back windows still run, since both agreed them at the start; after a stop, beyond those
+   windows, only both agreeing, the arbiter, or a side giving closes it.
 4. **The end.** If nobody stops, the schedule ends with its default when its last window closes.
 
 A market writes its schedules as templates of the
@@ -205,8 +209,8 @@ times relative to the deal:
   alone `payerShare` out of 10,000.
 - `end`: what happens when the last window closes and nobody stopped: `pay`, everything to the
   recipient, or `refund`, everything back to the payer.
-- `arbiter`: whether the deal names an arbiter, who may close a stopped escrow at any split. The two
-  sides choose who, deal by deal.
+- `arbiter`: whether the deal names an arbiter. The arbiter is a key that is neither side's and may
+  close the escrow at any split, stopped or not. The two sides choose who, deal by deal.
 
 The app turns each window into an absolute time, the `until` the escrow takes, from the deal's own
 times.
@@ -242,7 +246,8 @@ For a booked session:
 ```
 
 Until 24 hours before the session starts, the payer may take it all back alone. From then until 48
-hours after it ends, nothing alone. Then it pays, unless someone stopped.
+hours after it ends, nothing alone. Then it pays, unless someone stopped; with `arbiter: false`, a
+stop holds the money until both agree once the last window has closed.
 
 **What fits.** The [escrow](https://github.com/foundationforest/standard/blob/main/escrows/README.md#the-schedule)
 takes one to four windows, each an `until` and a `payerShare`, sorted by `until`, each later than

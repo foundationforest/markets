@@ -59,7 +59,7 @@
       }
     },
     "payment": {
-      "description": "The market's escrow schedules, by name. Direct payment is always allowed and is not listed here.",
+      "description": "The market's escrow schedules, by name. A post names direct in its payment field when it takes it.",
       "type": "object",
       "propertyNames": { "$ref": "#/$defs/word", "not": { "const": "direct" } },
       "additionalProperties": { "$ref": "#/$defs/schedule" }
@@ -168,7 +168,7 @@
           "enum": ["pay", "refund"]
         },
         "arbiter": {
-          "description": "Whether the deal names an arbiter, who may close a stopped escrow.",
+          "description": "Whether the deal names an arbiter: a key that is neither side's and may close the escrow at any split, stopped or not.",
           "type": "boolean"
         }
       }
