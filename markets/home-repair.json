@@ -25,6 +25,8 @@
       "fixed": { "type": "choice", "description": "Whether the job was done as agreed.", "values": ["yes", "no"], "roles": ["repairer"] }
     }
   },
+  "vouch": { "shared": ["subject", "text"] },
+  "report": { "shared": ["subject", "text"] },
   "payment": {
     "job": {
       "windows": [ { "from": "dealEnd", "offset": "+7d", "payerShare": 0 } ],

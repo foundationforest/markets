@@ -20,6 +20,8 @@
       "level": { "type": "choice", "description": "The level the reviewer would put the player at.", "values": ["beginner", "intermediate", "advanced", "competitive"] }
     }
   },
+  "vouch": { "shared": ["subject", "text"] },
+  "report": { "shared": ["subject", "text"] },
   "payment": {},
   "howDealsGo": "Two players agree in messages on a time and a court. No money passes between them; a court fee, if any, they share as they agree, outside Forest. After the match each may review the other. Each review names the post."
 }

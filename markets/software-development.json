@@ -22,6 +22,8 @@
       "asAgreed": { "type": "choice", "description": "Whether the software did what was agreed.", "values": ["yes", "no"], "roles": ["developer"] }
     }
   },
+  "vouch": { "shared": ["subject", "text"] },
+  "report": { "shared": ["subject", "text"] },
   "payment": {
     "job": {
       "windows": [ { "from": "dealEnd", "offset": "+14d", "payerShare": 0 } ],

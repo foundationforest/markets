@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Checks the markets and writes the directory:
 #   1. every markets/*.json against build/market.schema.json, each field's type against
-#      build/types.json, each role's word once per market, each field's roles among the market's
-#      roles, offer.payment's values: "direct", then the market's schedule names, and each name in
-#      preview one of the market's offer fields;
+#      build/types.json (in offer, review, vouch and report), each role's word once per market,
+#      each field's roles among the market's roles, offer.payment's values: "direct", then the
+#      market's schedule names, and each name in preview one of the market's offer fields;
 #   2. each market's name equal to its file's name, which also keeps every name unique;
 #   3. when every market passes, directory.json and directory.md as the market files write them,
 #      sorted by name: when either is stale, rewrites it and fails, so the new copy gets committed.
@@ -67,6 +67,8 @@ const PLAIN = {
   '#/properties/howDealsGo/pattern': 'must not be empty',
   '#/$defs/window/properties/offset/pattern': 'must be a sign, a whole number and h or d, such as "+3d" or "-24h"',
   '#/properties/review/properties/shared/contains': 'must hold "subject": only it defines a review',
+  '#/properties/vouch/properties/shared/contains': 'must hold "subject": only it defines a vouch',
+  '#/properties/report/properties/shared/contains': 'must hold "subject": only it defines a report',
   '#/properties/offer/properties/description/not': 'must not hold "many": description is a shared name, and a post holds one',
   '#/properties/offer/properties/price/not': 'must not hold "many": price is a shared name, and a post holds one',
   '#/properties/offer/properties/payment/required': 'must hold "many": true: payment is a shared name',
@@ -90,7 +92,7 @@ function say(e) {
   }
   if (e.keyword === 'not' && e.schemaPath.endsWith('/else/not')) return `${at}: "values" is only for a choice`
   if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
-  if (e.keyword === 'const' && /^\/(offer|review\/fields)\/[^/]+\/(many|required)$/.test(e.instancePath)) return `${at} must be true, or left out`
+  if (e.keyword === 'const' && /^\/(offer|(review|vouch|report)\/fields)\/[^/]+\/(many|required)$/.test(e.instancePath)) return `${at} must be true, or left out`
   if (e.keyword === 'required') return `${at}: "${e.params.missingProperty}" is missing`
   if (e.keyword === 'additionalProperties') return `${at}: unknown key "${e.params.additionalProperty}"`
   if (e.keyword === 'enum') return `${at} must be one of ${e.params.allowedValues.map((v) => JSON.stringify(v)).join(', ')}`
@@ -102,8 +104,8 @@ function say(e) {
 const repeats = (e) =>
   e.keyword === 'if' ||
   e.keyword === 'propertyNames' ||
-  e.schemaPath === '#/properties/review/properties/shared/contains/const' ||
-  (e.keyword === 'enum' && /^\/(offer|review\/fields)\/[^/]+\/type$/.test(e.instancePath))
+  /^#\/properties\/(review|vouch|report)\/properties\/shared\/contains\/const$/.test(e.schemaPath) ||
+  (e.keyword === 'enum' && /^\/(offer|(review|vouch|report)\/fields)\/[^/]+\/type$/.test(e.instancePath))
 
 // 1 and 2: each market file.
 const files = existsSync(root('markets')) ? readdirSync(root('markets')).filter((f) => f.endsWith('.json')).sort() : []
@@ -123,7 +125,12 @@ for (const file of files) {
   for (const word of new Set(words.filter((w, i) => typeof w === 'string' && words.indexOf(w) !== i))) {
     report(where, `the role "${word}" is listed twice`)
   }
-  const fields = [['/offer', market?.offer], ['/review/fields', market?.review?.fields]]
+  const fields = [
+    ['/offer', market?.offer],
+    ['/review/fields', market?.review?.fields],
+    ['/vouch/fields', market?.vouch?.fields],
+    ['/report/fields', market?.report?.fields],
+  ]
   for (const [at, block] of fields) {
     if (typeof block !== 'object' || block === null) continue
     for (const [name, field] of Object.entries(block)) {

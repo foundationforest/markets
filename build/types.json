@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/types.json",
   "title": "Types",
-  "description": "The nine types a market's fields are, as a post or a review holds their values. A record holds only whole numbers, so numbers, money and coordinates are decimal text. build/README.md says what a program does with each.",
+  "description": "The nine types a market's fields are, as a post, a review, a vouch or a report holds their values. A record holds only whole numbers, so numbers, money and coordinates are decimal text. build/README.md says what a program does with each.",
   "$defs": {
     "text": {
       "description": "Text. Searched and shown.",

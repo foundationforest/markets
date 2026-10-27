@@ -16,6 +16,8 @@
   "review": {
     "shared": ["subject", "score", "text", "offer", "evidence"]
   },
+  "vouch": { "shared": ["subject", "text"] },
+  "report": { "shared": ["subject", "text"] },
   "payment": {
     "visit": {
       "windows": [ { "from": "payment", "offset": "+7d", "payerShare": 0 } ],
