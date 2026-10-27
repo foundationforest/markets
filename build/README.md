@@ -52,7 +52,7 @@ A market's roles are a list of `{ "role", "posts" }`, one role or several:
 
 ## The file
 
-One file per market, `markets/<name>.json`, with these eight keys and no others; every key but
+One file per market, `markets/<name>.json`, with these ten keys and no others; every key but
 `preview` must be there:
 
 | Key | What it holds |
@@ -63,6 +63,8 @@ One file per market, `markets/<name>.json`, with these eight keys and no others;
 | `offer` | The fields of a post, by name, each a field as below. |
 | `preview` | The `offer` fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. Left out, they are `description`, `price`, then the first field of type `place`, of those the market has. |
 | `review` | `{ "shared", "fields" }`: the [shared](#shared-names) review fields a review here holds, by name, and any fields the market adds, written as the offer's are (`fields` is left out when there are none). |
+| `vouch` | `{ "shared", "fields" }`, written as `review` is. A vouch, at `vouch/<id>`, says "I know this profile is real and honest". Its shared names are `subject` and `text`. |
+| `report` | `{ "shared", "fields" }`, written as `review` is. A report, at `report/<id>`, says "This profile is fake or a scam". Its shared names are `subject` and `text`. |
 | `payment` | The market's escrow schedules, by name ([Payment](#payment)). A post names `direct` in its `payment` field when it takes it. `{}` when there are none. |
 | `howDealsGo` | How a deal here goes, in plain text. |
 
@@ -74,8 +76,8 @@ It may add:
   which is a list already.
 - `"required": true`: an app asks for it. Nothing enforces it.
 - `"roles"`: the market's roles the field is for, one or more of its `role` words. In `offer`, only
-  posts by those roles hold the field. In `review.fields`, only reviews of a profile in those roles
-  hold it. Left out, the field is for every role.
+  posts by those roles hold the field. In `review.fields`, `vouch.fields` and `report.fields`, only
+  records about a profile in those roles hold it. Left out, the field is for every role.
 
 ```json
 "offer": {
@@ -90,10 +92,13 @@ It may add:
   "fields": {
     "prepared": { "type": "choice", "description": "Whether the tutor came prepared.", "values": ["yes", "no"], "roles": ["tutor"] }
   }
-}
+},
+"vouch": { "shared": ["subject", "text"] },
+"report": { "shared": ["subject", "text"] }
 ```
 
-Only `subject` defines a review, so `review.shared` always holds it; everything else is optional.
+Only `subject` defines a review, a vouch or a report, so each one's `shared` always holds it;
+everything else is optional.
 
 A field's name is a key in a record, so it is a lowercase letter, then letters and digits, at most
 64 characters: `startTime`, not `start-time`.
@@ -169,6 +174,9 @@ On reviews, in `review.shared`:
   `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` for Solana mainnet, `eip155:<chain number>` for an EVM
   chain. The id is an escrow address, or a transaction's signature or hash, on that chain. The
   chain holds a colon itself, so the text splits at its last colon.
+
+On vouches and reports, in `vouch.shared` and `report.shared`, `subject` and `text` mean what they
+do on a review: the profile the vouch or report is about, and what its writer says.
 
 ## Payment
 

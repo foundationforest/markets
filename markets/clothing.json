@@ -25,6 +25,8 @@
       "asDescribed": { "type": "choice", "description": "Whether the item was as the post said.", "values": ["yes", "no"], "roles": ["seller"] }
     }
   },
+  "vouch": { "shared": ["subject", "text"] },
+  "report": { "shared": ["subject", "text"] },
   "payment": {
     "shipped": {
       "windows": [ { "from": "payment", "offset": "+14d", "payerShare": 0 } ],

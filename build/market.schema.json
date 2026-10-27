@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, its roles, the fields of its posts and reviews, which post fields a preview shows first, its payment schedules and how its deals go. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, its roles, the fields of its posts, reviews, vouches and reports, which post fields a preview shows first, its payment schedules and how its deals go. build/README.md explains each part.",
   "type": "object",
-  "required": ["name", "description", "roles", "offer", "review", "payment", "howDealsGo"],
+  "required": ["name", "description", "roles", "offer", "review", "vouch", "report", "payment", "howDealsGo"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -55,6 +55,46 @@
           "$ref": "#/$defs/fields",
           "type": "object",
           "propertyNames": { "not": { "enum": ["subject", "score", "text", "offer", "evidence"] } }
+        }
+      }
+    },
+    "vouch": {
+      "description": "A vouch, at vouch/<id>, says: I know this profile is real and honest. The shared fields a vouch here holds, by name, and any fields the market adds.",
+      "type": "object",
+      "required": ["shared"],
+      "additionalProperties": false,
+      "properties": {
+        "shared": {
+          "description": "Only subject defines a vouch, so it is always here; text is optional.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["subject", "text"] },
+          "contains": { "const": "subject" }
+        },
+        "fields": {
+          "$ref": "#/$defs/fields",
+          "type": "object",
+          "propertyNames": { "not": { "enum": ["subject", "text"] } }
+        }
+      }
+    },
+    "report": {
+      "description": "A report, at report/<id>, says: this profile is fake or a scam. The shared fields a report here holds, by name, and any fields the market adds.",
+      "type": "object",
+      "required": ["shared"],
+      "additionalProperties": false,
+      "properties": {
+        "shared": {
+          "description": "Only subject defines a report, so it is always here; text is optional.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["subject", "text"] },
+          "contains": { "const": "subject" }
+        },
+        "fields": {
+          "$ref": "#/$defs/fields",
+          "type": "object",
+          "propertyNames": { "not": { "enum": ["subject", "text"] } }
         }
       }
     },
@@ -132,7 +172,7 @@
           "const": true
         },
         "roles": {
-          "description": "The market's roles the field is for: in offer, the roles whose posts hold it; in review.fields, the roles of the profile the review is about. Left out: every role.",
+          "description": "The market's roles the field is for: in offer, the roles whose posts hold it; in review.fields, vouch.fields and report.fields, the roles of the profile the record is about. Left out: every role.",
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
