@@ -29,7 +29,7 @@ Three kinds say something about a profile, each naming it as its `subject`:
 - **A vouch** says: "I know this profile is real and honest."
 - **A report** says: "This profile is fake or a scam."
 
-A vouch and a report may add text, saying why. A rating also counts as a vouch.
+A vouch and a report may add text, saying why. A rating may count as a vouch too; an index decides how a rating counts.
 
 A review's evidence is optional today; an index may later count a review backed by a deal, such as a payment or a meeting, for more.
 
