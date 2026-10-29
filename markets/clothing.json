@@ -16,7 +16,7 @@
     "condition": { "type": "choice", "description": "The item's condition; new is never worn, without tags.", "values": ["new-with-tags", "new", "like-new", "good", "fair"] },
     "delivery": { "type": "choice", "description": "Picked up, shipped, or either.", "values": ["pickup", "shipped", "either"] },
     "place": { "type": "place", "description": "Where the item is picked up, or ships from or to." },
-    "photos": { "type": "blob", "description": "Photos of the item.", "many": true, "roles": ["seller"] }
+    "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] }
   },
   "preview": ["photos", "description", "price", "place"],
   "review": {

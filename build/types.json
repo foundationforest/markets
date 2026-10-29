@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/types.json",
   "title": "Types",
-  "description": "The nine types a market's fields are, as a post, a review, a vouch or a report holds their values. A record holds only whole numbers, so numbers, money and coordinates are decimal text. build/README.md says what a program does with each.",
+  "description": "The nine types a market's fields are, as a post, a review, a vouch or a report holds their values. An entry holds only whole numbers, so numbers, money and coordinates are decimal text. build/README.md says what a program does with each.",
   "$defs": {
     "text": {
       "description": "Text. Searched and shown.",
@@ -122,30 +122,10 @@
         }
       ]
     },
-    "blob": {
-      "description": "Bytes on the folder's hosts, named as the standard names a blob. Fetched and shown.",
-      "type": "object",
-      "required": ["sha256", "mimeType", "size"],
-      "additionalProperties": false,
-      "properties": {
-        "sha256": {
-          "description": "The SHA-256 of the bytes, in lowercase hex.",
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
-        },
-        "mimeType": {
-          "description": "Their media type, type/subtype in lower case, at most 255 characters.",
-          "type": "string",
-          "maxLength": 255,
-          "pattern": "^[a-z0-9][a-z0-9!#$&^_.+-]*/[a-z0-9][a-z0-9!#$&^_.+-]*$"
-        },
-        "size": {
-          "description": "How many bytes.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 9007199254740991
-        }
-      }
+    "file": {
+      "description": "One of the files its entry names, by the SHA-256 of its bytes in lowercase hex. The entry lists that file in files, as the standard names a file, so the folder's hosts keep its bytes. Fetched and shown.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
     },
     "hours": {
       "description": "When a person is free, every week: slots on weekdays, in one time zone. Filtered by day and time.",

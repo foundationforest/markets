@@ -45,8 +45,8 @@ A market's roles are a list of `{ "role", "posts" }`, one role or several:
 - `role` is any word, spelled as a name is. A person holds one profile per role, and its label is
   `<market>/<role>`, with these words.
 - `posts` says what the role's posts are: `offers` (what it gives), `requests` (what it looks for),
-  or `posts` (neither: just posts). Every post is a record at `offer/<id>` in its profile's
-  [folder](https://github.com/foundationforest/standard/blob/main/records/README.md#folders),
+  or `posts` (neither: just posts). Every post is an entry at `offer/<id>` in its profile's
+  [folder](https://github.com/foundationforest/standard/blob/main/folders/README.md#folders),
   requests included: a market has one path for posts, and `posts`, not the path, says how to read
   one.
 
@@ -77,7 +77,7 @@ It may add:
 - `"required": true`: an app asks for it. Nothing enforces it.
 - `"roles"`: the market's roles the field is for, one or more of its `role` words. In `offer`, only
   posts by those roles hold the field. In `review.fields`, `vouch.fields` and `report.fields`, only
-  records about a profile in those roles hold it. Left out, the field is for every role.
+  entries about a profile in those roles hold it. Left out, the field is for every role.
 
 ```json
 "offer": {
@@ -100,8 +100,9 @@ It may add:
 Only `subject` defines a review, a vouch or a report, so each one's `shared` always holds it;
 everything else is optional.
 
-A field's name is a key in a record, so it is a lowercase letter, then letters and digits, at most
-64 characters: `startTime`, not `start-time`.
+A field's name is a key in an entry's body, so it is a lowercase letter, then letters and digits,
+at most 64 characters: `startTime`, not `start-time`. It is never `files`, which the standard keeps
+for the files an entry names ([Photos](#photos)).
 
 For `preview`, list what a person needs first to tell one post from another, most needed first.
 Each name is one of the market's `offer` fields, and `check.sh` checks that it is; a post's preview
@@ -127,10 +128,10 @@ by its type, never by its name, except for the [shared names](#shared-names).
 | `place` | `{ "lat", "lon", "precisionKm", "area" }`, with `"online": true` and `"reachKm"` if wanted, or `{ "online": true }` | finds what is near |
 | `money` | `{ "amount", "currency", "per" }` | prints it and pays it |
 | `moment` | a time, or `{ "from", "to" }` | filters by time |
-| `blob` | `{ "sha256", "mimeType", "size" }` | fetches it and shows it |
+| `file` | the SHA-256 of one of the entry's `files`, in lowercase hex | fetches it and shows it |
 | `hours` | `{ "zone", "slots": [ { "days", "from", "to" } ] }` | filters by day and time |
 
-- A record holds only whole numbers, so a number, an amount and a coordinate are decimal text.
+- An entry holds only whole numbers, so a number, an amount and a coordinate are decimal text.
 - `place`: `lat` and `lon` in degrees, rounded to `precisionKm` kilometres, a whole number. `area` is
   the name people know the place by, such as a town. `"online": true` beside a point says the
   person deals there and online too. `reachKm`, a whole number, is how far from the point the
@@ -138,14 +139,46 @@ by its type, never by its name, except for the [shared names](#shared-names).
 - `money`: `currency` is a code such as `USD`. `per` is what the amount is for, such as `hour`, and
   is left out when it is for the whole deal.
 - `moment`: RFC 3339 with its zone, such as `2026-11-02T18:00:00+01:00`.
-- `blob`: bytes on the folder's hosts, named as
-  [the standard names a blob](https://github.com/foundationforest/standard/blob/main/records/README.md#blobs):
-  their SHA-256 in lowercase hex, their media type, and how many bytes.
+- `file`: one of the files its entry names, by the SHA-256 of its bytes in lowercase hex. The entry
+  lists that file in `files`, as
+  [the standard names a file](https://github.com/foundationforest/standard/blob/main/folders/README.md#files):
+  `{ "sha256", "type", "size" }`, its SHA-256, its media type and how many bytes.
 - `hours`: when a person is free, every week. `zone` is a time zone name, such as `Europe/Madrid`.
   Each slot's `days` are weekday names, `monday` to `sunday`, and its `from` and `to` are `HH:MM`
   in that zone, such as `"18:00"`.
 
 Use `choice` for a topic people filter by, and `words` only for open tags.
+
+## Photos
+
+A photo is one of the files of the entry it is on. To let a post show photos, give `offer` a field
+of type `file`, with `many` for more than one:
+
+```json
+"photos": { "type": "file", "description": "Photos of the item.", "many": true }
+```
+
+A post with photos names each one in that field, and lists each in its body's `files`:
+
+```json
+{
+  "description": "A wool coat, worn twice.",
+  "photos": ["04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86"],
+  "files": [
+    {
+      "sha256": "04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86",
+      "type": "image/jpeg",
+      "size": 48213
+    }
+  ]
+}
+```
+
+The app writes the post, then uploads each photo's bytes to the folder's hosts. The hosts keep the
+bytes while a current entry names them, so a newer version of the post that leaves a photo out lets
+it go. A hash the post does not list in `files` names nothing a host keeps. A review, a vouch or a
+report holds files the same way. How bytes are uploaded and fetched is
+[the standard's](https://github.com/foundationforest/standard/blob/main/folders/README.md#files).
 
 ## Shared names
 

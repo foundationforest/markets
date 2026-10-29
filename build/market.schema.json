@@ -138,9 +138,9 @@
       }
     },
     "fields": {
-      "description": "Fields by name. A name is a key in a record: a lowercase letter, then letters and digits, at most 64 characters.",
+      "description": "Fields by name. A name is a key in an entry's body: a lowercase letter, then letters and digits, at most 64 characters, and never files, which the standard keeps for the files an entry names.",
       "type": "object",
-      "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]{0,63}$" },
+      "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]{0,63}$", "not": { "const": "files" } },
       "additionalProperties": { "$ref": "#/$defs/field" }
     },
     "field": {
@@ -150,7 +150,7 @@
       "properties": {
         "type": {
           "description": "One of the nine types in build/types.json.",
-          "enum": ["text", "number", "words", "choice", "place", "money", "moment", "blob", "hours"]
+          "enum": ["text", "number", "words", "choice", "place", "money", "moment", "file", "hours"]
         },
         "description": {
           "description": "What the field holds, in one line.",
@@ -172,7 +172,7 @@
           "const": true
         },
         "roles": {
-          "description": "The market's roles the field is for: in offer, the roles whose posts hold it; in review.fields, vouch.fields and report.fields, the roles of the profile the record is about. Left out: every role.",
+          "description": "The market's roles the field is for: in offer, the roles whose posts hold it; in review.fields, vouch.fields and report.fields, the roles of the profile the entry is about. Left out: every role.",
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
