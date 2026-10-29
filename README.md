@@ -10,12 +10,12 @@ A market is a trade or space people hold a profile in, one profile per role, lab
 
 One file in [`markets/`](markets/) defines everything an app, an AI or an index needs to work in that market:
 - **Roles:** which sides exist in the market, and whether each role publishes offers, requests, or posts.
-- **Offer shape:** the typed fields of a post, written at `offer/<id>` in a profile's [folder](https://github.com/foundationforest/standard/blob/main/records/README.md#folders).
+- **Offer shape:** the typed fields of a post, written at `offer/<id>` in a profile's [folder](https://github.com/foundationforest/standard/blob/main/folders/README.md#folders).
 - **Review shape:** the typed fields of a review, written at `review/<id>` in a profile's folder.
 - **Vouch and report shapes:** the fields of a vouch, written at `vouch/<id>`, and of a report, written at `report/<id>`, in a profile's folder.
 - **Payment schedules and how deals go:** how a deal moves from agreement to completion, including standard [escrow](https://github.com/foundationforest/standard/blob/main/escrows/README.md) schedule templates when money is locked in advance.
 
-`offer/<id>`, `review/<id>`, `vouch/<id>` and `report/<id>` are the four kinds a market defines, and this repo keeps them, not the standard. The standard holds formats, recipes and checks, and names no content path; what a record is for is a meaning, and meanings are the market's.
+`offer/<id>`, `review/<id>`, `vouch/<id>` and `report/<id>` are the four kinds a market defines, and this repo keeps them, not the standard. The standard holds formats, recipes and checks, and names no content path; what an entry is for is a meaning, and meanings are the market's.
 
 ## Why markets are narrow
 
@@ -37,7 +37,7 @@ A review's evidence is optional today; an index may later count a review backed 
 
 1. **Propose.** Anyone can propose a new market or improve an existing one by adding or editing a file in [`markets/`](markets/) (see [`build/README.md`](build/README.md)).
 2. **Check and list.** [`build/check.sh`](build/check.sh) checks every market file against the schema and types, and writes [`directory.json`](directory.json) and [`directory.md`](directory.md) from the files.
-3. **Read.** `directory.json` and each market file, read at one commit, tell an app, an AI or an index which fields to ask for, what a post's preview shows first, and how to check records.
+3. **Read.** `directory.json` and each market file, read at one commit, tell an app, an AI or an index which fields to ask for, what a post's preview shows first, and how to check entries.
 
 ## Where things live
 

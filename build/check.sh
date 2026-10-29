@@ -82,6 +82,7 @@ function say(e) {
         ? `${at}: "direct" is a value, not a schedule`
         : `${at}: ${name} is not a schedule name: lowercase letters, digits and single hyphens, at most 64 characters`
     }
+    if (e.keyword === 'not' && e.propertyName === 'files') return `${at}: ${name} is not a field name: the standard keeps it for the files an entry names`
     if (e.keyword === 'not') return `${at}: ${name} is a shared name: list it in "shared"`
     return `${at}: ${name} is not a field name: a lowercase letter, then letters and digits, at most 64 characters`
   }

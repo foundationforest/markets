@@ -14,8 +14,8 @@
     "hours": { "type": "hours", "description": "When the work can be done, each week." },
     "time": { "type": "moment", "description": "When the job is wanted: a time, or a span to fit it in.", "roles": ["client"] },
     "licences": { "type": "text", "description": "Licences or certificates the repairer holds, such as for gas or electrical work.", "roles": ["repairer"] },
-    "photos": { "type": "blob", "description": "Photos of what needs fixing.", "many": true, "roles": ["client"] },
-    "pastWork": { "type": "blob", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] }
+    "photos": { "type": "file", "description": "Photos of what needs fixing.", "many": true, "roles": ["client"] },
+    "pastWork": { "type": "file", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] }
   },
   "preview": ["repairs", "description", "price", "place"],
   "review": {
