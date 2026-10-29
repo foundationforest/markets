@@ -5,10 +5,9 @@
     { "role": "seller", "posts": "offers" },
     { "role": "buyer", "posts": "requests" }
   ],
-  "offer": {
+  "post": {
     "description": { "type": "text", "description": "The item and anything to know about it.", "required": true },
     "price": { "type": "money", "description": "The price of the item, without shipping." },
-    "payment": { "type": "choice", "description": "How the item may be paid: direct, shipped, or both.", "values": ["direct", "shipped"], "many": true },
     "kind": { "type": "choice", "description": "What kind of item it is.", "values": ["phone", "laptop", "tablet", "desktop", "console", "camera", "audio", "tv", "watch", "other"] },
     "model": { "type": "text", "description": "The brand and model, such as iPhone 13 128 GB." },
     "condition": { "type": "choice", "description": "The item's condition.", "values": ["new", "like-new", "good", "fair", "for-parts"] },
@@ -18,19 +17,6 @@
   },
   "preview": ["photos", "description", "price", "place"],
   "review": {
-    "shared": ["subject", "score", "text", "offer", "evidence"],
-    "fields": {
-      "asDescribed": { "type": "choice", "description": "Whether the item was as the post said.", "values": ["yes", "no"], "roles": ["seller"] }
-    }
-  },
-  "vouch": { "shared": ["subject", "text"] },
-  "report": { "shared": ["subject", "text"] },
-  "payment": {
-    "shipped": {
-      "windows": [ { "from": "payment", "offset": "+14d", "payerShare": 0 } ],
-      "end": "pay",
-      "arbiter": true
-    }
-  },
-  "howDealsGo": "The seller and the buyer agree in messages on the price and on pickup or shipping, and pay direct or by the shipped schedule. At a pickup the buyer checks the item before paying. Each may review the other. Each review names the post."
+    "asDescribed": { "type": "choice", "description": "Whether the item was as the post said.", "values": ["yes", "no"], "roles": ["seller"] }
+  }
 }

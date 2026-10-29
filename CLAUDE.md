@@ -4,8 +4,9 @@ lives here; the standard (`foundationforest/standard`) holds no content fields. 
 
 ## Words
 
-Use these words: market, role, post, offer, request, field, type, entry, file, schedule, window,
-direct, escrow, index, directory. Plain words, no em-dashes.
+Use these words: market, role, post, offer, request, field, type, entry, file, index, directory.
+Offer only as a role's posts value (`offers`, `requests`, `posts`); every entry a role publishes is
+a post, at `post/<id>`. Plain words, no em-dashes.
 
 ## How to work in this repo
 

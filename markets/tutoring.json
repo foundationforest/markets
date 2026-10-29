@@ -5,27 +5,13 @@
     { "role": "tutor", "posts": "offers" },
     { "role": "student", "posts": "requests" }
   ],
-  "offer": {
+  "post": {
     "description": { "type": "text", "description": "The tutoring: what is taught, and how.", "required": true },
     "price": { "type": "money", "description": "The price per hour." },
-    "payment": { "type": "choice", "description": "How a session may be paid: direct, session, or both.", "values": ["direct", "session"], "many": true },
     "subjects": { "type": "choice", "description": "The school subjects the tutoring is for.", "values": ["maths", "physics", "chemistry", "biology", "english", "french", "spanish", "german", "italian", "chinese", "latin", "history", "geography", "economics", "computer-science", "literature", "philosophy", "music", "art", "other"], "many": true },
     "levels": { "type": "choice", "description": "The school levels the tutoring is for.", "values": ["primary", "secondary", "university"], "many": true },
     "place": { "type": "place", "description": "Where sessions are held, online, or both." },
     "hours": { "type": "hours", "description": "When sessions can be held, each week." }
   },
-  "preview": ["subjects", "description", "price", "place"],
-  "review": {
-    "shared": ["subject", "score", "text", "offer", "evidence"]
-  },
-  "vouch": { "shared": ["subject", "text"] },
-  "report": { "shared": ["subject", "text"] },
-  "payment": {
-    "session": {
-      "windows": [ { "from": "payment", "offset": "+7d", "payerShare": 0 } ],
-      "end": "pay",
-      "arbiter": false
-    }
-  },
-  "howDealsGo": "The tutor and the student, or a parent for a child, agree in messages on the subject, the times and the place, and pay direct or by the session schedule. After a session each may review the other. Each review names the post."
+  "preview": ["subjects", "description", "price", "place"]
 }
