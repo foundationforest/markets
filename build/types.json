@@ -78,7 +78,7 @@
       ]
     },
     "money": {
-      "description": "An amount of one currency, and what it is for. Printed and paid.",
+      "description": "An amount of one currency, and what it is for. Printed and sorted by.",
       "type": "object",
       "required": ["amount", "currency"],
       "additionalProperties": false,

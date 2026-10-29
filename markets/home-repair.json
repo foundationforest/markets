@@ -5,10 +5,9 @@
     { "role": "repairer", "posts": "offers" },
     { "role": "client", "posts": "requests" }
   ],
-  "offer": {
+  "post": {
     "description": { "type": "text", "description": "The work: what is fixed, and how.", "required": true },
     "price": { "type": "money", "description": "The price per hour or for the job." },
-    "payment": { "type": "choice", "description": "How the job may be paid: direct, job, or both.", "values": ["direct", "job"], "many": true },
     "repairs": { "type": "choice", "description": "The kinds of work.", "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "tiling", "locks", "furniture-assembly", "small-repairs", "other"], "many": true },
     "place": { "type": "place", "description": "Where the repairer works from and how far they go, or where the home is." },
     "hours": { "type": "hours", "description": "When the work can be done, each week." },
@@ -19,20 +18,7 @@
   },
   "preview": ["repairs", "description", "price", "place"],
   "review": {
-    "shared": ["subject", "score", "text", "offer", "evidence"],
-    "fields": {
-      "onTime": { "type": "choice", "description": "Whether the repairer came at the agreed time.", "values": ["yes", "no"], "roles": ["repairer"] },
-      "fixed": { "type": "choice", "description": "Whether the job was done as agreed.", "values": ["yes", "no"], "roles": ["repairer"] }
-    }
-  },
-  "vouch": { "shared": ["subject", "text"] },
-  "report": { "shared": ["subject", "text"] },
-  "payment": {
-    "job": {
-      "windows": [ { "from": "dealEnd", "offset": "+7d", "payerShare": 0 } ],
-      "end": "pay",
-      "arbiter": true
-    }
-  },
-  "howDealsGo": "The client and the repairer agree in messages on what needs fixing, when, and a price per hour or for the job, and pay direct or by the job schedule. Each may review the other. Each review names the post."
+    "onTime": { "type": "choice", "description": "Whether the repairer came at the agreed time.", "values": ["yes", "no"], "roles": ["repairer"] },
+    "fixed": { "type": "choice", "description": "Whether the job was done as agreed.", "values": ["yes", "no"], "roles": ["repairer"] }
+  }
 }

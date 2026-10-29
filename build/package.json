@@ -1,10 +1,34 @@
 {
-  "name": "markets-check",
+  "name": "@foundationforest/markets",
+  "version": "0.0.0",
   "private": true,
-  "description": "The check for the Forest markets directory: check.sh checks every market file, and writes directory.json and directory.md from them.",
+  "description": "The Forest markets, read from a markets checkout: the directory, each market file, and checkEntry, which checks a post, a review, a vouch or a report against its market. check.sh checks every market file, and writes directory.json and directory.md from them.",
   "license": "CC0-1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit",
+    "test": "node --test test/*.test.ts"
+  },
   "dependencies": {
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.2",
+    "typescript": "5.9.3"
   }
 }

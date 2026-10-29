@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, its roles, the fields of its posts, reviews, vouches and reports, which post fields a preview shows first, its payment schedules and how its deals go. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, what the dealing is, its roles, the fields of its posts, which of them a preview shows first, and the fields its reviews add. build/README.md explains each part.",
   "type": "object",
-  "required": ["name", "description", "roles", "offer", "review", "vouch", "report", "payment", "howDealsGo"],
+  "required": ["name", "description", "roles", "post"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -21,93 +21,27 @@
       "minItems": 1,
       "items": { "$ref": "#/$defs/role" }
     },
-    "offer": {
-      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money, payment is a choice of many.",
+    "post": {
+      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
         "description": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } },
-        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } },
-        "payment": { "type": "object", "required": ["many"], "properties": { "type": { "const": "choice" } } }
+        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } }
       }
     },
     "preview": {
-      "description": "The offer fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the first field of type place, of those the market has.",
+      "description": "The post fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the first field of type place, of those the market has.",
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "description": "The name of one of the market's offer fields; build/check.sh checks that it is.", "type": "string" }
+      "items": { "description": "The name of one of the market's post fields; build/check.sh checks that it is.", "type": "string" }
     },
     "review": {
-      "description": "The shared review fields a review here holds, by name, and any fields the market adds.",
+      "description": "The fields a review here holds besides the ones every review holds (subject, score, text and post), by name. Left out: none.",
+      "$ref": "#/$defs/fields",
       "type": "object",
-      "required": ["shared"],
-      "additionalProperties": false,
-      "properties": {
-        "shared": {
-          "description": "Only subject defines a review, so it is always here; everything else is optional.",
-          "type": "array",
-          "uniqueItems": true,
-          "items": { "enum": ["subject", "score", "text", "offer", "evidence"] },
-          "contains": { "const": "subject" }
-        },
-        "fields": {
-          "$ref": "#/$defs/fields",
-          "type": "object",
-          "propertyNames": { "not": { "enum": ["subject", "score", "text", "offer", "evidence"] } }
-        }
-      }
-    },
-    "vouch": {
-      "description": "A vouch, at vouch/<id>, says: I know this profile is real and honest. The shared fields a vouch here holds, by name, and any fields the market adds.",
-      "type": "object",
-      "required": ["shared"],
-      "additionalProperties": false,
-      "properties": {
-        "shared": {
-          "description": "Only subject defines a vouch, so it is always here; text is optional.",
-          "type": "array",
-          "uniqueItems": true,
-          "items": { "enum": ["subject", "text"] },
-          "contains": { "const": "subject" }
-        },
-        "fields": {
-          "$ref": "#/$defs/fields",
-          "type": "object",
-          "propertyNames": { "not": { "enum": ["subject", "text"] } }
-        }
-      }
-    },
-    "report": {
-      "description": "A report, at report/<id>, says: this profile is fake or a scam. The shared fields a report here holds, by name, and any fields the market adds.",
-      "type": "object",
-      "required": ["shared"],
-      "additionalProperties": false,
-      "properties": {
-        "shared": {
-          "description": "Only subject defines a report, so it is always here; text is optional.",
-          "type": "array",
-          "uniqueItems": true,
-          "items": { "enum": ["subject", "text"] },
-          "contains": { "const": "subject" }
-        },
-        "fields": {
-          "$ref": "#/$defs/fields",
-          "type": "object",
-          "propertyNames": { "not": { "enum": ["subject", "text"] } }
-        }
-      }
-    },
-    "payment": {
-      "description": "The market's escrow schedules, by name. A post names direct in its payment field when it takes it.",
-      "type": "object",
-      "propertyNames": { "$ref": "#/$defs/word", "not": { "const": "direct" } },
-      "additionalProperties": { "$ref": "#/$defs/schedule" }
-    },
-    "howDealsGo": {
-      "description": "How a deal here goes, in plain text. Lines allowed.",
-      "type": "string",
-      "pattern": "\\S"
+      "propertyNames": { "not": { "enum": ["subject", "score", "text", "post"] } }
     }
   },
   "$defs": {
@@ -172,7 +106,7 @@
           "const": true
         },
         "roles": {
-          "description": "The market's roles the field is for: in offer, the roles whose posts hold it; in review.fields, vouch.fields and report.fields, the roles of the profile the entry is about. Left out: every role.",
+          "description": "The market's roles the field is for: in post, the roles whose posts hold it; in review, the roles of the profile the review is about. Left out: every role.",
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
@@ -190,50 +124,6 @@
           "then": { "not": { "required": ["many"] } }
         }
       ]
-    },
-    "schedule": {
-      "description": "An escrow schedule, with times relative to the deal. The app turns each window into an absolute time.",
-      "type": "object",
-      "required": ["windows", "end", "arbiter"],
-      "additionalProperties": false,
-      "properties": {
-        "windows": {
-          "description": "In order. At least one: the end comes when the last window closes.",
-          "type": "array",
-          "minItems": 1,
-          "items": { "$ref": "#/$defs/window" }
-        },
-        "end": {
-          "description": "If nobody stopped by the time the last window closes: pay, all to the recipient, or refund, all to the payer.",
-          "enum": ["pay", "refund"]
-        },
-        "arbiter": {
-          "description": "Whether the deal names an arbiter: a key that is neither side's and may close the escrow at any split, stopped or not.",
-          "type": "boolean"
-        }
-      }
-    },
-    "window": {
-      "type": "object",
-      "required": ["from", "offset", "payerShare"],
-      "additionalProperties": false,
-      "properties": {
-        "from": {
-          "description": "What the window's close counts from: payment, when the money went in, or dealStart or dealEnd, when the deal starts and ends, as the app sets them when it makes the escrow: from the post when it names a time, else as agreed in messages. For a single time, dealStart equals dealEnd.",
-          "enum": ["payment", "dealStart", "dealEnd"]
-        },
-        "offset": {
-          "description": "Hours (h) or days (d) after (+) or before (-) it, when the window closes.",
-          "type": "string",
-          "pattern": "^[+-](0|[1-9][0-9]*)[dh]$"
-        },
-        "payerShare": {
-          "description": "The share, out of 10,000, the payer may take back alone until the window closes.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 10000
-        }
-      }
     }
   }
 }

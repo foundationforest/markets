@@ -1,6 +1,7 @@
 # Runs build/check.sh on every pull request and every push to main: every market file against
 # build/market.schema.json and build/types.json, and directory.json and directory.md as the market
-# files write them.
+# files write them. Then the package in build/ type-checks and passes its tests; a test that skips
+# fails: the summary must say "# skipped 0".
 
 name: check
 
@@ -11,6 +12,11 @@ on:
 
 permissions:
   contents: read
+
+# shell: bash runs each step with pipefail, so a failing test fails its step through the tee.
+defaults:
+  run:
+    shell: bash
 
 jobs:
   check:
@@ -24,3 +30,11 @@ jobs:
           cache: npm
           cache-dependency-path: build/package-lock.json
       - run: build/check.sh
+      - name: Type-check
+        working-directory: build
+        run: npm run check
+      - name: Test
+        working-directory: build
+        run: |
+          npm test | tee "$RUNNER_TEMP/tap"
+          grep -qx '# skipped 0' "$RUNNER_TEMP/tap"
