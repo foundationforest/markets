@@ -59,6 +59,7 @@ const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
   '#/properties/post/properties/description/not': 'must not hold "many": description is a shared name, and a post holds one',
   '#/properties/post/properties/price/not': 'must not hold "many": price is a shared name, and a post holds one',
+  '#/properties/post/properties/contact/not': 'must not hold "many": contact is a shared name, and a post holds one',
 }
 function say(e: ErrorObject): string {
   const at = e.instancePath || 'the file'

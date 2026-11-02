@@ -13,7 +13,8 @@
     "condition": { "type": "choice", "description": "The item's condition.", "values": ["new", "like-new", "good", "fair", "for-parts"] },
     "delivery": { "type": "choice", "description": "Picked up, shipped, or either.", "values": ["pickup", "shipped", "either"] },
     "place": { "type": "place", "description": "Where the item is picked up, or ships from or to." },
-    "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] }
+    "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] },
+    "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
   },
   "preview": ["photos", "description", "price", "place"],
   "review": {

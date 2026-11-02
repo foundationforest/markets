@@ -22,12 +22,13 @@
       "items": { "$ref": "#/$defs/role" }
     },
     "post": {
-      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money.",
+      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money, contact is one text.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
         "description": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } },
-        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } }
+        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } },
+        "contact": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } }
       }
     },
     "preview": {

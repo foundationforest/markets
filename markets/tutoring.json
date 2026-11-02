@@ -11,7 +11,8 @@
     "subjects": { "type": "choice", "description": "The school subjects the tutoring is for.", "values": ["maths", "physics", "chemistry", "biology", "english", "french", "spanish", "german", "italian", "chinese", "latin", "history", "geography", "economics", "computer-science", "literature", "philosophy", "music", "art", "other"], "many": true },
     "levels": { "type": "choice", "description": "The school levels the tutoring is for.", "values": ["primary", "secondary", "university"], "many": true },
     "place": { "type": "place", "description": "Where sessions are held, online, or both." },
-    "hours": { "type": "hours", "description": "When sessions can be held, each week." }
+    "hours": { "type": "hours", "description": "When sessions can be held, each week." },
+    "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
   },
   "preview": ["subjects", "description", "price", "place"]
 }
