@@ -219,6 +219,20 @@ markets.checkEntry('home-repair', 'client', 'review', { subject, onTime: 'yes' }
 A program reads the markets at the commit its checkout holds, and may read another directory's
 checkout.
 
+A page reads no files, and its content security policy may forbid `eval`. It imports
+`@foundationforest/markets/browser` and gives it the same files as data: `directory.json`,
+`build/types.json`, and the file of each market the directory lists. It throws when one of those is
+missing.
+
+```ts
+import { loadMarkets } from '@foundationforest/markets/browser'
+
+const markets = loadMarkets({ directory, types, markets: [clothing, electronics /* , … */] })
+```
+
+Both entries run the same code. It imports nothing, makes no code from strings, and reads
+`build/types.json` as data, so a page and a program give every entry the same answer.
+
 `checkEntry(market, role, kind, body, aboutRole?)` checks a post, a review, a vouch or a report by a
 `role` profile as this manual says, and answers `null` when it fits, else the first field that does
 not, in plain words. For a review, `aboutRole` is the role of the profile it is about: a field kept
@@ -227,4 +241,5 @@ for some roles is checked against it, and goes unchecked without it. It enforces
 [the standard's](https://github.com/foundationforest/standard/blob/main/folders/README.md) checks.
 
 The package also exports `SHARED`, the fields every review, vouch and report holds, as a market's
-fields are written. `npm test` runs its tests; `npm run check` type-checks it.
+fields are written. `npm test` runs its tests; `npm run check` type-checks it, and the browser
+entry again without Node's types.

@@ -4,7 +4,7 @@
 #      build/types.json (in post and review), each role's word once per market, each field's roles
 #      among the market's roles, and each name in preview one of the market's post fields; and the
 #      schema's lists of types and of the names every review holds the same as build/types.json's
-#      and the package's (src/index.ts);
+#      and the package's (src/markets.ts);
 #   2. each market's name equal to its file's name, which also keeps every name unique;
 #   3. when every market passes, directory.json and directory.md as the market files write them,
 #      sorted by name: when either is stale, rewrites it and fails, so the new copy gets committed.

@@ -1,16 +1,62 @@
 // The package against this checkout: the directory, each market file, and checkEntry for each kind,
-// with the answers it gives in words.
+// with the answers it gives in words. Each case runs on both entries and on ajv, the check the
+// package made before its own checker, as the reference: all three must agree, but on the answers
+// ajv got wrong, each with its own test.
 
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { SHARED, loadMarkets } from '../src/index.ts'
+import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
+import formats from 'ajv-formats'
+import { loadMarkets as loadGiven } from '../src/browser.ts'
+import { SHARED, loadMarkets, type Markets } from '../src/index.ts'
+import { fromFiles } from '../src/markets.ts'
+import { browser, files } from './browser.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const json = (path: string) => JSON.parse(readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8'))
 const markets = loadMarkets()
-const check = markets.checkEntry
+
+/** The markets with each value checked by ajv, as src/index.ts compiled it before the checker. */
+const reference = (() => {
+  const types = files.types as { $id: string }
+  const ajv = new Ajv2020({ strict: true })
+  formats.default(ajv)
+  ajv.addSchema(types)
+  const compiled = new Map<string, ValidateFunction>()
+  return fromFiles(files, (field, value) => {
+    const key = JSON.stringify([field.type, field.values, field.many])
+    let validate = compiled.get(key)
+    if (!validate) {
+      const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `${types.$id}#/$defs/${field.type}` }
+      validate = ajv.compile(field.many ? { type: 'array', uniqueItems: true, items: one } : one)
+      compiled.set(key, validate)
+    }
+    return validate(value)
+  })
+})()
+
+/** Every case the tests ask both entries, for the last test to ask again with code from strings disallowed. */
+const cases: Parameters<Markets['checkEntry']>[] = []
+
+/** checkEntry from the Node entry and the browser entry, which must answer the same. */
+const both: Markets['checkEntry'] = (...args) => {
+  const answer = markets.checkEntry(...args)
+  const given = browser.checkEntry(...args)
+  assert.equal(given, answer, `${JSON.stringify(args)}: the browser entry answers ${given}, the Node entry ${answer}`)
+  cases.push(args)
+  return answer
+}
+
+/** checkEntry from both entries, which ajv must answer the same too. */
+const check: Markets['checkEntry'] = (...args) => {
+  const answer = both(...args)
+  const before = reference.checkEntry(...args)
+  assert.equal(before, answer, `${JSON.stringify(args)}: ajv answers ${before}, the entries ${answer}`)
+  return answer
+}
 
 const subject = '9bpPbLYCPwNWq9BZqnJr3EqRNqymFZ4g58Zk9K86azDC'
 const photo = { sha256: '04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86', type: 'image/jpeg', size: 48213 }
@@ -121,4 +167,99 @@ test("the shared fields are of types.json's types, and the schema keeps a review
   const types = Object.keys(json('build/types.json').$defs)
   for (const fields of Object.values(SHARED)) for (const field of Object.values(fields)) assert.ok(types.includes(field.type))
   assert.deepEqual(json('build/market.schema.json').properties.review.propertyNames.not.enum, Object.keys(SHARED.review))
+})
+
+test('values at the edges of each type answer as ajv answers them', () => {
+  const hash = photo.sha256
+  const at = (time: string) => `2026-11-02T${time}`
+  const hours = (slot: object, zone = 'Europe/Madrid') => ({ zone, slots: [{ days: ['monday'], from: '09:00', to: '17:00', ...slot }] })
+  const edges: [market: string, role: string, field: string, values: unknown[]][] = [
+    ['tutoring', 'tutor', 'contact', ['', 'x', 7, null, ['x'], {}]],
+    ['sports-coaching', 'coach', 'minutes', ['0', '-0', '01', '2.', '-2.5', '1e3', ' 1', '١٢', 2]],
+    ['software-development', 'developer', 'stack', [
+      [], ['a'], [''], ['__proto__'], ['a'.repeat(64)], ['a'.repeat(65)], ['😀'.repeat(64)], ['😀'.repeat(65)], ['a\nb'],
+      ['toString', 'toString'], ['constructor', 'constructor'], ['a', 'b', 'a'], [1, 1], [['a'], ['a']], 'a',
+    ]],
+    ['tutoring', 'tutor', 'subjects', [['maths', 'maths'], ['maths', 'physics'], [], 'maths', ['Maths'], [null]]],
+    ['clothing', 'seller', 'kind', ['top', 'TOP', ['top'], 1]],
+    ['tutoring', 'tutor', 'place', [
+      { online: true }, { online: false }, { online: 'true' }, { online: true, area: 'Madrid' }, { ...place, online: true, reachKm: 5 },
+      { lat: '90', lon: '180', precisionKm: 0, area: 'x' }, { lat: '90.1', lon: '0', precisionKm: 0, area: 'x' },
+      { lat: '-90.0', lon: '-180.00', precisionKm: 0, area: 'x' }, { lat: '0', lon: '180.5', precisionKm: 0, area: 'x' },
+      { ...place, lat: '+40' }, { ...place, precisionKm: 1.5 }, { ...place, precisionKm: 1.0 }, { ...place, precisionKm: -1 },
+      { ...place, precisionKm: '1' }, { ...place, area: '' }, { ...place, area: '😀' }, { ...place, reachKm: 0.5 }, { ...place, online: false },
+      { ...place, extra: 1 }, { lat: '40.42', lon: '-3.70', area: 'Madrid' }, {}, [], 'Madrid',
+    ]],
+    ['tutoring', 'tutor', 'price', [
+      { amount: '0', currency: 'EUR' }, { amount: '12.50', currency: 'USD', per: 'hour' }, { amount: '01', currency: 'USD' },
+      { amount: '-1', currency: 'USD' }, { amount: '1.', currency: 'USD' }, { amount: '1', currency: 'usd' }, { amount: '1', currency: 'USDT' },
+      { amount: '1', currency: 'USD', per: '' }, { amount: '1', currency: 'USD', per: 7 }, { currency: 'USD' }, { amount: '1' },
+      { amount: '1', currency: 'USD', each: 'x' }, '30 USD',
+    ]],
+    ['tennis-matches', 'player', 'time', [
+      '2024-02-29T00:00:00Z', '2026-02-29T00:00:00Z', '2000-02-29T12:00:00Z', '1900-02-29T12:00:00Z', '2026-04-31T00:00:00Z',
+      '2026-04-30T00:00:00Z', '2026-13-01T00:00:00Z', '2026-00-10T00:00:00Z', '2026-01-00T00:00:00Z', '0000-01-01T00:00:00Z',
+      '2026-12-31T23:59:60Z', '2026-12-31T23:59:60.5Z', '2026-12-31T23:59:61Z', '2027-01-01T00:59:60+01:00', '2026-12-31T22:59:60-01:00',
+      '2027-01-01T00:00:60+00:01', '2026-12-31T23:30:60-00:29', at('12:00:60Z'), at('23:59:60+00:00'), at('23:59:60-00:01'),
+      at('00:00:00Z'), at('23:59:59Z'), at('23:00:00+23:59'), at('23:00:00+24:00'), at('23:00:00-00:60'), at('18:00:00.123+01:00'),
+      at('18:00:00.+01:00'), '2026-11-02t18:00:00z', '2026-11-02 18:00:00Z', at('18:00:00'), at('18:00Z'), at('18:00:00+0100'),
+      { from: at('18:00:00Z'), to: at('20:00:00Z') }, { from: at('18:00:00Z') }, { from: at('18:00:00Z'), to: at('20:00:00Z'), at: 'x' },
+      { from: at('18:00:00Z'), to: at('24:00:00Z') }, 1762106400,
+    ]],
+    ['tutoring', 'tutor', 'hours', [
+      hours({}), hours({}, 'UTC'), hours({}, 'Etc/GMT+1'), hours({}, 'America/Argentina/Buenos_Aires'), hours({}, '/Madrid'),
+      hours({}, 'Europe//Madrid'), hours({}, ''), hours({ days: ['monday', 'monday'] }), hours({ days: [] }), hours({ days: ['Monday'] }),
+      hours({ days: ['monday', 'sunday'] }), hours({ from: '24:00' }), hours({ from: '9:00' }), hours({ to: '23:59' }), hours({ to: '23:60' }),
+      hours({ extra: 1 }), { zone: 'Europe/Madrid', slots: [] }, { zone: 'Europe/Madrid', slots: [{ days: ['monday'], from: '09:00' }] },
+      { zone: 'Europe/Madrid' }, { slots: [] }, { ...hours({}), extra: 1 },
+    ]],
+    ['clothing', 'seller', 'photos', [
+      [hash], [hash.toUpperCase()], [hash.slice(1)], [`${hash}0`], [hash, hash], [], hash,
+      [{ valueOf: 1 }, { valueOf: 1 }], [{ toString: 1 }, { toString: 1 }], [{ constructor: {} }, { constructor: {} }],
+    ]],
+  ]
+  for (const [market, role, field, values] of edges) for (const value of values) check(market, role, 'post', { [field]: value })
+})
+
+test('a word twice in a list is not distinct, __proto__ too: ajv let __proto__ twice pass', () => {
+  const body = { stack: ['__proto__', '__proto__'] }
+  assert.equal(reference.checkEntry('software-development', 'developer', 'post', body), null)
+  assert.equal(both('software-development', 'developer', 'post', body), 'stack takes a list of short words, each different')
+})
+
+test('a time has hours to 23 and minutes to 59, also when its zone puts it at 23:59 UTC: ajv let those pass', () => {
+  for (const time of ['2026-11-02T24:59:30+01:00', '2026-11-02T23:60:30+00:01']) {
+    assert.equal(reference.checkEntry('tennis-matches', 'player', 'post', { time }), null)
+    assert.match(both('tennis-matches', 'player', 'post', { time })!, /^time takes a time in RFC 3339/)
+    assert.match(both('software-development', 'client', 'post', { due: { from: '2026-11-02T18:00:00Z', to: time } })!, /^due takes a time in RFC 3339/)
+  }
+})
+
+test('the browser entry holds the same directory and market files, and needs each one the directory lists', () => {
+  assert.deepEqual(browser.directory, markets.directory)
+  for (const { name } of markets.directory.markets) assert.deepEqual(browser.market(name), markets.market(name))
+  assert.equal(browser.market('knitting'), undefined)
+  assert.throws(() => loadGiven({ ...files, markets: files.markets.slice(1) }), { message: 'the directory lists clothing, but no markets/clothing.json was given' })
+  assert.deepEqual(loadGiven({ ...files, markets: [...files.markets, { ...files.markets[0]!, name: 'knitting' }] }).market('knitting'), undefined)
+})
+
+test('a keyword the checker does not know, in build/types.json, throws when the markets load', () => {
+  const types = files.types as { $defs: { [type: string]: object } }
+  const using = (text: object) => () => loadGiven({ ...files, types: { ...types, $defs: { ...types.$defs, text } } })
+  assert.throws(using({ type: 'string', multipleOf: 2 }), { message: 'build/types.json: #/$defs/text has multipleOf: 2, which the checker does not know' })
+  assert.throws(using({ type: 'string', format: 'email' }), /format: "email"/)
+  assert.throws(using({ type: ['string', 'null'] }), /type: \["string","null"\]/)
+  assert.throws(using({ type: 'object', additionalProperties: { type: 'string' } }), /additionalProperties/)
+  assert.throws(using({ $ref: '#/$defs/colour' }), { message: 'build/types.json has no #/$defs/colour' })
+})
+
+// Last: it asks again every case the tests above asked.
+test('the browser entry answers every case with code from strings disallowed, as a strict content security policy does', () => {
+  const run = spawnSync(process.execPath, ['--disallow-code-generation-from-strings', fileURLToPath(new URL('browser.ts', import.meta.url))], {
+    input: JSON.stringify(cases),
+    encoding: 'utf8',
+  })
+  assert.equal(run.status, 0, run.stderr)
+  assert.ok(cases.length > 200)
+  assert.deepEqual(JSON.parse(run.stdout), cases.map((args) => markets.checkEntry(...args)))
 })
