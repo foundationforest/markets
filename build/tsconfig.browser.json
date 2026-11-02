@@ -1,0 +1,8 @@
+// The browser entry, type-checked without Node's types: a Node module or global in it fails here.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src/browser.ts"]
+}

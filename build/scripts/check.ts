@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { Ajv2020, type ErrorObject } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { SHARED } from '../src/index.ts'
+import { SHARED } from '../src/markets.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const root = (path: string) => join(ROOT, path)
@@ -40,8 +40,8 @@ ajv.compile(types)
 const validateMarket = ajv.compile(schema)
 
 // The types are the names types.json defines, and the names every review holds are the package's
-// (src/index.ts). The schema lists both too, for anyone who reads it alone; each list must agree, so
-// each is checked once, against its source.
+// (src/markets.ts). The schema lists both too, for anyone who reads it alone; each list must agree,
+// so each is checked once, against its source.
 const typeNames = Object.keys(types.$defs)
 const schemaTypes: string[] = schema.$defs.field.properties.type.enum
 if (!isDeepStrictEqual([...schemaTypes].sort(), [...typeNames].sort())) {
@@ -50,7 +50,7 @@ if (!isDeepStrictEqual([...schemaTypes].sort(), [...typeNames].sort())) {
 const sharedNames = Object.keys(SHARED.review)
 const schemaShared: string[] | undefined = schema.properties?.review?.propertyNames?.not?.enum
 if (!isDeepStrictEqual(schemaShared, sharedNames)) {
-  report('build/market.schema.json', `the names a review field may not take (${schemaShared?.join(', ')}) differ from the ones every review holds in src/index.ts (${sharedNames.join(', ')})`)
+  report('build/market.schema.json', `the names a review field may not take (${schemaShared?.join(', ')}) differ from the ones every review holds in src/markets.ts (${sharedNames.join(', ')})`)
 }
 
 // One line per schema error, in plain words where ajv's own are unclear.
