@@ -169,10 +169,13 @@ current entry names them: a newer version that leaves a photo out lets it go, an
 ## Shared names
 
 These keep their meaning and type in every market, so a program finds them by name: the fields
-every review, vouch and report holds, and two in `post`, neither ever `many`:
+every review, vouch and report holds, and three in `post`, none ever `many`:
 
 - `description` (text): the post's main text, among any other text it holds.
 - `price` (money): what the post costs, the money a program sorts by.
+- `contact` (text): how to reach the writer outside Forest, such as a phone, a handle or an
+  email. It is public to anyone, and the same contact on two profiles links them, so it is the
+  person's choice per post.
 
 ## Payments
 

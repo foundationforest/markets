@@ -10,7 +10,8 @@
     "time": { "type": "moment", "description": "When to play: a time, or a span when the player is free." },
     "level": { "type": "choice", "description": "The player's level.", "values": ["beginner", "intermediate", "advanced", "competitive"] },
     "format": { "type": "choice", "description": "Singles, doubles, or either.", "values": ["singles", "doubles", "either"] },
-    "court": { "type": "text", "description": "Whether a court is booked, and any fee to share." }
+    "court": { "type": "text", "description": "Whether a court is booked, and any fee to share." },
+    "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
   },
   "preview": ["description", "time", "place", "level"],
   "review": {

@@ -13,7 +13,8 @@
     "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one." },
     "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
     "place": { "type": "place", "description": "Where sessions are held, online, or both." },
-    "hours": { "type": "hours", "description": "When sessions can be held, each week." }
+    "hours": { "type": "hours", "description": "When sessions can be held, each week." },
+    "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
   },
   "preview": ["sports", "description", "price", "place"]
 }

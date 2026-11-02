@@ -14,7 +14,8 @@
     "time": { "type": "moment", "description": "When the job is wanted: a time, or a span to fit it in.", "roles": ["client"] },
     "licences": { "type": "text", "description": "Licences or certificates the repairer holds, such as for gas or electrical work.", "roles": ["repairer"] },
     "photos": { "type": "file", "description": "Photos of what needs fixing.", "many": true, "roles": ["client"] },
-    "pastWork": { "type": "file", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] }
+    "pastWork": { "type": "file", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] },
+    "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
   },
   "preview": ["repairs", "description", "price", "place"],
   "review": {
