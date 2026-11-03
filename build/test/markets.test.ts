@@ -27,15 +27,10 @@ const reference = (() => {
   ajv.addSchema(types)
   const compiled = new Map<string, ValidateFunction>()
   return fromFiles(files, (field, value) => {
-    const key = JSON.stringify([field.type, field.values, field.per, field.reach, field.many])
+    const key = JSON.stringify([field.type, field.values, field.per, field.many])
     let validate = compiled.get(key)
     if (!validate) {
-      const allows =
-        field.type === 'money'
-          ? { type: 'object', properties: { per: field.per ? { enum: field.per } : false } }
-          : field.type === 'place' && !field.reach
-            ? { type: 'object', properties: { reachKm: false } }
-            : {}
+      const allows = field.type === 'money' ? { type: 'object', properties: { per: field.per ? { enum: field.per } : false } } : {}
       const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `${types.$id}#/$defs/${field.type}`, ...allows }
       validate = ajv.compile(field.many ? { type: 'array', uniqueItems: true, items: one } : one)
       compiled.set(key, validate)
@@ -66,7 +61,7 @@ const check: Markets['checkEntry'] = (...args) => {
 
 const subject = '9bpPbLYCPwNWq9BZqnJr3EqRNqymFZ4g58Zk9K86azDC'
 const photo = { sha256: '04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86', type: 'image/jpeg', size: 48213 }
-const place = { area: 'Madrid', lat: '40.42', lon: '-3.70' }
+const place = { lat: '40.42', lon: '-3.70', radiusKm: 5, area: 'Madrid' }
 const price = { amount: '30', currency: 'USD', per: 'hour' }
 
 test('the directory and each market file, from this checkout or one named', () => {
@@ -78,7 +73,7 @@ test('the directory and each market file, from this checkout or one named', () =
 
 test("a post fits when each field is its market's, of its type", () => {
   assert.equal(check('tutoring', 'tutor', 'post', { description: 'Maths', price, subjects: ['maths', 'physics'], levels: ['secondary'], mode: ['in-person'], place }), null)
-  assert.equal(check('tennis-matches', 'player', 'post', { description: 'Singles', time: '2026-11-02T18:00:00+01:00', format: ['singles'], place: { area: 'Madrid' } }), null)
+  assert.equal(check('tennis-matches', 'player', 'post', { description: 'Singles', time: '2026-11-02T18:00:00+01:00', format: ['singles'], place }), null)
   assert.equal(check('software-development', 'developer', 'post', { stack: ['python', 'react'] }), null)
   assert.equal(check('home-repair', 'repairer', 'post', { hours: { zone: 'Europe/Madrid', slots: [{ days: ['monday'], from: '09:00', to: '17:00' }] } }), null)
 })
@@ -131,29 +126,37 @@ test('money takes a per its field lists, or none for the whole deal; with no lis
   assert.equal(check('clothing', 'seller', 'post', { price: { amount: '40', currency: 'EUR', per: 'hour' } }), 'price takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per')
 })
 
-test('a place is a name, with a point if wanted, and reachKm only where its field has reach', () => {
-  for (const at of [{ area: 'Madrid' }, place]) {
+test('a place is a point and a radius, with an area name if wanted', () => {
+  const { area, ...point } = place
+  for (const at of [place, point, { ...place, radiusKm: 0 }]) {
     assert.equal(check('clothing', 'seller', 'post', { location: at }), null)
     assert.equal(check('tennis-matches', 'player', 'post', { place: at }), null)
   }
-  for (const at of [{ area: 'Madrid', reachKm: 10 }, { ...place, reachKm: 0 }]) {
-    assert.equal(check('tennis-matches', 'player', 'post', { place: at }), null)
-    assert.equal(check('clothing', 'seller', 'post', { location: at }), 'location takes { area } or { area, lat, lon }: area a name, lat and lon as decimal text, and no reachKm')
-  }
-  const reach = 'place takes { area } or { area, lat, lon }: area a name, lat and lon as decimal text, and reachKm in whole kilometres if wanted'
-  for (const at of [{ online: true }, { area: 'Madrid', online: true }, { ...place, precisionKm: 1 }, { area: 'Madrid', lat: '40.42' }, { lat: '40.42', lon: '-3.70' }]) {
-    assert.equal(check('tennis-matches', 'player', 'post', { place: at }), reach)
+  const takes = 'place takes { lat, lon, radiusKm, area }: lat and lon as decimal text, radiusKm in whole kilometres, and area a name if wanted'
+  const before = [{ area }, { area, reachKm: 10 }, { area, lat: '40.42', lon: '-3.70' }, { area, lat: '40.42', lon: '-3.70', reachKm: 10 }]
+  for (const at of [...before, { ...place, radiusKm: 1.5 }, { ...place, radiusKm: -1 }, { ...place, online: true }, { lat: '40.42', radiusKm: 5 }]) {
+    assert.equal(check('tennis-matches', 'player', 'post', { place: at }), takes)
   }
 })
 
-test('home-cleaning and home-repair split place by role: where the pro works from, with reach, and where the home is', () => {
+test('every place field sets the radius an app starts at', () => {
+  const starts: { [market: string]: number } = {}
+  for (const { name } of markets.directory.markets) {
+    for (const [key, field] of Object.entries(markets.market(name)!.post)) if (field.type === 'place') starts[`${name} ${key}`] = field.radiusKm!
+  }
+  assert.deepEqual(starts, {
+    'clothing location': 2, 'electronics location': 2, 'home-cleaning base': 10, 'home-cleaning home': 1, 'home-repair base': 10,
+    'home-repair home': 1, 'sports-coaching place': 5, 'tennis-matches place': 5, 'tutoring place': 5,
+  })
+})
+
+test('home-cleaning and home-repair split place by role: the area the pro works in, and where the home is', () => {
   for (const market of ['home-cleaning', 'home-repair']) {
     const pro = markets.market(market)!.roles[0]!.role
-    assert.equal(check(market, pro, 'post', { base: { ...place, reachKm: 15 } }), null)
-    assert.equal(check(market, 'client', 'post', { home: place }), null)
+    assert.equal(check(market, pro, 'post', { base: { ...place, radiusKm: 15 } }), null)
+    assert.equal(check(market, 'client', 'post', { home: { ...place, radiusKm: 1 } }), null)
     assert.equal(check(market, 'client', 'post', { base: place }), `base is for posts by ${pro}`)
     assert.equal(check(market, pro, 'post', { home: place }), 'home is for posts by client')
-    assert.match(check(market, 'client', 'post', { home: { ...place, reachKm: 5 } })!, /^home takes .* and no reachKm$/)
   }
 })
 
@@ -174,19 +177,33 @@ test('with several fields named, all must match; a many field matches when any o
   assert.equal(check('clothing', 'seller', 'post', { wearer: 'women', kind: 'coat', size: 'm' }), 'wearer takes a list, each different, each one of women, men, girls, boys, baby')
 })
 
-test('a size labelled differently by country is the measure itself: foot length, waist and height', () => {
-  assert.equal(check('clothing', 'seller', 'post', { wearer: ['girls'], kind: 'trainers', footLength: '17' }), null)
-  assert.equal(check('clothing', 'seller', 'post', { kind: 'boots', footLength: 24.5 }), 'footLength takes a number as decimal text, such as "2.5"')
-  assert.equal(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'jeans', waist: '32' }), null)
-  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['women'], kind: 'trousers', waist: '28' }), null)
+test('each size is a picker in the system most labels print: letters, waist in inches, age, and shoes in centimetres', () => {
+  const waistOnly = 'waist is only for a post whose wearer is women or men, and whose kind is trousers or jeans'
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['women'], kind: 'leggings', size: 'm' }), null)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['men'], kind: 'joggers', size: 'xl' }), null)
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['women'], kind: 'leggings', waist: 'w28' }), waistOnly)
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'jeans', waist: 'w32' }), null)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['women'], kind: 'trousers', waist: 'w27' }), null)
+  for (const waist of ['32', 32, 'W32', 'w37']) {
+    assert.match(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'jeans', waist })!, /^waist takes one of w22, w23, .*, w36, w38, .*, w50$/)
+  }
   assert.match(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'jeans', size: 'm' })!, /^size is only for a post whose wearer is women or men, and whose kind is top, .* or underwear$/)
-  assert.equal(check('clothing', 'seller', 'post', { wearer: ['boys'], kind: 'jeans', waist: '24' }), 'waist is only for a post whose wearer is women or men, and whose kind is trousers or jeans')
-  assert.equal(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'coat', waist: '32' }), 'waist is only for a post whose wearer is women or men, and whose kind is trousers or jeans')
-  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', height: '62' }), null)
-  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['girls', 'boys'], kind: 'jeans', height: '128' }), null)
-  assert.match(check('clothing', 'buyer', 'post', { wearer: ['women'], kind: 'coat', height: '104' })!, /^height is only for a post whose wearer is girls, boys or baby, and whose kind is top, /)
-  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'slippers', height: '74' })!, /^height is only for a post whose wearer is girls, boys or baby, and whose kind is/)
-  for (const old of ['shoeSize', 'babySize', 'kidsSize']) {
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['boys'], kind: 'jeans', waist: 'w24' }), waistOnly)
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'coat', waist: 'w32' }), waistOnly)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', babySize: '3-6m' }), null)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['girls', 'boys'], kind: 'jeans', kidsSize: '7-8y' }), null)
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['girls'], kind: 'leggings', kidsSize: '4-5y' }), null)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'coat', kidsSize: '2-3y' })!, /^kidsSize is only for a post whose wearer is girls or boys, and whose kind is top, /)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['women'], kind: 'coat', babySize: '0-3m' })!, /^babySize is only for a post whose wearer is baby, and whose kind is top, /)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'slippers', babySize: '6-9m' })!, /^babySize is only for a post whose wearer is baby, and whose kind is/)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['girls'], kind: 'coat', kidsSize: '104' })!, /^kidsSize takes one of 2-3y, /)
+  for (const footLength of ['7', '17', '24.5', '29', '33']) {
+    assert.equal(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'trainers', footLength }), null)
+  }
+  for (const footLength of ['24.3', '25.0', '38', '6.5', '33.5', 24.5]) {
+    assert.match(check('clothing', 'seller', 'post', { kind: 'boots', footLength })!, /^footLength takes one of 7, 7\.5, 8, .*, 33$/)
+  }
+  for (const old of ['shoeSize', 'height']) {
     assert.equal(check('clothing', 'seller', 'post', { [old]: '38' }), `a post in clothing has no field ${old}`)
   }
 })
@@ -194,7 +211,7 @@ test('a size labelled differently by country is the measure itself: foot length,
 test('a place asked only in person: online alone holds no place', () => {
   for (const market of ['tutoring', 'sports-coaching']) {
     for (const role of markets.market(market)!.roles.map((r) => r.role)) {
-      assert.equal(check(market, role, 'post', { mode: ['in-person'], place: { ...place, reachKm: 5 } }), null)
+      assert.equal(check(market, role, 'post', { mode: ['in-person'], place }), null)
       assert.equal(check(market, role, 'post', { mode: ['online', 'in-person'], place }), null)
       assert.equal(check(market, role, 'post', { mode: ['online'] }), null)
       assert.equal(check(market, role, 'post', { mode: ['online'], place }), 'place is only for a post whose mode is in-person')
@@ -303,13 +320,13 @@ test('values at the edges of each type answer as ajv answers them', () => {
   const at = (time: string) => `2026-11-02T${time}`
   const hours = (slot: object, zone = 'Europe/Madrid') => ({ zone, slots: [{ days: ['monday'], from: '09:00', to: '17:00', ...slot }] })
   const places = [
-    { online: true }, { online: 'true' }, { online: true, area: 'Madrid' }, { ...place, online: true, reachKm: 5 },
-    { area: 'Madrid' }, { area: 'Madrid', reachKm: 5 }, { area: 'Madrid', reachKm: 0 }, { area: 'Madrid', reachKm: -1 }, { area: '' },
-    { area: 'Madrid', precisionKm: 1 }, { area: 'Madrid', lat: '40.42' }, { area: 'Madrid', lon: '-3.70' }, { area: 'Madrid', extra: 1 },
-    { reachKm: 5 }, { area: 'x', lat: '90', lon: '180' }, { area: 'x', lat: '90.1', lon: '0' }, { area: 'x', lat: '-90.0', lon: '-180.00' },
-    { area: 'x', lat: '0', lon: '180.5' }, { ...place, lat: '+40' }, { ...place, lat: 40.42 }, { ...place, precisionKm: 1 },
-    { ...place, area: '' }, { ...place, area: '😀' }, { ...place, reachKm: 12 }, { ...place, reachKm: 0.5 }, { ...place, reachKm: 1.0 },
-    { ...place, reachKm: '5' }, { ...place, reachKm: -1 }, { ...place, extra: 1 }, { lat: '40.42', lon: '-3.70' }, {}, [], 'Madrid',
+    place, { ...place, radiusKm: 0 }, { lat: '40.42', lon: '-3.70', radiusKm: 5 }, { ...place, radiusKm: 20000 }, { ...place, online: true },
+    { area: 'Madrid' }, { area: 'Madrid', reachKm: 5 }, { area: 'Madrid', lat: '40.42', lon: '-3.70' }, { ...place, reachKm: 5 },
+    { lat: '40.42', radiusKm: 5 }, { lon: '-3.70', radiusKm: 5 }, { lat: '40.42', lon: '-3.70' }, { radiusKm: 5 }, { ...place, radiusKm: null },
+    { ...place, radiusKm: -1 }, { ...place, radiusKm: 0.5 }, { ...place, radiusKm: 1.0 }, { ...place, radiusKm: '5' }, { ...place, precisionKm: 1 },
+    { ...place, lat: '90', lon: '180' }, { ...place, lat: '90.1', lon: '0' }, { ...place, lat: '-90.0', lon: '-180.00' }, { ...place, lon: '180.5' },
+    { ...place, lat: '+40' }, { ...place, lat: 40.42 }, { ...place, area: '' }, { ...place, area: '😀' }, { ...place, area: 7 },
+    { ...place, extra: 1 }, {}, [], 'Madrid',
   ]
   const prices = [
     { amount: '0', currency: 'EUR' }, { amount: '12.50', currency: 'USD', per: 'hour' }, { amount: '12.50', currency: 'USD', per: 'session' },

@@ -10,43 +10,55 @@
     "price": { "type": "money", "description": "The price of the item, without shipping." },
     "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] },
     "wearer": { "type": "choice", "description": "Who the item is made for: a unisex item is for women and men, and baby is under two.", "values": ["women", "men", "girls", "boys", "baby"], "many": true },
-    "kind": { "type": "choice", "description": "What the item is: a kind of clothes or of shoes; a jumper is a sweater.", "values": ["top", "shirt", "jumper", "dress", "skirt", "trousers", "jeans", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear", "trainers", "boots", "sandals", "heels", "flats", "slippers"] },
+    "kind": { "type": "choice", "description": "What the item is: a kind of clothes or of shoes; a jumper is a sweater, and trousers are any but jeans, leggings and joggers.", "values": ["top", "shirt", "jumper", "dress", "skirt", "trousers", "jeans", "leggings", "joggers", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear", "trainers", "boots", "sandals", "heels", "flats", "slippers"] },
     "size": {
       "type": "choice",
-      "description": "The size of adult clothes, by letter.",
+      "description": "The size of adult clothes, by the letter on the label, such as m.",
       "values": ["xxs", "xs", "s", "m", "l", "xl", "xxl", "3xl", "4xl", "one-size"],
       "when": {
         "wearer": ["women", "men"],
-        "kind": ["top", "shirt", "jumper", "dress", "skirt", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
+        "kind": ["top", "shirt", "jumper", "dress", "skirt", "leggings", "joggers", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
       }
     },
     "waist": {
-      "type": "number",
-      "description": "The waist size in inches, as the label carries it, such as 32; with none on the label, measured round the waistband.",
+      "type": "choice",
+      "description": "The waist of adult trousers and jeans in inches, as the label prints it after W, such as w32.",
+      "values": ["w22", "w23", "w24", "w25", "w26", "w27", "w28", "w29", "w30", "w31", "w32", "w33", "w34", "w35", "w36", "w38", "w40", "w42", "w44", "w46", "w48", "w50"],
       "when": {
         "wearer": ["women", "men"],
         "kind": ["trousers", "jeans"]
       }
     },
-    "height": {
-      "type": "number",
-      "description": "The height of the child the clothes fit, in centimetres, such as 104, from a newborn up.",
+    "babySize": {
+      "type": "choice",
+      "description": "The size of baby clothes, by age in months as the label prints it, such as 6-9m.",
+      "values": ["newborn", "0-3m", "3-6m", "6-9m", "9-12m", "12-18m", "18-24m"],
       "when": {
-        "wearer": ["girls", "boys", "baby"],
-        "kind": ["top", "shirt", "jumper", "dress", "skirt", "trousers", "jeans", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
+        "wearer": ["baby"],
+        "kind": ["top", "shirt", "jumper", "dress", "skirt", "trousers", "jeans", "leggings", "joggers", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
+      }
+    },
+    "kidsSize": {
+      "type": "choice",
+      "description": "The size of children's clothes, by age in years as the label prints it, such as 4-5y.",
+      "values": ["2-3y", "3-4y", "4-5y", "5-6y", "6-7y", "7-8y", "8-9y", "9-10y", "10-11y", "11-12y", "12-13y", "13-14y", "14-15y", "15-16y"],
+      "when": {
+        "wearer": ["girls", "boys"],
+        "kind": ["top", "shirt", "jumper", "dress", "skirt", "trousers", "jeans", "leggings", "joggers", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
       }
     },
     "footLength": {
-      "type": "number",
-      "description": "The length of the foot the shoes fit, heel to longest toe, in centimetres, such as 24.5, children's to adults'.",
+      "type": "choice",
+      "description": "The shoe size in centimetres, the length of foot it fits, as the label prints it after CM, in half steps from children's to adults', such as 29 for a men's US 11.",
+      "values": ["7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "12.5", "13", "13.5", "14", "14.5", "15", "15.5", "16", "16.5", "17", "17.5", "18", "18.5", "19", "19.5", "20", "20.5", "21", "21.5", "22", "22.5", "23", "23.5", "24", "24.5", "25", "25.5", "26", "26.5", "27", "27.5", "28", "28.5", "29", "29.5", "30", "30.5", "31", "31.5", "32", "32.5", "33"],
       "when": { "kind": ["trainers", "boots", "sandals", "heels", "flats", "slippers"] }
     },
     "brand": { "type": "text", "description": "The brand, if any." },
     "condition": { "type": "choice", "description": "The item's condition.", "values": ["new-with-tags", "new-without-tags", "like-new", "good", "fair"] },
     "delivery": { "type": "choice", "description": "Picked up, shipped, or both.", "values": ["pickup", "shipping"], "many": true },
-    "location": { "type": "place", "description": "Where the item is; in a request, where the buyer is." }
+    "location": { "type": "place", "description": "Where the item is; in a request, where the buyer is.", "radiusKm": 2 }
   },
-  "preview": ["photos", "description", "price", "size", "waist", "height", "footLength", "brand", "condition", "location"],
+  "preview": ["photos", "description", "price", "size", "waist", "babySize", "kidsSize", "footLength", "brand", "condition", "location"],
   "review": {
     "asDescribed": { "type": "choice", "description": "Whether the item was as the post said.", "values": ["yes", "no"], "roles": ["seller"] }
   }
