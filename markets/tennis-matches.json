@@ -6,7 +6,7 @@
   ],
   "post": {
     "description": { "type": "text", "description": "The match the player wants to play.", "required": true },
-    "place": { "type": "place", "description": "Where to play: a court, or the area to find one in." },
+    "place": { "type": "place", "description": "Where to play: a court, or the area to find one in.", "online": false },
     "time": { "type": "moment", "description": "When to play: a time, or a span when the player is free." },
     "level": { "type": "choice", "description": "The player's level.", "values": ["beginner", "intermediate", "advanced", "competitive"] },
     "format": { "type": "choice", "description": "Singles, doubles, or either.", "values": ["singles", "doubles", "either"] },

@@ -4,14 +4,24 @@
 // code from strings, so it runs where a content security policy forbids eval.
 //
 // A body fits when each of its fields is one its market names for that kind and role, of its type
-// (build/types.json), a choice among its values, `many` a list of distinct values, a `file` the
-// SHA-256 of one of the body's `files`. `files` is the standard's, checked with the entry, and no
+// (build/types.json), a choice among its values, money with a `per` its field lists or none, a place
+// not online when its field says so, `many` a list of distinct values, a `file` the SHA-256 of one
+// of the body's `files`. `files` is the standard's, checked with the entry, and no
 // market's field. `required` is for apps to ask for and is not enforced, except that a review, a
 // vouch and a report name their subject: only it says who one is about. Whether `subject`, or the
 // profile in a review's `post`, is an address is the standard's check (folders), not this one.
 
 export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 'moment' | 'file' | 'hours'
-export type Field = { type: Type; description: string; values?: string[]; many?: true; required?: true; roles?: string[] }
+export type Field = {
+  type: Type
+  description: string
+  values?: string[]
+  per?: string[]
+  online?: false
+  many?: true
+  required?: true
+  roles?: string[]
+}
 export type Fields = { [name: string]: Field }
 export type Role = { role: string; posts: 'offers' | 'requests' | 'posts' }
 /** A market file, markets/<name>.json, as build/market.schema.json defines it. */
@@ -53,20 +63,29 @@ const MEANS: { [name: string]: { fits: RegExp; takes: string } } = {
   post: { fits: /^[^/]+\/post\/[^/]+$/, takes: "a post's address, <profile address>/post/<id>" },
 }
 
-/** What each type takes, in words. */
-const TAKES: { [type in Exclude<Type, 'choice'>]: string } = {
+/** What each type takes, in words; choice, money and place say what their field allows. */
+const TAKES: { [type in Exclude<Type, 'choice' | 'money' | 'place'>]: string } = {
   text: 'text',
   number: 'a number as decimal text, such as "2.5"',
   words: 'a list of short words, each different',
-  place: '{ lat, lon, precisionKm, area }, lat and lon as decimal text, with online: true and reachKm if wanted; or { online: true }',
-  money: '{ amount, currency, per }: amount as decimal text, currency a code such as USD, per if wanted',
   moment: 'a time in RFC 3339 with its zone, such as 2026-11-02T18:00:00+01:00, or { from, to }',
   file: 'the SHA-256 of one of the files the body lists in files, in lowercase hex',
   hours: '{ zone, slots: [{ days, from, to }] }: days as monday to sunday, times as HH:MM',
 }
 
 const takes = (field: Field) => {
-  const one = field.type === 'choice' ? `one of ${field.values!.join(', ')}` : TAKES[field.type]
+  const one =
+    field.type === 'choice'
+      ? `one of ${field.values!.join(', ')}`
+      : field.type === 'money'
+        ? field.per
+          ? `{ amount, currency, per }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted`
+          : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per'
+        : field.type === 'place'
+          ? `{ area } or { lat, lon, precisionKm, area }, lat and lon as decimal text, with ${
+              field.online === false ? 'reachKm if wanted, never online' : 'online: true and reachKm if wanted; or { online: true }'
+            }`
+          : TAKES[field.type]
   return field.many ? `a list, each different, each ${one}` : one
 }
 
@@ -90,7 +109,10 @@ export type Markets = {
   checkEntry(market: string, role: string, kind: string, body: unknown, aboutRole?: string): string | null
 }
 
-/** Whether a value is of a field's type: a choice among its values, a list of distinct ones when `many`. */
+/**
+ * Whether a value is of a field's type: a choice among its values, money with a `per` its field
+ * lists or none, a place not online when its field says so, a list of distinct ones when `many`.
+ */
 export type Fits = (field: Field, value: unknown) => boolean
 
 /**
@@ -273,8 +295,14 @@ export function checker(types: unknown): Fits {
   }
   walk(root, '#')
 
+  // What a field allows beyond its type. An empty enum fits nothing, so it keeps a key out.
+  const allows = (field: Field): Schema => {
+    if (field.type === 'money') return { type: 'object', properties: { per: { enum: field.per ?? [] } } }
+    if (field.type === 'place' && field.online === false) return { type: 'object', properties: { online: { enum: [] } } }
+    return {}
+  }
   return (field, value) => {
-    const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `#/$defs/${field.type}` }
+    const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `#/$defs/${field.type}`, ...allows(field) }
     return fits(field.many ? { type: 'array', uniqueItems: true, items: one } : one, value)
   }
 }

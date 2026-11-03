@@ -27,7 +27,8 @@ another dealing. A topic is never in a name; it is a field. A name is lowercase 
 single hyphens, at most 64 characters, and no other market's.
 
 Once a market is merged, its name and its roles' words never change, since they are part of every
-profile's key. Fields can be added; none is removed or retyped.
+profile's key. Fields can be added, and a field's `values` and `per` can grow; nothing is removed,
+retyped or narrowed.
 
 ## Roles
 
@@ -61,6 +62,11 @@ A field is `{ "type", "description" }`: one of the [types](#types), and what it 
 It may add:
 
 - `"values"`, for a `choice` and only for one: the list to choose from.
+- `"per"`, for a `money` field and only for one: what its amount may be for, such as
+  `["hour", "session"]`. An amount may always leave `per` out, for the whole deal; with no list,
+  it always does, as the price of a jacket.
+- `"online": false`, for a `place` field and only for one: the place is never online, such as where
+  an item is.
 - `"many": true`: a list of its type, such as several photos. Never on `words`, a list already.
 - `"required": true`: an app asks for it. Nothing enforces it.
 - `"roles"`: the roles the field is for. In `post`, only their posts hold it; in `review`, only
@@ -69,7 +75,7 @@ It may add:
 ```json
 "post": {
   "description": { "type": "text", "description": "What the session covers.", "required": true },
-  "price": { "type": "money", "description": "The price of one session." },
+  "price": { "type": "money", "description": "The price per hour or per session.", "per": ["hour", "session"] },
   "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true },
   "degrees": { "type": "text", "description": "Degrees or certificates the tutor holds.", "roles": ["tutor"] }
 },
@@ -119,18 +125,19 @@ type, never its name, except for the [shared names](#shared-names).
 | `number` | decimal text, such as `"2.5"` | filters by range |
 | `words` | a list of short words | filters by them |
 | `choice` | one of the field's `values` | filters by it |
-| `place` | `{ "lat", "lon", "precisionKm", "area" }`, with `"online": true` and `"reachKm"` if wanted, or `{ "online": true }` | finds what is near |
+| `place` | `{ "area" }` or `{ "lat", "lon", "precisionKm", "area" }`, with `"online": true` and `"reachKm"` if wanted, or `{ "online": true }` | finds what is near its point |
 | `money` | `{ "amount", "currency", "per" }` | prints it and sorts by it |
 | `moment` | a time, or `{ "from", "to" }` | filters by time |
 | `file` | the SHA-256 of one of the entry's `files`, in lowercase hex ([Photos](#photos)) | fetches it and shows it |
 | `hours` | `{ "zone", "slots": [ { "days", "from", "to" } ] }` | filters by day and time |
 
 - Numbers, amounts and coordinates are decimal text, since an entry holds only whole numbers.
-- `place`: `lat` and `lon` in degrees, rounded to `precisionKm`, a whole number of kilometres;
-  `area` is the name people know it by, such as a town; `"online": true` beside a point means
-  online too; `reachKm`, a whole number, is how far from it the person goes.
-- `money`: `currency` is a code such as `USD`; `per` is what the amount is for, such as `hour`,
-  left out for the whole deal.
+- `place`: `area` is the name people know it by, such as a town. A point is optional, and is what
+  near-search uses: `lat` and `lon` in degrees, rounded to `precisionKm`, a whole number of
+  kilometres. `"online": true` beside an area means online too; `reachKm`, a whole number, is how
+  far from it the person goes.
+- `money`: `currency` is a code such as `USD`; `per` is what the amount is for, one of its field's
+  `per`, left out for the whole deal.
 - `moment`: RFC 3339 with its zone, such as `2026-11-02T18:00:00+01:00`.
 - `hours`: when a person is free each week. `zone` is a time zone name, such as `Europe/Madrid`;
   each slot's `days` are `monday` to `sunday`, and `from` and `to` are `HH:MM` in that zone.

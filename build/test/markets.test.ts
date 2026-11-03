@@ -27,10 +27,16 @@ const reference = (() => {
   ajv.addSchema(types)
   const compiled = new Map<string, ValidateFunction>()
   return fromFiles(files, (field, value) => {
-    const key = JSON.stringify([field.type, field.values, field.many])
+    const key = JSON.stringify([field.type, field.values, field.per, field.online, field.many])
     let validate = compiled.get(key)
     if (!validate) {
-      const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `${types.$id}#/$defs/${field.type}` }
+      const allows =
+        field.type === 'money'
+          ? { type: 'object', properties: { per: field.per ? { enum: field.per } : false } }
+          : field.type === 'place' && field.online === false
+            ? { type: 'object', properties: { online: false } }
+            : {}
+      const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `${types.$id}#/$defs/${field.type}`, ...allows }
       validate = ajv.compile(field.many ? { type: 'array', uniqueItems: true, items: one } : one)
       compiled.set(key, validate)
     }
@@ -72,7 +78,7 @@ test('the directory and each market file, from this checkout or one named', () =
 
 test("a post fits when each field is its market's, of its type", () => {
   assert.equal(check('tutoring', 'tutor', 'post', { description: 'Maths', price, subjects: ['maths', 'physics'], levels: ['secondary'], place }), null)
-  assert.equal(check('tennis-matches', 'player', 'post', { description: 'Singles', time: '2026-11-02T18:00:00+01:00', format: 'singles', place: { online: true } }), null)
+  assert.equal(check('tennis-matches', 'player', 'post', { description: 'Singles', time: '2026-11-02T18:00:00+01:00', format: 'singles', place: { area: 'Madrid' } }), null)
   assert.equal(check('software-development', 'developer', 'post', { stack: ['python', 'react'] }), null)
   assert.equal(check('home-repair', 'repairer', 'post', { hours: { zone: 'Europe/Madrid', slots: [{ days: ['monday'], from: '09:00', to: '17:00' }] } }), null)
 })
@@ -98,7 +104,7 @@ test('a field its market does not name does not fit, nor one Object gives every 
 })
 
 test('each value is of its type: a choice among its values, many a list of distinct values', () => {
-  assert.equal(check('tutoring', 'tutor', 'post', { price: { amount: 30, currency: 'USD' } }), 'price takes { amount, currency, per }: amount as decimal text, currency a code such as USD, per if wanted')
+  assert.equal(check('tutoring', 'tutor', 'post', { price: { amount: 30, currency: 'USD' } }), 'price takes { amount, currency, per }: amount as decimal text, currency a code such as USD, per one of hour, session if wanted')
   assert.match(check('tutoring', 'tutor', 'post', { subjects: ['knitting'] })!, /^subjects takes a list, each different, each one of maths, physics, /)
   assert.match(check('tutoring', 'tutor', 'post', { subjects: ['maths', 'maths'] })!, /^subjects takes a list, each different/)
   assert.match(check('tutoring', 'tutor', 'post', { subjects: 'maths' })!, /^subjects takes a list/)
@@ -106,6 +112,27 @@ test('each value is of its type: a choice among its values, many a list of disti
   assert.equal(check('sports-coaching', 'coach', 'post', { minutes: 60 }), 'minutes takes a number as decimal text, such as "2.5"')
   assert.equal(check('software-development', 'developer', 'post', { stack: ['python', 'python'] }), 'stack takes a list of short words, each different')
   assert.match(check('tennis-matches', 'player', 'post', { time: '2026-11-02 18:00' })!, /^time takes a time in RFC 3339/)
+})
+
+test('money takes a per its field lists, or none for the whole deal; with no list, never one', () => {
+  for (const per of ['hour', 'session']) assert.equal(check('tutoring', 'tutor', 'post', { price: { ...price, per } }), null)
+  assert.equal(check('tutoring', 'tutor', 'post', { price: { amount: '300', currency: 'USD' } }), null)
+  assert.equal(check('tutoring', 'tutor', 'post', { price: { ...price, per: 'night' } }), 'price takes { amount, currency, per }: amount as decimal text, currency a code such as USD, per one of hour, session if wanted')
+  assert.equal(check('clothing', 'seller', 'post', { price: { amount: '40', currency: 'EUR' } }), null)
+  assert.equal(check('clothing', 'seller', 'post', { price: { amount: '40', currency: 'EUR', per: 'hour' } }), 'price takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per')
+})
+
+test('a place is an area, with a point if wanted; online only where its field allows', () => {
+  for (const at of [{ area: 'Madrid' }, { area: 'Madrid', reachKm: 10 }, place]) {
+    assert.equal(check('clothing', 'seller', 'post', { location: at }), null)
+    assert.equal(check('tutoring', 'tutor', 'post', { place: at }), null)
+  }
+  for (const at of [{ online: true }, { area: 'Madrid', online: true }, { ...place, online: true }]) {
+    assert.equal(check('tutoring', 'tutor', 'post', { place: at }), null)
+    assert.equal(check('clothing', 'seller', 'post', { location: at }), 'location takes { area } or { lat, lon, precisionKm, area }, lat and lon as decimal text, with reachKm if wanted, never online')
+  }
+  assert.match(check('tutoring', 'tutor', 'post', { place: { lat: '40.42', lon: '-3.70', area: 'Madrid' } })!, /^place takes \{ area \} or \{ lat, lon, precisionKm, area \}/)
+  assert.match(check('tutoring', 'tutor', 'post', { place: { lat: '40.42', area: 'Madrid', precisionKm: 1 } })!, /^place takes/)
 })
 
 test('the first field that does not fit is the one answered', () => {
@@ -173,6 +200,23 @@ test('values at the edges of each type answer as ajv answers them', () => {
   const hash = photo.sha256
   const at = (time: string) => `2026-11-02T${time}`
   const hours = (slot: object, zone = 'Europe/Madrid') => ({ zone, slots: [{ days: ['monday'], from: '09:00', to: '17:00', ...slot }] })
+  const places = [
+    { online: true }, { online: false }, { online: 'true' }, { online: true, area: 'Madrid' }, { ...place, online: true, reachKm: 5 },
+    { area: 'Madrid' }, { area: 'Madrid', reachKm: 5 }, { area: 'Madrid', reachKm: -1 }, { area: '' }, { area: 'Madrid', precisionKm: 1 },
+    { area: 'Madrid', lat: '40.42' }, { area: 'Madrid', online: false }, { area: 'Madrid', extra: 1 }, { reachKm: 5 },
+    { lat: '90', lon: '180', precisionKm: 0, area: 'x' }, { lat: '90.1', lon: '0', precisionKm: 0, area: 'x' },
+    { lat: '-90.0', lon: '-180.00', precisionKm: 0, area: 'x' }, { lat: '0', lon: '180.5', precisionKm: 0, area: 'x' },
+    { ...place, lat: '+40' }, { ...place, precisionKm: 1.5 }, { ...place, precisionKm: 1.0 }, { ...place, precisionKm: -1 },
+    { ...place, precisionKm: '1' }, { ...place, area: '' }, { ...place, area: '😀' }, { ...place, reachKm: 0.5 }, { ...place, online: false },
+    { ...place, extra: 1 }, { lat: '40.42', lon: '-3.70', area: 'Madrid' }, { lat: '40.42', lon: '-3.70', precisionKm: 1 }, {}, [], 'Madrid',
+  ]
+  const prices = [
+    { amount: '0', currency: 'EUR' }, { amount: '12.50', currency: 'USD', per: 'hour' }, { amount: '12.50', currency: 'USD', per: 'session' },
+    { amount: '12.50', currency: 'USD', per: 'night' }, { amount: '01', currency: 'USD' },
+    { amount: '-1', currency: 'USD' }, { amount: '1.', currency: 'USD' }, { amount: '1', currency: 'usd' }, { amount: '1', currency: 'USDT' },
+    { amount: '1', currency: 'USD', per: '' }, { amount: '1', currency: 'USD', per: 7 }, { currency: 'USD' }, { amount: '1' },
+    { amount: '1', currency: 'USD', each: 'x' }, '30 USD',
+  ]
   const edges: [market: string, role: string, field: string, values: unknown[]][] = [
     ['tutoring', 'tutor', 'contact', ['', 'x', 7, null, ['x'], {}]],
     ['sports-coaching', 'coach', 'minutes', ['0', '-0', '01', '2.', '-2.5', '1e3', ' 1', '١٢', 2]],
@@ -182,20 +226,12 @@ test('values at the edges of each type answer as ajv answers them', () => {
     ]],
     ['tutoring', 'tutor', 'subjects', [['maths', 'maths'], ['maths', 'physics'], [], 'maths', ['Maths'], [null]]],
     ['clothing', 'seller', 'kind', ['top', 'TOP', ['top'], 1]],
-    ['tutoring', 'tutor', 'place', [
-      { online: true }, { online: false }, { online: 'true' }, { online: true, area: 'Madrid' }, { ...place, online: true, reachKm: 5 },
-      { lat: '90', lon: '180', precisionKm: 0, area: 'x' }, { lat: '90.1', lon: '0', precisionKm: 0, area: 'x' },
-      { lat: '-90.0', lon: '-180.00', precisionKm: 0, area: 'x' }, { lat: '0', lon: '180.5', precisionKm: 0, area: 'x' },
-      { ...place, lat: '+40' }, { ...place, precisionKm: 1.5 }, { ...place, precisionKm: 1.0 }, { ...place, precisionKm: -1 },
-      { ...place, precisionKm: '1' }, { ...place, area: '' }, { ...place, area: '😀' }, { ...place, reachKm: 0.5 }, { ...place, online: false },
-      { ...place, extra: 1 }, { lat: '40.42', lon: '-3.70', area: 'Madrid' }, {}, [], 'Madrid',
-    ]],
-    ['tutoring', 'tutor', 'price', [
-      { amount: '0', currency: 'EUR' }, { amount: '12.50', currency: 'USD', per: 'hour' }, { amount: '01', currency: 'USD' },
-      { amount: '-1', currency: 'USD' }, { amount: '1.', currency: 'USD' }, { amount: '1', currency: 'usd' }, { amount: '1', currency: 'USDT' },
-      { amount: '1', currency: 'USD', per: '' }, { amount: '1', currency: 'USD', per: 7 }, { currency: 'USD' }, { amount: '1' },
-      { amount: '1', currency: 'USD', each: 'x' }, '30 USD',
-    ]],
+    ['tutoring', 'tutor', 'place', places],
+    ['clothing', 'seller', 'location', places],
+    ['home-repair', 'repairer', 'place', places],
+    ['tutoring', 'tutor', 'price', prices],
+    ['home-repair', 'repairer', 'price', prices],
+    ['clothing', 'seller', 'price', prices],
     ['tennis-matches', 'player', 'time', [
       '2024-02-29T00:00:00Z', '2026-02-29T00:00:00Z', '2000-02-29T12:00:00Z', '1900-02-29T12:00:00Z', '2026-04-31T00:00:00Z',
       '2026-04-30T00:00:00Z', '2026-13-01T00:00:00Z', '2026-00-10T00:00:00Z', '2026-01-00T00:00:00Z', '0000-01-01T00:00:00Z',

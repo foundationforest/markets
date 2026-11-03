@@ -7,9 +7,9 @@
   ],
   "post": {
     "description": { "type": "text", "description": "The work: what is fixed, and how.", "required": true },
-    "price": { "type": "money", "description": "The price per hour or for the job." },
+    "price": { "type": "money", "description": "The price per hour, or for the whole job.", "per": ["hour"] },
     "repairs": { "type": "choice", "description": "The kinds of work.", "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "tiling", "locks", "furniture-assembly", "small-repairs", "other"], "many": true },
-    "place": { "type": "place", "description": "Where the repairer works from and how far they go, or where the home is." },
+    "place": { "type": "place", "description": "Where the repairer works from and how far they go, or where the home is.", "online": false },
     "hours": { "type": "hours", "description": "When the work can be done, each week." },
     "time": { "type": "moment", "description": "When the job is wanted: a time, or a span to fit it in.", "roles": ["client"] },
     "licences": { "type": "text", "description": "Licences or certificates the repairer holds, such as for gas or electrical work.", "roles": ["repairer"] },

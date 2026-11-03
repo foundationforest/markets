@@ -1,15 +1,16 @@
 {
   "name": "sports-coaching",
-  "description": "Coaches teach a sport one on one or in small groups, paid per session, in person or online.",
+  "description": "Coaches teach a sport one on one or in small groups, paid per session or per hour, in person or online.",
   "roles": [
     { "role": "coach", "posts": "offers" },
     { "role": "student", "posts": "requests" }
   ],
   "post": {
     "description": { "type": "text", "description": "The coaching: what is taught, and how.", "required": true },
-    "price": { "type": "money", "description": "The price of one session, per person." },
+    "price": { "type": "money", "description": "The price per person: per hour, per session, or for a whole course.", "per": ["hour", "session"] },
     "sports": { "type": "choice", "description": "The sports the coaching is for.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "basketball", "volleyball", "rugby", "hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics", "other"], "many": true },
     "levels": { "type": "choice", "description": "The levels the coaching is for.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
+    "ages": { "type": "choice", "description": "The ages the coaching is for.", "values": ["children", "teens", "adults", "seniors"], "many": true },
     "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one." },
     "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
     "place": { "type": "place", "description": "Where sessions are held, online, or both." },

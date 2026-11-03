@@ -12,11 +12,11 @@
     "model": { "type": "text", "description": "The brand and model, such as iPhone 13 128 GB." },
     "condition": { "type": "choice", "description": "The item's condition.", "values": ["new", "like-new", "good", "fair", "for-parts"] },
     "delivery": { "type": "choice", "description": "Picked up, shipped, or either.", "values": ["pickup", "shipped", "either"] },
-    "place": { "type": "place", "description": "Where the item is picked up, or ships from or to." },
+    "location": { "type": "place", "description": "Where the item is, picked up or shipped from; in a request, where the buyer wants it.", "online": false },
     "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] },
     "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
   },
-  "preview": ["photos", "description", "price", "place"],
+  "preview": ["photos", "description", "price", "location"],
   "review": {
     "asDescribed": { "type": "choice", "description": "Whether the item was as the post said.", "values": ["yes", "no"], "roles": ["seller"] }
   }
