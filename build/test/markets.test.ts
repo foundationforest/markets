@@ -27,14 +27,14 @@ const reference = (() => {
   ajv.addSchema(types)
   const compiled = new Map<string, ValidateFunction>()
   return fromFiles(files, (field, value) => {
-    const key = JSON.stringify([field.type, field.values, field.per, field.online, field.many])
+    const key = JSON.stringify([field.type, field.values, field.per, field.reach, field.many])
     let validate = compiled.get(key)
     if (!validate) {
       const allows =
         field.type === 'money'
           ? { type: 'object', properties: { per: field.per ? { enum: field.per } : false } }
-          : field.type === 'place' && field.online === false
-            ? { type: 'object', properties: { online: false } }
+          : field.type === 'place' && !field.reach
+            ? { type: 'object', properties: { reachKm: false } }
             : {}
       const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `${types.$id}#/$defs/${field.type}`, ...allows }
       validate = ajv.compile(field.many ? { type: 'array', uniqueItems: true, items: one } : one)
@@ -66,7 +66,7 @@ const check: Markets['checkEntry'] = (...args) => {
 
 const subject = '9bpPbLYCPwNWq9BZqnJr3EqRNqymFZ4g58Zk9K86azDC'
 const photo = { sha256: '04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86', type: 'image/jpeg', size: 48213 }
-const place = { lat: '40.42', lon: '-3.70', precisionKm: 1, area: 'Madrid' }
+const place = { area: 'Madrid', lat: '40.42', lon: '-3.70' }
 const price = { amount: '30', currency: 'USD', per: 'hour' }
 
 test('the directory and each market file, from this checkout or one named', () => {
@@ -77,15 +77,24 @@ test('the directory and each market file, from this checkout or one named', () =
 })
 
 test("a post fits when each field is its market's, of its type", () => {
-  assert.equal(check('tutoring', 'tutor', 'post', { description: 'Maths', price, subjects: ['maths', 'physics'], levels: ['secondary'], place }), null)
-  assert.equal(check('tennis-matches', 'player', 'post', { description: 'Singles', time: '2026-11-02T18:00:00+01:00', format: 'singles', place: { area: 'Madrid' } }), null)
+  assert.equal(check('tutoring', 'tutor', 'post', { description: 'Maths', price, subjects: ['maths', 'physics'], levels: ['secondary'], mode: ['in-person'], place }), null)
+  assert.equal(check('tennis-matches', 'player', 'post', { description: 'Singles', time: '2026-11-02T18:00:00+01:00', format: ['singles'], place: { area: 'Madrid' } }), null)
   assert.equal(check('software-development', 'developer', 'post', { stack: ['python', 'react'] }), null)
   assert.equal(check('home-repair', 'repairer', 'post', { hours: { zone: 'Europe/Madrid', slots: [{ days: ['monday'], from: '09:00', to: '17:00' }] } }), null)
 })
 
-test('required is not enforced on a post', () => {
+test('a post may leave out any field', () => {
   assert.equal(check('tutoring', 'tutor', 'post', {}), null)
   assert.equal(check('tutoring', 'tutor', 'post', { subjects: ['maths'] }), null)
+})
+
+test('every post may hold contact, which no market lists', () => {
+  for (const { name, roles } of markets.directory.markets) {
+    assert.equal(Object.hasOwn(markets.market(name)!.post, 'contact'), false)
+    assert.equal(check(name, roles[0]!.role, 'post', { contact: '+34 600 000 000' }), null)
+  }
+  assert.equal(check('tutoring', 'tutor', 'post', { contact: ['+34 600 000 000'] }), 'contact takes text')
+  assert.equal(check('tutoring', 'tutor', 'review', { subject, contact: 'x' }), 'a review in tutoring has no field contact')
 })
 
 test('the market, the roles, the kind and the body are named before any field', () => {
@@ -122,17 +131,101 @@ test('money takes a per its field lists, or none for the whole deal; with no lis
   assert.equal(check('clothing', 'seller', 'post', { price: { amount: '40', currency: 'EUR', per: 'hour' } }), 'price takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per')
 })
 
-test('a place is an area, with a point if wanted; online only where its field allows', () => {
-  for (const at of [{ area: 'Madrid' }, { area: 'Madrid', reachKm: 10 }, place]) {
+test('a place is a name, with a point if wanted, and reachKm only where its field has reach', () => {
+  for (const at of [{ area: 'Madrid' }, place]) {
     assert.equal(check('clothing', 'seller', 'post', { location: at }), null)
-    assert.equal(check('tutoring', 'tutor', 'post', { place: at }), null)
+    assert.equal(check('tennis-matches', 'player', 'post', { place: at }), null)
   }
-  for (const at of [{ online: true }, { area: 'Madrid', online: true }, { ...place, online: true }]) {
-    assert.equal(check('tutoring', 'tutor', 'post', { place: at }), null)
-    assert.equal(check('clothing', 'seller', 'post', { location: at }), 'location takes { area } or { lat, lon, precisionKm, area }, lat and lon as decimal text, with reachKm if wanted, never online')
+  for (const at of [{ area: 'Madrid', reachKm: 10 }, { ...place, reachKm: 0 }]) {
+    assert.equal(check('tennis-matches', 'player', 'post', { place: at }), null)
+    assert.equal(check('clothing', 'seller', 'post', { location: at }), 'location takes { area } or { area, lat, lon }: area a name, lat and lon as decimal text, and no reachKm')
   }
-  assert.match(check('tutoring', 'tutor', 'post', { place: { lat: '40.42', lon: '-3.70', area: 'Madrid' } })!, /^place takes \{ area \} or \{ lat, lon, precisionKm, area \}/)
-  assert.match(check('tutoring', 'tutor', 'post', { place: { lat: '40.42', area: 'Madrid', precisionKm: 1 } })!, /^place takes/)
+  const reach = 'place takes { area } or { area, lat, lon }: area a name, lat and lon as decimal text, and reachKm in whole kilometres if wanted'
+  for (const at of [{ online: true }, { area: 'Madrid', online: true }, { ...place, precisionKm: 1 }, { area: 'Madrid', lat: '40.42' }, { lat: '40.42', lon: '-3.70' }]) {
+    assert.equal(check('tennis-matches', 'player', 'post', { place: at }), reach)
+  }
+})
+
+test('home-cleaning and home-repair split place by role: where the pro works from, with reach, and where the home is', () => {
+  for (const market of ['home-cleaning', 'home-repair']) {
+    const pro = markets.market(market)!.roles[0]!.role
+    assert.equal(check(market, pro, 'post', { base: { ...place, reachKm: 15 } }), null)
+    assert.equal(check(market, 'client', 'post', { home: place }), null)
+    assert.equal(check(market, 'client', 'post', { base: place }), `base is for posts by ${pro}`)
+    assert.equal(check(market, pro, 'post', { home: place }), 'home is for posts by client')
+    assert.match(check(market, 'client', 'post', { home: { ...place, reachKm: 5 } })!, /^home takes .* and no reachKm$/)
+  }
+})
+
+test('a field with when is held only where the fields it names hold one of its values', () => {
+  const shoes = 'shoeSize is only for a post whose kind is trainers, boots, sandals, heels, flats or slippers'
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['women'], kind: 'boots', shoeSize: '38.5' }), null)
+  assert.equal(check('clothing', 'seller', 'post', { kind: 'coat', shoeSize: '38' }), shoes)
+  assert.equal(check('clothing', 'seller', 'post', { shoeSize: '38' }), shoes)
+  assert.equal(check('clothing', 'seller', 'post', { shoeSize: '38', kind: 'boots' }), null)
+  assert.match(check('clothing', 'seller', 'post', { kind: 'boots', shoeSize: '38.25' })!, /^shoeSize takes one of 16, 17, /)
+})
+
+test('with several fields named, all must match; a many field matches when any of its values does', () => {
+  const adult = { kind: 'coat', size: 'm' }
+  assert.equal(check('clothing', 'seller', 'post', { ...adult, wearer: ['women', 'men'] }), null)
+  assert.equal(check('clothing', 'seller', 'post', { ...adult, wearer: ['men', 'girls'] }), null)
+  assert.match(check('clothing', 'seller', 'post', { ...adult, wearer: ['girls'] })!, /^size is only for a post whose wearer is women or men, and whose kind is top, shirt, .* or underwear$/)
+  assert.match(check('clothing', 'seller', 'post', { wearer: ['women'], kind: 'boots', size: 'm' })!, /^size is only for a post whose wearer is women or men, and whose kind is/)
+  assert.equal(check('clothing', 'seller', 'post', { wearer: 'women', kind: 'coat', size: 'm' }), 'wearer takes a list, each different, each one of women, men, girls, boys, baby')
+})
+
+test('a baby size from newborn to 24 months, and a kids size from 2 years up', () => {
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', babySize: '3-6m' }), null)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['girls', 'boys'], kind: 'coat', kidsSize: '4-5y' }), null)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['girls'], kind: 'nightwear', babySize: '3-6m' })!, /^babySize is only for a post whose wearer is baby, and whose kind is/)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', kidsSize: '2-3y' })!, /^kidsSize is only for a post whose wearer is girls or boys, and whose kind is/)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'coat', babySize: '2-3y' })!, /^babySize takes one of newborn, 0-3m, .* 18-24m$/)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['boys'], kind: 'coat', kidsSize: '18-24m' })!, /^kidsSize takes one of 2-3y, .* 15-16y$/)
+})
+
+test('a place asked only in person: online alone holds no place', () => {
+  for (const market of ['tutoring', 'sports-coaching']) {
+    for (const role of markets.market(market)!.roles.map((r) => r.role)) {
+      assert.equal(check(market, role, 'post', { mode: ['in-person'], place: { ...place, reachKm: 5 } }), null)
+      assert.equal(check(market, role, 'post', { mode: ['online', 'in-person'], place }), null)
+      assert.equal(check(market, role, 'post', { mode: ['online'] }), null)
+      assert.equal(check(market, role, 'post', { mode: ['online'], place }), 'place is only for a post whose mode is in-person')
+      assert.equal(check(market, role, 'post', { place }), 'place is only for a post whose mode is in-person')
+    }
+  }
+})
+
+test('a field with roles and when holds only where both match, in a post and in a review', () => {
+  const market = {
+    name: 'knitting',
+    description: 'Knitters knit to order.',
+    roles: [{ role: 'knitter', posts: 'offers' as const }, { role: 'client', posts: 'requests' as const }],
+    post: {
+      kind: { type: 'choice' as const, description: 'What is knitted.', values: ['jumper', 'scarf'] },
+      size: { type: 'choice' as const, description: 'The size.', values: ['s', 'm'], roles: ['client'], when: { kind: ['jumper'] } },
+    },
+    review: {
+      late: { type: 'choice' as const, description: 'Whether it came late.', values: ['yes', 'no'] },
+      days: { type: 'number' as const, description: 'How many days late.', roles: ['knitter'], when: { late: ['yes'] } },
+    },
+  }
+  const knitting = loadGiven({ ...files, directory: { markets: [...files.directory.markets, market] }, markets: [...files.markets, market] })
+  assert.equal(knitting.checkEntry('knitting', 'client', 'post', { kind: 'jumper', size: 'm' }), null)
+  assert.equal(knitting.checkEntry('knitting', 'client', 'post', { kind: 'scarf', size: 'm' }), 'size is only for a post whose kind is jumper')
+  assert.equal(knitting.checkEntry('knitting', 'knitter', 'post', { kind: 'jumper', size: 'm' }), 'size is for posts by client')
+  assert.equal(knitting.checkEntry('knitting', 'client', 'review', { subject, late: 'yes', days: '2' }, 'knitter'), null)
+  assert.equal(knitting.checkEntry('knitting', 'client', 'review', { subject, late: 'no', days: '2' }, 'knitter'), 'days is only for a review whose late is yes')
+  assert.equal(knitting.checkEntry('knitting', 'knitter', 'review', { subject, late: 'yes', days: '2' }, 'client'), 'days is for reviews of knitter')
+})
+
+test('choices hold no other, either or both: leaving a field out says other, and many says both', () => {
+  for (const { name } of markets.directory.markets) {
+    const { post, review = {} } = markets.market(name)!
+    for (const [key, field] of Object.entries({ ...post, ...review })) {
+      for (const value of ['other', 'either', 'both', 'unisex']) assert.ok(!field.values?.includes(value), `${name} ${key} holds ${value}`)
+    }
+  }
 })
 
 test('the first field that does not fit is the one answered', () => {
@@ -190,10 +283,12 @@ test('a vouch and a report hold subject and text, the same in every market', () 
   assert.equal(check('home-repair', 'client', 'report', { subject, onTime: 'no' }), 'a report in home-repair has no field onTime')
 })
 
-test("the shared fields are of types.json's types, and the schema keeps a review's names for them", () => {
+test("the shared fields are of types.json's types, and the schema keeps a post's and a review's names for them", () => {
   const types = Object.keys(json('build/types.json').$defs)
   for (const fields of Object.values(SHARED)) for (const field of Object.values(fields)) assert.ok(types.includes(field.type))
-  assert.deepEqual(json('build/market.schema.json').properties.review.propertyNames.not.enum, Object.keys(SHARED.review))
+  for (const kind of ['post', 'review'] as const) {
+    assert.deepEqual(json('build/market.schema.json').properties[kind].propertyNames.not.enum, Object.keys(SHARED[kind]))
+  }
 })
 
 test('values at the edges of each type answer as ajv answers them', () => {
@@ -201,14 +296,13 @@ test('values at the edges of each type answer as ajv answers them', () => {
   const at = (time: string) => `2026-11-02T${time}`
   const hours = (slot: object, zone = 'Europe/Madrid') => ({ zone, slots: [{ days: ['monday'], from: '09:00', to: '17:00', ...slot }] })
   const places = [
-    { online: true }, { online: false }, { online: 'true' }, { online: true, area: 'Madrid' }, { ...place, online: true, reachKm: 5 },
-    { area: 'Madrid' }, { area: 'Madrid', reachKm: 5 }, { area: 'Madrid', reachKm: -1 }, { area: '' }, { area: 'Madrid', precisionKm: 1 },
-    { area: 'Madrid', lat: '40.42' }, { area: 'Madrid', online: false }, { area: 'Madrid', extra: 1 }, { reachKm: 5 },
-    { lat: '90', lon: '180', precisionKm: 0, area: 'x' }, { lat: '90.1', lon: '0', precisionKm: 0, area: 'x' },
-    { lat: '-90.0', lon: '-180.00', precisionKm: 0, area: 'x' }, { lat: '0', lon: '180.5', precisionKm: 0, area: 'x' },
-    { ...place, lat: '+40' }, { ...place, precisionKm: 1.5 }, { ...place, precisionKm: 1.0 }, { ...place, precisionKm: -1 },
-    { ...place, precisionKm: '1' }, { ...place, area: '' }, { ...place, area: '😀' }, { ...place, reachKm: 0.5 }, { ...place, online: false },
-    { ...place, extra: 1 }, { lat: '40.42', lon: '-3.70', area: 'Madrid' }, { lat: '40.42', lon: '-3.70', precisionKm: 1 }, {}, [], 'Madrid',
+    { online: true }, { online: 'true' }, { online: true, area: 'Madrid' }, { ...place, online: true, reachKm: 5 },
+    { area: 'Madrid' }, { area: 'Madrid', reachKm: 5 }, { area: 'Madrid', reachKm: 0 }, { area: 'Madrid', reachKm: -1 }, { area: '' },
+    { area: 'Madrid', precisionKm: 1 }, { area: 'Madrid', lat: '40.42' }, { area: 'Madrid', lon: '-3.70' }, { area: 'Madrid', extra: 1 },
+    { reachKm: 5 }, { area: 'x', lat: '90', lon: '180' }, { area: 'x', lat: '90.1', lon: '0' }, { area: 'x', lat: '-90.0', lon: '-180.00' },
+    { area: 'x', lat: '0', lon: '180.5' }, { ...place, lat: '+40' }, { ...place, lat: 40.42 }, { ...place, precisionKm: 1 },
+    { ...place, area: '' }, { ...place, area: '😀' }, { ...place, reachKm: 12 }, { ...place, reachKm: 0.5 }, { ...place, reachKm: 1.0 },
+    { ...place, reachKm: '5' }, { ...place, reachKm: -1 }, { ...place, extra: 1 }, { lat: '40.42', lon: '-3.70' }, {}, [], 'Madrid',
   ]
   const prices = [
     { amount: '0', currency: 'EUR' }, { amount: '12.50', currency: 'USD', per: 'hour' }, { amount: '12.50', currency: 'USD', per: 'session' },
@@ -226,9 +320,10 @@ test('values at the edges of each type answer as ajv answers them', () => {
     ]],
     ['tutoring', 'tutor', 'subjects', [['maths', 'maths'], ['maths', 'physics'], [], 'maths', ['Maths'], [null]]],
     ['clothing', 'seller', 'kind', ['top', 'TOP', ['top'], 1]],
-    ['tutoring', 'tutor', 'place', places],
+    ['tennis-matches', 'player', 'place', places],
     ['clothing', 'seller', 'location', places],
-    ['home-repair', 'repairer', 'place', places],
+    ['home-repair', 'repairer', 'base', places],
+    ['home-cleaning', 'client', 'home', places],
     ['tutoring', 'tutor', 'price', prices],
     ['home-repair', 'repairer', 'price', prices],
     ['clothing', 'seller', 'price', prices],

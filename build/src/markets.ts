@@ -3,13 +3,13 @@
 // reads the files from a checkout, browser.ts takes them from a page. It imports nothing and makes no
 // code from strings, so it runs where a content security policy forbids eval.
 //
-// A body fits when each of its fields is one its market names for that kind and role, of its type
-// (build/types.json), a choice among its values, money with a `per` its field lists or none, a place
-// not online when its field says so, `many` a list of distinct values, a `file` the SHA-256 of one
-// of the body's `files`. `files` is the standard's, checked with the entry, and no
-// market's field. `required` is for apps to ask for and is not enforced, except that a review, a
-// vouch and a report name their subject: only it says who one is about. Whether `subject`, or the
-// profile in a review's `post`, is an address is the standard's check (folders), not this one.
+// A body fits when each of its fields is one its market names for that kind and role, or a shared
+// one, held only where its `when` matches, of its type (build/types.json): a choice among its values,
+// money with a `per` its field lists or none, a place with reachKm only where its field has `reach`,
+// `many` a list of distinct values, a `file` the SHA-256 of one of the body's `files`. `files` is the
+// standard's, checked with the entry, and no market's field. No field must be held, except that a
+// review, a vouch and a report name their subject: only it says who one is about. Whether `subject`,
+// or the profile in a review's `post`, is an address is the standard's check (folders), not this one.
 
 export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 'moment' | 'file' | 'hours'
 export type Field = {
@@ -17,10 +17,11 @@ export type Field = {
   description: string
   values?: string[]
   per?: string[]
-  online?: false
+  reach?: true
   many?: true
-  required?: true
   roles?: string[]
+  /** The choice fields of the same entry this one depends on, each with the values that make it apply. */
+  when?: { [field: string]: string[] }
 }
 export type Fields = { [name: string]: Field }
 export type Role = { role: string; posts: 'offers' | 'requests' | 'posts' }
@@ -36,23 +37,26 @@ const KINDS = ['post', 'review', 'vouch', 'report'] as const
 export type Kind = (typeof KINDS)[number]
 
 /**
- * The fields every market's reviews, vouches and reports hold, as the manual defines them (Reviews,
- * vouches and reports). A market adds fields to its reviews only; a post's fields are all its
- * market's.
+ * The fields each kind holds in every market, beyond its market's, as the manual defines them: a
+ * post's contact (Shared names), and what every review, vouch and report holds (Reviews, vouches and
+ * reports). A market adds fields to its reviews only, and never lists contact.
  */
-export const SHARED: { [kind in Exclude<Kind, 'post'>]: Fields } = {
+export const SHARED: { [kind in Kind]: Fields } = {
+  post: {
+    contact: { type: 'text', description: 'How to reach the writer outside Forest, such as a phone, a handle or an email.' },
+  },
   review: {
-    subject: { type: 'text', description: 'The address of the profile the review is about, in the same market.', required: true },
+    subject: { type: 'text', description: 'The address of the profile the review is about, in the same market.' },
     score: { type: 'number', description: 'The rating, from "1" to "10" with at most one decimal, such as "8.5".' },
     text: { type: 'text', description: 'What the reviewer says.' },
     post: { type: 'text', description: 'The address of the post the review is about, <profile address>/post/<id>, whoever wrote it.' },
   },
   vouch: {
-    subject: { type: 'text', description: 'The address of the profile the vouch is about, in the same market.', required: true },
+    subject: { type: 'text', description: 'The address of the profile the vouch is about, in the same market.' },
     text: { type: 'text', description: 'Why the writer vouches for it.' },
   },
   report: {
-    subject: { type: 'text', description: 'The address of the profile the report is about, in the same market.', required: true },
+    subject: { type: 'text', description: 'The address of the profile the report is about, in the same market.' },
     text: { type: 'text', description: 'Why the writer reports it.' },
   },
 }
@@ -82,14 +86,17 @@ const takes = (field: Field) => {
           ? `{ amount, currency, per }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted`
           : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per'
         : field.type === 'place'
-          ? `{ area } or { lat, lon, precisionKm, area }, lat and lon as decimal text, with ${
-              field.online === false ? 'reachKm if wanted, never online' : 'online: true and reachKm if wanted; or { online: true }'
+          ? `{ area } or { area, lat, lon }: area a name, lat and lon as decimal text, ${
+              field.reach ? 'and reachKm in whole kilometres if wanted' : 'and no reachKm'
             }`
           : TAKES[field.type]
   return field.many ? `a list, each different, each ${one}` : one
 }
 
 const isObject = (v: unknown): v is { [key: string]: unknown } => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/** A list as words do it: "a", "a or b", "a, b or c". */
+const or = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items.join(''))
 
 /** The SHA-256 of each file the body lists in `files`. */
 const filesOf = (body: { [key: string]: unknown }): unknown[] =>
@@ -111,7 +118,8 @@ export type Markets = {
 
 /**
  * Whether a value is of a field's type: a choice among its values, money with a `per` its field
- * lists or none, a place not online when its field says so, a list of distinct ones when `many`.
+ * lists or none, a place with reachKm only where its field has `reach`, a list of distinct ones when
+ * `many`.
  */
 export type Fits = (field: Field, value: unknown) => boolean
 
@@ -140,9 +148,9 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
       if (!(KINDS as readonly string[]).includes(kind)) return `${kind} is not a kind of entry: the kinds are post, review, vouch and report`
       if (aboutRole !== undefined && !roles.includes(aboutRole)) return `${aboutRole} is not a role in ${name}: its roles are ${roles.join(', ')}`
       if (!isObject(body)) return `a ${kind} is an object of its fields`
-      const shared: Fields = kind === 'post' ? {} : SHARED[kind as Exclude<Kind, 'post'>]
+      const shared = SHARED[kind as Kind]
       if (kind !== 'post' && !Object.hasOwn(body, 'subject')) return `a ${kind} names its subject: the address of the profile it is about`
-      const fields: Fields = kind === 'post' ? market.post : kind === 'review' ? { ...shared, ...market.review } : shared
+      const fields: Fields = kind === 'post' ? { ...market.post, ...shared } : kind === 'review' ? { ...shared, ...market.review } : shared
       const files = filesOf(body)
       for (const [key, value] of Object.entries(body)) {
         if (key === 'files') continue
@@ -152,6 +160,13 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
         if (field.roles && is !== undefined && !field.roles.includes(is)) {
           return `${key} is for ${kind === 'post' ? 'posts by' : `${kind}s of`} ${field.roles.join(' or ')}`
         }
+        // when: each field it names holds one of its values; a many field, any of them.
+        const when = Object.entries(field.when ?? {})
+        const applies = when.every(([other, values]) => {
+          const held = Object.hasOwn(body, other) ? body[other] : undefined
+          return (fields[other]?.many && Array.isArray(held) ? held : [held]).some((v) => values.includes(v as string))
+        })
+        if (!applies) return `${key} is only for a ${kind} whose ${when.map(([other, values]) => `${other} is ${or(values)}`).join(', and whose ')}`
         if (!fits(field, value)) return `${key} takes ${takes(field)}`
         if (field.type === 'file' && !(field.many ? (value as string[]) : [value]).every((sha256) => files.includes(sha256))) {
           return `${key} names a file the body's files do not list`
@@ -298,7 +313,7 @@ export function checker(types: unknown): Fits {
   // What a field allows beyond its type. An empty enum fits nothing, so it keeps a key out.
   const allows = (field: Field): Schema => {
     if (field.type === 'money') return { type: 'object', properties: { per: { enum: field.per ?? [] } } }
-    if (field.type === 'place' && field.online === false) return { type: 'object', properties: { online: { enum: [] } } }
+    if (field.type === 'place' && !field.reach) return { type: 'object', properties: { reachKm: { enum: [] } } }
     return {}
   }
   return (field, value) => {

@@ -5,15 +5,14 @@
     { "role": "player", "posts": "posts" }
   ],
   "post": {
-    "description": { "type": "text", "description": "The match the player wants to play.", "required": true },
-    "place": { "type": "place", "description": "Where to play: a court, or the area to find one in.", "online": false },
+    "description": { "type": "text", "description": "The match the player wants to play." },
+    "place": { "type": "place", "description": "Where to play, a court or an area to find one in, and how far the player travels.", "reach": true },
     "time": { "type": "moment", "description": "When to play: a time, or a span when the player is free." },
     "level": { "type": "choice", "description": "The player's level.", "values": ["beginner", "intermediate", "advanced", "competitive"] },
-    "format": { "type": "choice", "description": "Singles, doubles, or either.", "values": ["singles", "doubles", "either"] },
-    "court": { "type": "text", "description": "Whether a court is booked, and any fee to share." },
-    "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
+    "format": { "type": "choice", "description": "Singles, doubles, or both.", "values": ["singles", "doubles"], "many": true },
+    "court": { "type": "text", "description": "Whether a court is booked, and any fee to share." }
   },
-  "preview": ["description", "time", "place", "level"],
+  "preview": ["description", "time", "place", "level", "format"],
   "review": {
     "showedUp": { "type": "choice", "description": "Whether the player came to the match as agreed.", "values": ["yes", "no"] },
     "level": { "type": "choice", "description": "The level the reviewer would put the player at.", "values": ["beginner", "intermediate", "advanced", "competitive"] }

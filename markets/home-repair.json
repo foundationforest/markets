@@ -6,18 +6,18 @@
     { "role": "client", "posts": "requests" }
   ],
   "post": {
-    "description": { "type": "text", "description": "The work: what is fixed, and how.", "required": true },
+    "description": { "type": "text", "description": "The work: what is fixed, and how." },
     "price": { "type": "money", "description": "The price per hour, or for the whole job.", "per": ["hour"] },
-    "repairs": { "type": "choice", "description": "The kinds of work.", "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "tiling", "locks", "furniture-assembly", "small-repairs", "other"], "many": true },
-    "place": { "type": "place", "description": "Where the repairer works from and how far they go, or where the home is.", "online": false },
+    "repairs": { "type": "choice", "description": "The kinds of work.", "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "plastering", "tiling", "flooring", "roofing", "locks", "mounting", "furniture-assembly"], "many": true },
+    "base": { "type": "place", "description": "Where the repairer works from, and how far they go.", "reach": true, "roles": ["repairer"] },
+    "home": { "type": "place", "description": "Where the home is.", "roles": ["client"] },
     "hours": { "type": "hours", "description": "When the work can be done, each week." },
     "time": { "type": "moment", "description": "When the job is wanted: a time, or a span to fit it in.", "roles": ["client"] },
     "licences": { "type": "text", "description": "Licences or certificates the repairer holds, such as for gas or electrical work.", "roles": ["repairer"] },
     "photos": { "type": "file", "description": "Photos of what needs fixing.", "many": true, "roles": ["client"] },
-    "pastWork": { "type": "file", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] },
-    "contact": { "type": "text", "description": "How to reach the writer outside Forest, such as WhatsApp or an email." }
+    "pastWork": { "type": "file", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] }
   },
-  "preview": ["repairs", "description", "price", "place"],
+  "preview": ["repairs", "description", "price", "base", "home"],
   "review": {
     "onTime": { "type": "choice", "description": "Whether the repairer came at the agreed time.", "values": ["yes", "no"], "roles": ["repairer"] },
     "fixed": { "type": "choice", "description": "Whether the job was done as agreed.", "values": ["yes", "no"], "roles": ["repairer"] }
