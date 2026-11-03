@@ -8,7 +8,7 @@
   "post": {
     "description": { "type": "text", "description": "The coaching: what is taught, and how." },
     "price": { "type": "money", "description": "The price per person: per hour, per session, or for a whole course.", "per": ["hour", "session"] },
-    "sports": { "type": "choice", "description": "The sports the coaching is for.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "basketball", "volleyball", "rugby", "hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics"], "many": true },
+    "sports": { "type": "choice", "description": "The sports the coaching is for; football is soccer, and hockey is field hockey.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "american-football", "basketball", "volleyball", "rugby", "hockey", "ice-hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics"], "many": true },
     "levels": { "type": "choice", "description": "The levels the coaching is for.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
     "ages": { "type": "choice", "description": "The ages the coaching is for.", "values": ["children", "teens", "adults", "seniors"], "many": true },
     "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one." },

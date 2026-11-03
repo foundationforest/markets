@@ -53,9 +53,13 @@ nothing is removed, retyped or narrowed.
 A market file becomes two things: the form a stranger fills in on a phone in a minute, and the
 filters the other side searches with. So:
 
-- Start from how the best marketplace for that dealing asks today, then cut what Forest doesn't
-  need.
+- Start from how the best marketplaces for that dealing ask today, across countries, not in one,
+  then cut what Forest doesn't need. A market serves every country, so each field holds in all.
 - A picker (a `choice`) where people filter, text where they describe.
+- Where countries label a measure differently, as with shoe sizes, the field holds the measure
+  itself: a `number` in one unit someone can measure, named in its description, such as foot
+  length in centimetres. An app shows each person the labels their country uses, and one number
+  filters the same everywhere. A size with no measure behind it, such as a letter, stays a `choice`.
 - Every field is one someone would miss. More fields behind the form are fine when they make it
   simpler: clothing asks one size question, and four fields behind it hold the answer.
 - Use [`when`](#the-file) where a question only makes sense after an answer, such as a shoe size
@@ -245,8 +249,8 @@ markets.directory // directory.json
 markets.market('tutoring') // markets/tutoring.json
 markets.checkEntry('tutoring', 'tutor', 'post', { subjects: ['knitting'] })
 // 'subjects takes a list, each different, each one of maths, physics, …'
-markets.checkEntry('clothing', 'seller', 'post', { kind: 'coat', shoeSize: '38' })
-// 'shoeSize is only for a post whose kind is trainers, boots, sandals, heels, flats or slippers'
+markets.checkEntry('clothing', 'seller', 'post', { kind: 'coat', footLength: '24.5' })
+// 'footLength is only for a post whose kind is trainers, boots, sandals, heels, flats or slippers'
 markets.checkEntry('home-repair', 'client', 'review', { subject, onTime: 'yes' }, 'repairer')
 // null
 ```

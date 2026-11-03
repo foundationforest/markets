@@ -13,6 +13,9 @@ words, no em-dashes.
 ## How to work in this repo
 
 - One task per session. Open a pull request; never push to main.
+- A pull request that breaks what exists, by removing, retyping or narrowing anything, says so at
+  its top, plainly: which posts stop fitting until they are reposted, and who must follow, in
+  order: services first, then the app.
 - A session never opens a pull request or acts in another repo, even to protect something live: it
   flags it and waits.
 - Run `build/check.sh` before you push. It writes both `directory.json` and `directory.md` from
