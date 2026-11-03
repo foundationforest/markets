@@ -5,8 +5,8 @@
 //
 // A body fits when each of its fields is one its market names for that kind and role, or a shared
 // one, held only where its `when` matches, of its type (build/types.json): a choice among its values,
-// money with a `per` its field lists or none, a place with reachKm only where its field has `reach`,
-// `many` a list of distinct values, a `file` the SHA-256 of one of the body's `files`. `files` is the
+// money with a `per` its field lists or none, a place with a point and a radius, `many` a list of
+// distinct values, a `file` the SHA-256 of one of the body's `files`. `files` is the
 // standard's, checked with the entry, and no market's field. No field must be held, except that a
 // review, a vouch and a report name their subject: only it says who one is about. Whether `subject`,
 // or the profile in a review's `post`, is an address is the standard's check (folders), not this one.
@@ -17,7 +17,8 @@ export type Field = {
   description: string
   values?: string[]
   per?: string[]
-  reach?: true
+  /** For a place field: the radius, in whole kilometres, a new place starts at. */
+  radiusKm?: number
   many?: true
   roles?: string[]
   /** The choice fields of the same entry this one depends on, each with the values that make it apply. */
@@ -67,11 +68,12 @@ const MEANS: { [name: string]: { fits: RegExp; takes: string } } = {
   post: { fits: /^[^/]+\/post\/[^/]+$/, takes: "a post's address, <profile address>/post/<id>" },
 }
 
-/** What each type takes, in words; choice, money and place say what their field allows. */
-const TAKES: { [type in Exclude<Type, 'choice' | 'money' | 'place'>]: string } = {
+/** What each type takes, in words; choice and money say what their field allows. */
+const TAKES: { [type in Exclude<Type, 'choice' | 'money'>]: string } = {
   text: 'text',
   number: 'a number as decimal text, such as "2.5"',
   words: 'a list of short words, each different',
+  place: '{ lat, lon, radiusKm, area }: lat and lon as decimal text, radiusKm in whole kilometres, and area a name if wanted',
   moment: 'a time in RFC 3339 with its zone, such as 2026-11-02T18:00:00+01:00, or { from, to }',
   file: 'the SHA-256 of one of the files the body lists in files, in lowercase hex',
   hours: '{ zone, slots: [{ days, from, to }] }: days as monday to sunday, times as HH:MM',
@@ -85,11 +87,7 @@ const takes = (field: Field) => {
         ? field.per
           ? `{ amount, currency, per }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted`
           : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per'
-        : field.type === 'place'
-          ? `{ area } or { area, lat, lon }: area a name, lat and lon as decimal text, ${
-              field.reach ? 'and reachKm in whole kilometres if wanted' : 'and no reachKm'
-            }`
-          : TAKES[field.type]
+        : TAKES[field.type]
   return field.many ? `a list, each different, each ${one}` : one
 }
 
@@ -118,8 +116,7 @@ export type Markets = {
 
 /**
  * Whether a value is of a field's type: a choice among its values, money with a `per` its field
- * lists or none, a place with reachKm only where its field has `reach`, a list of distinct ones when
- * `many`.
+ * lists or none, a list of distinct ones when `many`.
  */
 export type Fits = (field: Field, value: unknown) => boolean
 
@@ -310,12 +307,10 @@ export function checker(types: unknown): Fits {
   }
   walk(root, '#')
 
-  // What a field allows beyond its type. An empty enum fits nothing, so it keeps a key out.
-  const allows = (field: Field): Schema => {
-    if (field.type === 'money') return { type: 'object', properties: { per: { enum: field.per ?? [] } } }
-    if (field.type === 'place' && !field.reach) return { type: 'object', properties: { reachKm: { enum: [] } } }
-    return {}
-  }
+  // What a field allows beyond its type: a money field, only the per it lists. An empty enum fits
+  // nothing, so with no list it keeps per out.
+  const allows = (field: Field): Schema =>
+    field.type === 'money' ? { type: 'object', properties: { per: { enum: field.per ?? [] } } } : {}
   return (field, value) => {
     const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `#/$defs/${field.type}`, ...allows(field) }
     return fits(field.many ? { type: 'array', uniqueItems: true, items: one } : one, value)

@@ -29,49 +29,32 @@
       "type": "string"
     },
     "place": {
-      "description": "A place by the name people know it by, with a point if wanted, and how far the person goes where its field has reach. Matched by how near it is; every point is rough.",
-      "$defs": {
-        "area": {
-          "description": "The name people know the place by, such as a town, a district or a court.",
+      "description": "A point and a radius in whole kilometres, and the area's name if wanted. Radius 0 is that exact spot; otherwise the place is somewhere in the circle, or anywhere in it the person will go. Two places match when their circles touch. A point is rough unless the radius is 0: give an exact point only for a public spot meant to be found, such as a court or a shop, and anywhere else a rough one with the real spot inside the circle, never a home's door.",
+      "type": "object",
+      "required": ["lat", "lon", "radiusKm"],
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "description": "The point's latitude in degrees, decimal text from -90 to 90.",
           "type": "string",
-          "minLength": 1
+          "pattern": "^-?(90(\\.0+)?|[1-8]?[0-9](\\.[0-9]+)?)$"
         },
-        "reachKm": {
-          "description": "How many kilometres from the place the person goes, a whole number. Held only where the field has reach.",
+        "lon": {
+          "description": "The point's longitude in degrees, decimal text from -180 to 180.",
+          "type": "string",
+          "pattern": "^-?(180(\\.0+)?|(1[0-7][0-9]|[1-9]?[0-9])(\\.[0-9]+)?)$"
+        },
+        "radiusKm": {
+          "description": "The circle's radius round the point, in whole kilometres: 0 for that exact spot.",
           "type": "integer",
           "minimum": 0
-        }
-      },
-      "oneOf": [
-        {
-          "type": "object",
-          "required": ["area"],
-          "additionalProperties": false,
-          "properties": {
-            "area": { "$ref": "#/$defs/place/$defs/area" },
-            "reachKm": { "$ref": "#/$defs/place/$defs/reachKm" }
-          }
         },
-        {
-          "type": "object",
-          "required": ["area", "lat", "lon"],
-          "additionalProperties": false,
-          "properties": {
-            "area": { "$ref": "#/$defs/place/$defs/area" },
-            "lat": {
-              "description": "Latitude in degrees, decimal text from -90 to 90.",
-              "type": "string",
-              "pattern": "^-?(90(\\.0+)?|[1-8]?[0-9](\\.[0-9]+)?)$"
-            },
-            "lon": {
-              "description": "Longitude in degrees, decimal text from -180 to 180.",
-              "type": "string",
-              "pattern": "^-?(180(\\.0+)?|(1[0-7][0-9]|[1-9]?[0-9])(\\.[0-9]+)?)$"
-            },
-            "reachKm": { "$ref": "#/$defs/place/$defs/reachKm" }
-          }
+        "area": {
+          "description": "The name people know the area by, such as a town, a district or a court, which an index shows and finds the place by.",
+          "type": "string",
+          "minLength": 1
         }
-      ]
+      }
     },
     "money": {
       "description": "An amount of one currency, and what it is for. Printed and sorted by.",

@@ -8,8 +8,8 @@
   "post": {
     "description": { "type": "text", "description": "The cleaning: what is cleaned, and how." },
     "price": { "type": "money", "description": "The price per hour or per visit, or for the whole job.", "per": ["hour", "visit"] },
-    "base": { "type": "place", "description": "Where the cleaner works from, and how far they go.", "reach": true, "roles": ["cleaner"] },
-    "home": { "type": "place", "description": "Where the home is.", "roles": ["client"] },
+    "base": { "type": "place", "description": "The area the cleaner works in.", "radiusKm": 10, "roles": ["cleaner"] },
+    "home": { "type": "place", "description": "Where the home is.", "radiusKm": 1, "roles": ["client"] },
     "frequency": { "type": "choice", "description": "How often the home is cleaned; biweekly is every two weeks.", "values": ["once", "weekly", "biweekly", "monthly"], "many": true },
     "supplies": { "type": "choice", "description": "Who brings the cleaning supplies.", "values": ["cleaner", "client"] },
     "hours": { "type": "hours", "description": "When the cleaning can be done, each week." },

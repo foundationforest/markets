@@ -12,7 +12,7 @@
     "levels": { "type": "choice", "description": "The levels the tutoring is for; adult is for adults outside school.", "values": ["primary", "secondary", "university", "adult"], "many": true },
     "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
     "mode": { "type": "choice", "description": "How sessions are held: in person, online, or both.", "values": ["in-person", "online"], "many": true },
-    "place": { "type": "place", "description": "Where the person can meet, such as a home or a town, and how far they travel.", "reach": true, "when": { "mode": ["in-person"] } },
+    "place": { "type": "place", "description": "Where sessions can be held: anywhere in the circle the person will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
     "hours": { "type": "hours", "description": "When sessions can be held, each week." }
   },
   "preview": ["subjects", "description", "price", "mode", "place"]

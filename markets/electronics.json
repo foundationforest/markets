@@ -13,7 +13,7 @@
     "model": { "type": "text", "description": "The brand and model, such as iPhone 13 128 GB." },
     "condition": { "type": "choice", "description": "The item's condition.", "values": ["new", "like-new", "good", "fair", "for-parts"] },
     "delivery": { "type": "choice", "description": "Picked up, shipped, or both.", "values": ["pickup", "shipping"], "many": true },
-    "location": { "type": "place", "description": "Where the item is; in a request, where the buyer is." }
+    "location": { "type": "place", "description": "Where the item is; in a request, where the buyer is.", "radiusKm": 2 }
   },
   "preview": ["photos", "description", "price", "model", "condition", "location"],
   "review": {

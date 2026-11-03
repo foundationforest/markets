@@ -85,7 +85,7 @@ function say(e: ErrorObject): string {
     return `${at}: "${rule.else.not.required[0]}" is only for a ${rule.if.properties.type.const} field`
   }
   if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
-  if (e.keyword === 'const' && /^\/(post|review)\/[^/]+\/(many|reach)$/.test(e.instancePath)) {
+  if (e.keyword === 'const' && /^\/(post|review)\/[^/]+\/many$/.test(e.instancePath)) {
     return `${at} must be ${e.params.allowedValue}, or left out`
   }
   if (e.keyword === 'required') return `${at}: "${e.params.missingProperty}" is missing`

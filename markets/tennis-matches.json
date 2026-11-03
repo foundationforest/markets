@@ -6,7 +6,7 @@
   ],
   "post": {
     "description": { "type": "text", "description": "The match the player wants to play." },
-    "place": { "type": "place", "description": "Where to play, a court or an area to find one in, and how far the player travels.", "reach": true },
+    "place": { "type": "place", "description": "Where to play: a court, or anywhere in the circle the player will go.", "radiusKm": 5 },
     "time": { "type": "moment", "description": "When to play: a time, or a span when the player is free." },
     "level": { "type": "choice", "description": "The player's level.", "values": ["beginner", "intermediate", "advanced", "competitive"] },
     "format": { "type": "choice", "description": "Singles, doubles, or both.", "values": ["singles", "doubles"], "many": true },

@@ -105,9 +105,10 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/word" }
         },
-        "reach": {
-          "description": "For a place field: the value may hold reachKm, and an app asks how far the person goes. Left out: no reachKm.",
-          "const": true
+        "radiusKm": {
+          "description": "For a place field, and always on one: the radius, in whole kilometres, a new place starts at before the person changes it.",
+          "type": "integer",
+          "minimum": 0
         },
         "many": {
           "description": "The field holds a list of its type. Never for words, which is a list already. Left out otherwise.",
@@ -148,7 +149,8 @@
         },
         {
           "if": { "properties": { "type": { "const": "place" } } },
-          "else": { "not": { "required": ["reach"] } }
+          "then": { "required": ["radiusKm"] },
+          "else": { "not": { "required": ["radiusKm"] } }
         }
       ]
     }

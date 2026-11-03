@@ -56,12 +56,12 @@ filters the other side searches with. So:
 - Start from how the best marketplaces for that dealing ask today, across countries, not in one,
   then cut what Forest doesn't need. A market serves every country, so each field holds in all.
 - A picker (a `choice`) where people filter, text where they describe.
-- Where countries label a measure differently, as with shoe sizes, the field holds the measure
-  itself: a `number` in one unit someone can measure, named in its description, such as foot
-  length in centimetres. An app shows each person the labels their country uses, and one number
-  filters the same everywhere. A size with no measure behind it, such as a letter, stays a `choice`.
+- Each field holds what a person can give without effort, in one standard that works in every
+  country, and apps and AIs translate for people: the phone gives a point, the label a size, and
+  the person their price in their own currency, which money keeps since rates move. A field names
+  its standard in its description, such as shoe sizes in centimetres, so an AI converts from others.
 - Every field is one someone would miss. More fields behind the form are fine when they make it
-  simpler: clothing asks one size question, and four fields behind it hold the answer.
+  simpler: clothing asks one size question, and five fields behind it hold the answer.
 - Use [`when`](#the-file) where a question only makes sense after an answer, such as a shoe size
   after the kind of item. Most markets need none, or one.
 - Before you propose, fill in a post as each role, and search as the other side.
@@ -87,8 +87,9 @@ It may add:
 - `"per"`, for a `money` field and only for one: what its amount may be for, such as
   `["hour", "session"]`. An amount may always leave `per` out, for the whole deal; with no list,
   it always does, as the price of a jacket.
-- `"reach": true`, for a `place` field and only for one: the place may hold `reachKm`, and an app
-  asks how far the person goes ([Types](#types)).
+- `"radiusKm"`, on every `place` field and only on one: the radius, in whole kilometres, a new
+  place starts at before the person changes it ([Types](#types)), such as 2 for an item to pick up,
+  1 for a home, 5 for where people meet and 10 for where a pro works.
 - `"many": true`: a list of its type, such as several photos. Never on `words`, a list already.
 - `"roles"`: the roles the field is for. In `post`, only their posts hold it; in `review`, only
   reviews of a profile in them. Left out: every role.
@@ -106,7 +107,7 @@ It may add:
   "price": { "type": "money", "description": "The price per hour or per session.", "per": ["hour", "session"] },
   "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true },
   "mode": { "type": "choice", "description": "In person, online, or both.", "values": ["in-person", "online"], "many": true },
-  "place": { "type": "place", "description": "Where the person meets, and how far they travel.", "reach": true, "when": { "mode": ["in-person"] } },
+  "place": { "type": "place", "description": "Where sessions can be held.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
   "degrees": { "type": "text", "description": "Degrees or certificates the tutor holds.", "roles": ["tutor"] }
 },
 "preview": ["levels", "description", "price", "mode", "place"],
@@ -157,20 +158,23 @@ type, never its name, except for the [shared names](#shared-names).
 | `number` | decimal text, such as `"2.5"` | filters by range |
 | `words` | a list of short words | filters by them |
 | `choice` | one of the field's `values` | filters by it |
-| `place` | `{ "area" }`, with `"lat"` and `"lon"` if wanted, and `"reachKm"` where its field has `reach` | matches what is near it |
+| `place` | `{ "lat", "lon", "radiusKm" }`, and `"area"` if wanted | matches circles that touch |
 | `money` | `{ "amount", "currency", "per" }` | prints it and sorts by it |
 | `moment` | a time, or `{ "from", "to" }` | filters by time |
 | `file` | the SHA-256 of one of the entry's `files`, in lowercase hex ([Photos](#photos)) | fetches it and shows it |
 | `hours` | `{ "zone", "slots": [ { "days", "from", "to" } ] }` | filters by day and time |
 
 - Numbers, amounts and coordinates are decimal text, since an entry holds only whole numbers.
-- `place`: `area` is the name people know it by, such as a town or a court. A point, `lat` and
-  `lon` in degrees, is optional: the app rounds it, and readers treat every point as rough.
-  `reachKm`, a whole number of kilometres, is how far the person goes, held only where its field
-  has `reach`. Two places match when their circles touch: the distance between their points is at
-  most the sum of their reaches, and a place with no reach is a point. A place with no point has
-  only its name to match by. Online is never a place: a market where people deal online too gives
-  that its own `choice`, and asks for a place only `when` it is in person, as `mode` above.
+- `place`: a point, `lat` and `lon` in degrees, and `radiusKm`, a whole number of kilometres, both
+  required; `area` is the name people know the area by, such as a town or a court, which an index
+  shows and finds the place by. Radius 0 is that exact spot; otherwise the place is somewhere in the
+  circle, or anywhere in it the person will go. Two places match when their circles touch: the
+  distance between their points is at most the sum of their radii. A point is rough unless the
+  radius is 0, and exact only for a public spot meant to be found, never a home's door. An app puts
+  the centre near the person, not on them, picks that spot once and keeps it, since fresh random
+  centres would average out to their home, and keeps their real spot inside the circle. Online is
+  never a place: a market where people deal online too gives that its own `choice`, and asks for a
+  place only `when` it is in person, as `mode` above.
 - `money`: `currency` is a code such as `USD`; `per` is what the amount is for, one of its field's
   `per`, left out for the whole deal.
 - `moment`: RFC 3339 with its zone, such as `2026-11-02T18:00:00+01:00`.
