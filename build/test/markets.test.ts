@@ -158,12 +158,11 @@ test('home-cleaning and home-repair split place by role: where the pro works fro
 })
 
 test('a field with when is held only where the fields it names hold one of its values', () => {
-  const shoes = 'shoeSize is only for a post whose kind is trainers, boots, sandals, heels, flats or slippers'
-  assert.equal(check('clothing', 'seller', 'post', { wearer: ['women'], kind: 'boots', shoeSize: '38.5' }), null)
-  assert.equal(check('clothing', 'seller', 'post', { kind: 'coat', shoeSize: '38' }), shoes)
-  assert.equal(check('clothing', 'seller', 'post', { shoeSize: '38' }), shoes)
-  assert.equal(check('clothing', 'seller', 'post', { shoeSize: '38', kind: 'boots' }), null)
-  assert.match(check('clothing', 'seller', 'post', { kind: 'boots', shoeSize: '38.25' })!, /^shoeSize takes one of 16, 17, /)
+  const shoes = 'footLength is only for a post whose kind is trainers, boots, sandals, heels, flats or slippers'
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['women'], kind: 'boots', footLength: '24.5' }), null)
+  assert.equal(check('clothing', 'seller', 'post', { kind: 'coat', footLength: '24.5' }), shoes)
+  assert.equal(check('clothing', 'seller', 'post', { footLength: '24.5' }), shoes)
+  assert.equal(check('clothing', 'seller', 'post', { footLength: '24.5', kind: 'boots' }), null)
 })
 
 test('with several fields named, all must match; a many field matches when any of its values does', () => {
@@ -175,13 +174,21 @@ test('with several fields named, all must match; a many field matches when any o
   assert.equal(check('clothing', 'seller', 'post', { wearer: 'women', kind: 'coat', size: 'm' }), 'wearer takes a list, each different, each one of women, men, girls, boys, baby')
 })
 
-test('a baby size from newborn to 24 months, and a kids size from 2 years up', () => {
-  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', babySize: '3-6m' }), null)
-  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['girls', 'boys'], kind: 'coat', kidsSize: '4-5y' }), null)
-  assert.match(check('clothing', 'buyer', 'post', { wearer: ['girls'], kind: 'nightwear', babySize: '3-6m' })!, /^babySize is only for a post whose wearer is baby, and whose kind is/)
-  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', kidsSize: '2-3y' })!, /^kidsSize is only for a post whose wearer is girls or boys, and whose kind is/)
-  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'coat', babySize: '2-3y' })!, /^babySize takes one of newborn, 0-3m, .* 18-24m$/)
-  assert.match(check('clothing', 'buyer', 'post', { wearer: ['boys'], kind: 'coat', kidsSize: '18-24m' })!, /^kidsSize takes one of 2-3y, .* 15-16y$/)
+test('a size labelled differently by country is the measure itself: foot length, waist and height', () => {
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['girls'], kind: 'trainers', footLength: '17' }), null)
+  assert.equal(check('clothing', 'seller', 'post', { kind: 'boots', footLength: 24.5 }), 'footLength takes a number as decimal text, such as "2.5"')
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'jeans', waist: '32' }), null)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['women'], kind: 'trousers', waist: '28' }), null)
+  assert.match(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'jeans', size: 'm' })!, /^size is only for a post whose wearer is women or men, and whose kind is top, .* or underwear$/)
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['boys'], kind: 'jeans', waist: '24' }), 'waist is only for a post whose wearer is women or men, and whose kind is trousers or jeans')
+  assert.equal(check('clothing', 'seller', 'post', { wearer: ['men'], kind: 'coat', waist: '32' }), 'waist is only for a post whose wearer is women or men, and whose kind is trousers or jeans')
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', height: '62' }), null)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['girls', 'boys'], kind: 'jeans', height: '128' }), null)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['women'], kind: 'coat', height: '104' })!, /^height is only for a post whose wearer is girls, boys or baby, and whose kind is top, /)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'slippers', height: '74' })!, /^height is only for a post whose wearer is girls, boys or baby, and whose kind is/)
+  for (const old of ['shoeSize', 'babySize', 'kidsSize']) {
+    assert.equal(check('clothing', 'seller', 'post', { [old]: '38' }), `a post in clothing has no field ${old}`)
+  }
 })
 
 test('a place asked only in person: online alone holds no place', () => {
