@@ -173,8 +173,15 @@ test('with several fields named, all must match; a many field matches when any o
   assert.match(check('clothing', 'seller', 'post', { ...adult, wearer: ['girls'] })!, /^size is only for a post whose wearer is women or men, and whose kind is top, shirt, .* or underwear$/)
   assert.match(check('clothing', 'seller', 'post', { wearer: ['women'], kind: 'boots', size: 'm' })!, /^size is only for a post whose wearer is women or men, and whose kind is/)
   assert.equal(check('clothing', 'seller', 'post', { wearer: 'women', kind: 'coat', size: 'm' }), 'wearer takes a list, each different, each one of women, men, girls, boys, baby')
-  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', kidsSize: '3-6m' }), null)
-  assert.match(check('clothing', 'buyer', 'post', { wearer: ['women'], kind: 'nightwear', kidsSize: '3-6m' })!, /^kidsSize is only for a post whose wearer is girls, boys or baby/)
+})
+
+test('a baby size from newborn to 24 months, and a kids size from 2 years up', () => {
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', babySize: '3-6m' }), null)
+  assert.equal(check('clothing', 'buyer', 'post', { wearer: ['girls', 'boys'], kind: 'coat', kidsSize: '4-5y' }), null)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['girls'], kind: 'nightwear', babySize: '3-6m' })!, /^babySize is only for a post whose wearer is baby, and whose kind is/)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'nightwear', kidsSize: '2-3y' })!, /^kidsSize is only for a post whose wearer is girls or boys, and whose kind is/)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['baby'], kind: 'coat', babySize: '2-3y' })!, /^babySize takes one of newborn, 0-3m, .* 18-24m$/)
+  assert.match(check('clothing', 'buyer', 'post', { wearer: ['boys'], kind: 'coat', kidsSize: '18-24m' })!, /^kidsSize takes one of 2-3y, .* 15-16y$/)
 })
 
 test('a place asked only in person: online alone holds no place', () => {

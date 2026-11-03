@@ -57,7 +57,7 @@ filters the other side searches with. So:
   need.
 - A picker (a `choice`) where people filter, text where they describe.
 - Every field is one someone would miss. More fields behind the form are fine when they make it
-  simpler: clothing asks one size question, and three fields behind it hold the answer.
+  simpler: clothing asks one size question, and four fields behind it hold the answer.
 - Use [`when`](#the-file) where a question only makes sense after an answer, such as a shoe size
   after the kind of item. Most markets need none, or one.
 - Before you propose, fill in a post as each role, and search as the other side.
