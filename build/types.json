@@ -29,19 +29,15 @@
       "type": "string"
     },
     "place": {
-      "description": "Online, or the name of an area, with a point rounded to precisionKm kilometres if wanted, online too if it says so, and how far the person goes. Searched by how near its point is.",
+      "description": "A place by the name people know it by, with a point if wanted, and how far the person goes where its field has reach. Matched by how near it is; every point is rough.",
       "$defs": {
         "area": {
-          "description": "The name people know the area by, such as a town or a district.",
+          "description": "The name people know the place by, such as a town, a district or a court.",
           "type": "string",
           "minLength": 1
         },
-        "online": {
-          "description": "The person deals online too.",
-          "const": true
-        },
         "reachKm": {
-          "description": "How many kilometres from the place the person goes.",
+          "description": "How many kilometres from the place the person goes, a whole number. Held only where the field has reach.",
           "type": "integer",
           "minimum": 0
         }
@@ -49,27 +45,19 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["online"],
-          "additionalProperties": false,
-          "properties": {
-            "online": { "const": true }
-          }
-        },
-        {
-          "type": "object",
           "required": ["area"],
           "additionalProperties": false,
           "properties": {
             "area": { "$ref": "#/$defs/place/$defs/area" },
-            "online": { "$ref": "#/$defs/place/$defs/online" },
             "reachKm": { "$ref": "#/$defs/place/$defs/reachKm" }
           }
         },
         {
           "type": "object",
-          "required": ["lat", "lon", "precisionKm", "area"],
+          "required": ["area", "lat", "lon"],
           "additionalProperties": false,
           "properties": {
+            "area": { "$ref": "#/$defs/place/$defs/area" },
             "lat": {
               "description": "Latitude in degrees, decimal text from -90 to 90.",
               "type": "string",
@@ -80,13 +68,6 @@
               "type": "string",
               "pattern": "^-?(180(\\.0+)?|(1[0-7][0-9]|[1-9]?[0-9])(\\.[0-9]+)?)$"
             },
-            "precisionKm": {
-              "description": "How many kilometres the point is rounded to.",
-              "type": "integer",
-              "minimum": 0
-            },
-            "area": { "$ref": "#/$defs/place/$defs/area" },
-            "online": { "$ref": "#/$defs/place/$defs/online" },
             "reachKm": { "$ref": "#/$defs/place/$defs/reachKm" }
           }
         }

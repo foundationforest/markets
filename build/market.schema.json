@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, what the dealing is, its roles, the fields of its posts, which of them a preview shows first, and the fields its reviews add. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, what the dealing is, its roles, the fields of its posts, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
   "type": "object",
   "required": ["name", "description", "roles", "post"],
   "additionalProperties": false,
@@ -22,17 +22,17 @@
       "items": { "$ref": "#/$defs/role" }
     },
     "post": {
-      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money, contact is one text.",
+      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money. Never contact, which every post may hold.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
         "description": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } },
-        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } },
-        "contact": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } }
-      }
+        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } }
+      },
+      "propertyNames": { "not": { "enum": ["contact"] } }
     },
     "preview": {
-      "description": "The post fields a post's preview shows first, in order, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the first field of type place, of those the market has.",
+      "description": "The post fields that matter first, in order: a form asks them first, and a result shows them first, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the fields of type place, of those the market has.",
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
@@ -105,16 +105,12 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/word" }
         },
-        "online": {
-          "description": "For a place field: false when the place is never online, such as where an item is. Left out: it may be online.",
-          "const": false
+        "reach": {
+          "description": "For a place field: the value may hold reachKm, and an app asks how far the person goes. Left out: no reachKm.",
+          "const": true
         },
         "many": {
           "description": "The field holds a list of its type. Never for words, which is a list already. Left out otherwise.",
-          "const": true
-        },
-        "required": {
-          "description": "An app asks for the field; nothing enforces it. Left out otherwise.",
           "const": true
         },
         "roles": {
@@ -123,6 +119,17 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/word" }
+        },
+        "when": {
+          "description": "The field applies only when each choice field named holds one of the values listed; for a many field, any of its values counts. It names choice fields of the same entry and their values; build/check.sh checks that it does. Left out: always.",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/line" }
+          }
         }
       },
       "allOf": [
@@ -141,7 +148,7 @@
         },
         {
           "if": { "properties": { "type": { "const": "place" } } },
-          "else": { "not": { "required": ["online"] } }
+          "else": { "not": { "required": ["reach"] } }
         }
       ]
     }

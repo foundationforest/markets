@@ -39,18 +39,20 @@ if (types === undefined || schema === undefined) finish()
 ajv.compile(types)
 const validateMarket = ajv.compile(schema)
 
-// The types are the names types.json defines, and the names every review holds are the package's
-// (src/markets.ts). The schema lists both too, for anyone who reads it alone; each list must agree,
-// so each is checked once, against its source.
+// The types are the names types.json defines, and the names every post and every review holds are
+// the package's (src/markets.ts). The schema lists them too, for anyone who reads it alone; each list
+// must agree, so each is checked once, against its source.
 const typeNames = Object.keys(types.$defs)
 const schemaTypes: string[] = schema.$defs.field.properties.type.enum
 if (!isDeepStrictEqual([...schemaTypes].sort(), [...typeNames].sort())) {
   report('build/market.schema.json', `its field types (${schemaTypes.join(', ')}) differ from build/types.json's (${typeNames.join(', ')})`)
 }
-const sharedNames = Object.keys(SHARED.review)
-const schemaShared: string[] | undefined = schema.properties?.review?.propertyNames?.not?.enum
-if (!isDeepStrictEqual(schemaShared, sharedNames)) {
-  report('build/market.schema.json', `the names a review field may not take (${schemaShared?.join(', ')}) differ from the ones every review holds in src/markets.ts (${sharedNames.join(', ')})`)
+for (const kind of ['post', 'review'] as const) {
+  const sharedNames = Object.keys(SHARED[kind])
+  const schemaShared: string[] | undefined = schema.properties?.[kind]?.propertyNames?.not?.enum
+  if (!isDeepStrictEqual(schemaShared, sharedNames)) {
+    report('build/market.schema.json', `the names a ${kind} field may not take (${schemaShared?.join(', ')}) differ from the ones every ${kind} holds in src/markets.ts (${sharedNames.join(', ')})`)
+  }
 }
 
 // One line per schema error, in plain words where ajv's own are unclear.
@@ -59,17 +61,18 @@ const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
   '#/properties/post/properties/description/not': 'must not hold "many": description is a shared name, and a post holds one',
   '#/properties/post/properties/price/not': 'must not hold "many": price is a shared name, and a post holds one',
-  '#/properties/post/properties/contact/not': 'must not hold "many": contact is a shared name, and a post holds one',
 }
 function say(e: ErrorObject): string {
   const at = e.instancePath || 'the file'
   if (e.propertyName !== undefined) {
     const name = JSON.stringify(e.propertyName)
     if (e.keyword === 'not' && e.propertyName === 'files') return `${at}: ${name} is not a field name: the standard keeps it for the files an entry names`
+    if (e.keyword === 'not' && at === '/post') return `${at}: ${name} is a field every post may hold: build/README.md defines it, and no market lists it`
     if (e.keyword === 'not') return `${at}: ${name} is a field every review holds: build/README.md defines it, and a market adds only others`
     return `${at}: ${name} is not a field name: a lowercase letter, then letters and digits, at most 64 characters`
   }
   if (e.keyword === 'minItems') return `${at} must hold at least ${e.params.limit}`
+  if (e.keyword === 'minProperties') return `${at} must name at least one field`
   if (PLAIN[e.schemaPath]) return `${at} ${PLAIN[e.schemaPath]}`
   if (e.keyword === 'const' && e.schemaPath.startsWith('#/properties/post/properties/')) {
     return `${at} must be ${JSON.stringify(e.params.allowedValue)}: ${e.instancePath.split('/')[2]} is a shared name`
@@ -82,7 +85,7 @@ function say(e: ErrorObject): string {
     return `${at}: "${rule.else.not.required[0]}" is only for a ${rule.if.properties.type.const} field`
   }
   if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
-  if (e.keyword === 'const' && /^\/(post|review)\/[^/]+\/(many|required|online)$/.test(e.instancePath)) {
+  if (e.keyword === 'const' && /^\/(post|review)\/[^/]+\/(many|reach)$/.test(e.instancePath)) {
     return `${at} must be ${e.params.allowedValue}, or left out`
   }
   if (e.keyword === 'required') return `${at}: "${e.params.missingProperty}" is missing`
@@ -94,6 +97,8 @@ function say(e: ErrorObject): string {
 // and a field's type outside the schema's list is said once, by the check against types.json.
 const repeats = (e: ErrorObject) =>
   e.keyword === 'if' || e.keyword === 'propertyNames' || (e.keyword === 'enum' && /^\/(post|review)\/[^/]+\/type$/.test(e.instancePath))
+
+const isObject = (v: unknown): v is { [key: string]: any } => typeof v === 'object' && v !== null && !Array.isArray(v)
 
 // 1 and 2: each market file.
 const files = existsSync(root('markets')) ? readdirSync(root('markets')).filter((f) => f.endsWith('.json')).sort() : []
@@ -124,7 +129,36 @@ for (const file of files) {
           report(where, `${at}/${name}/roles: "${role}" is not a role here: the roles are ${words.join(', ')}`)
         }
       }
+      // when: each name a choice field of the same entry, each value one of its values, and the field
+      // kept to the roles the named one is for, or it could never apply for the others.
+      for (const [dep, values] of Object.entries<any>(isObject(field?.when) ? field.when : {})) {
+        const of = Object.hasOwn(block, dep) ? block[dep] : undefined
+        if (of?.type !== 'choice' || !Array.isArray(of.values)) {
+          report(where, `${at}/${name}/when: "${dep}" is not a choice field in "${at.slice(1)}"`)
+          continue
+        }
+        for (const value of Array.isArray(values) ? values : []) {
+          if (!of.values.includes(value)) report(where, `${at}/${name}/when/${dep}: ${JSON.stringify(value)} is not one of ${dep}'s values`)
+        }
+        if (Array.isArray(of.roles) && !(Array.isArray(field.roles) && field.roles.every((role: unknown) => of.roles.includes(role)))) {
+          report(where, `${at}/${name}: its when names "${dep}", which is only for ${of.roles.join(', ')}, so its roles must be among those`)
+        }
+      }
     }
+    // when, again: no field depends on itself, directly or through others, so a form can ask each one
+    // after the fields it depends on.
+    const done = new Set<string>()
+    const visit = (name: string, path: string[]): void => {
+      if (path.includes(name)) {
+        report(where, `${at}: when goes in a loop (${[...path.slice(path.indexOf(name)), name].join(' depends on ')}), so a form cannot ask any of them first`)
+        return
+      }
+      if (done.has(name)) return
+      const when = isObject(block[name]?.when) ? block[name].when : {}
+      for (const dep of Object.keys(when)) if (Object.hasOwn(block, dep)) visit(dep, [...path, name])
+      done.add(name)
+    }
+    for (const name of Object.keys(block)) visit(name, [])
   }
   // preview: each name one of the market's post fields.
   const postNames = typeof market?.post === 'object' && market.post !== null ? Object.keys(market.post) : []
