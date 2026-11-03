@@ -29,7 +29,23 @@
       "type": "string"
     },
     "place": {
-      "description": "Online, or a point rounded to precisionKm kilometres, with the name of its area, online too if it says so, and how far from it the person goes. Searched by how near it is.",
+      "description": "Online, or the name of an area, with a point rounded to precisionKm kilometres if wanted, online too if it says so, and how far the person goes. Searched by how near its point is.",
+      "$defs": {
+        "area": {
+          "description": "The name people know the area by, such as a town or a district.",
+          "type": "string",
+          "minLength": 1
+        },
+        "online": {
+          "description": "The person deals online too.",
+          "const": true
+        },
+        "reachKm": {
+          "description": "How many kilometres from the place the person goes.",
+          "type": "integer",
+          "minimum": 0
+        }
+      },
       "oneOf": [
         {
           "type": "object",
@@ -37,6 +53,16 @@
           "additionalProperties": false,
           "properties": {
             "online": { "const": true }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["area"],
+          "additionalProperties": false,
+          "properties": {
+            "area": { "$ref": "#/$defs/place/$defs/area" },
+            "online": { "$ref": "#/$defs/place/$defs/online" },
+            "reachKm": { "$ref": "#/$defs/place/$defs/reachKm" }
           }
         },
         {
@@ -59,20 +85,9 @@
               "type": "integer",
               "minimum": 0
             },
-            "area": {
-              "description": "The name people know the area by, such as a town or a district.",
-              "type": "string",
-              "minLength": 1
-            },
-            "online": {
-              "description": "The person deals online too.",
-              "const": true
-            },
-            "reachKm": {
-              "description": "How many kilometres from the point the person goes.",
-              "type": "integer",
-              "minimum": 0
-            }
+            "area": { "$ref": "#/$defs/place/$defs/area" },
+            "online": { "$ref": "#/$defs/place/$defs/online" },
+            "reachKm": { "$ref": "#/$defs/place/$defs/reachKm" }
           }
         }
       ]
@@ -94,7 +109,7 @@
           "pattern": "^[A-Z]{3}$"
         },
         "per": {
-          "description": "What the amount is for, such as hour or night. Absent: the whole deal.",
+          "description": "What the amount is for, one of the per values its field lists, such as hour. Absent: the whole deal.",
           "type": "string",
           "minLength": 1
         }

@@ -98,6 +98,17 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/line" }
         },
+        "per": {
+          "description": "For a money field: what its amount may be for, such as hour or session. An amount may always leave per out, for the whole deal. Left out: it always does.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/word" }
+        },
+        "online": {
+          "description": "For a place field: false when the place is never online, such as where an item is. Left out: it may be online.",
+          "const": false
+        },
         "many": {
           "description": "The field holds a list of its type. Never for words, which is a list already. Left out otherwise.",
           "const": true
@@ -123,6 +134,14 @@
         {
           "if": { "properties": { "type": { "const": "words" } } },
           "then": { "not": { "required": ["many"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "money" } } },
+          "else": { "not": { "required": ["per"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "place" } } },
+          "else": { "not": { "required": ["online"] } }
         }
       ]
     }

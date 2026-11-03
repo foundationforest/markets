@@ -74,9 +74,17 @@ function say(e: ErrorObject): string {
   if (e.keyword === 'const' && e.schemaPath.startsWith('#/properties/post/properties/')) {
     return `${at} must be ${JSON.stringify(e.params.allowedValue)}: ${e.instancePath.split('/')[2]} is a shared name`
   }
-  if (e.keyword === 'not' && e.schemaPath.endsWith('/else/not')) return `${at}: "values" is only for a choice`
+  // A key kept for one type, such as values for a choice: the field's rule in the schema names both.
+  // ajv gives the path from the field, which it checks on its own.
+  const only = /\/allOf\/(\d+)\/else\/not$/.exec(e.schemaPath)
+  if (only) {
+    const rule = schema.$defs.field.allOf[Number(only[1])]
+    return `${at}: "${rule.else.not.required[0]}" is only for a ${rule.if.properties.type.const} field`
+  }
   if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
-  if (e.keyword === 'const' && /^\/(post|review)\/[^/]+\/(many|required)$/.test(e.instancePath)) return `${at} must be true, or left out`
+  if (e.keyword === 'const' && /^\/(post|review)\/[^/]+\/(many|required|online)$/.test(e.instancePath)) {
+    return `${at} must be ${e.params.allowedValue}, or left out`
+  }
   if (e.keyword === 'required') return `${at}: "${e.params.missingProperty}" is missing`
   if (e.keyword === 'additionalProperties') return `${at}: unknown key "${e.params.additionalProperty}"`
   if (e.keyword === 'enum') return `${at} must be one of ${e.params.allowedValues.map((v: unknown) => JSON.stringify(v)).join(', ')}`
