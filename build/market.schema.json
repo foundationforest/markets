@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, what the dealing is, its roles, the fields of its posts, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, what the dealing is, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
   "type": "object",
-  "required": ["name", "description", "roles", "post"],
+  "required": ["name", "description", "roles", "listing"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -21,8 +21,8 @@
       "minItems": 1,
       "items": { "$ref": "#/$defs/role" }
     },
-    "post": {
-      "description": "The fields of a post here, by name. The shared names keep their type: description is one text, price is one money. Never contact, which every post may hold.",
+    "listing": {
+      "description": "The fields of a listing here, by name. The shared names keep their type: description is one text, price is one money. Never contact, which every listing may hold.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
@@ -32,17 +32,17 @@
       "propertyNames": { "not": { "enum": ["contact"] } }
     },
     "preview": {
-      "description": "The post fields that matter first, in order: a form asks them first, and a result shows them first, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the fields of type place, of those the market has.",
+      "description": "The listing fields that matter first, in order: a form asks them first, and a result shows them first, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the fields of type place, of those the market has.",
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "description": "The name of one of the market's post fields; build/check.sh checks that it is.", "type": "string" }
+      "items": { "description": "The name of one of the market's listing fields; build/check.sh checks that it is.", "type": "string" }
     },
     "review": {
-      "description": "The fields a review here holds besides the ones every review holds (subject, score, text and post), by name. Left out: none.",
+      "description": "The fields a review here holds besides the ones every review holds (subject, score, text and listing), by name. Left out: none.",
       "$ref": "#/$defs/fields",
       "type": "object",
-      "propertyNames": { "not": { "enum": ["subject", "score", "text", "post"] } }
+      "propertyNames": { "not": { "enum": ["subject", "score", "text", "listing"] } }
     }
   },
   "$defs": {
@@ -59,16 +59,16 @@
     },
     "role": {
       "type": "object",
-      "required": ["role", "posts"],
+      "required": ["role", "listings"],
       "additionalProperties": false,
       "properties": {
         "role": {
           "description": "The role's word, the second half of its labels.",
           "$ref": "#/$defs/word"
         },
-        "posts": {
-          "description": "What this role's posts are: offers, requests, or just posts.",
-          "enum": ["offers", "requests", "posts"]
+        "listings": {
+          "description": "What this role's listings are: offers or requests.",
+          "enum": ["offers", "requests"]
         }
       }
     },
@@ -120,7 +120,7 @@
           "const": true
         },
         "roles": {
-          "description": "The market's roles the field is for: in post, the roles whose posts hold it; in review, the roles of the profile the review is about. Left out: every role.",
+          "description": "The market's roles the field is for: in listing, the roles whose listings hold it; in review, the roles of the profile the review is about. Left out: every role.",
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,

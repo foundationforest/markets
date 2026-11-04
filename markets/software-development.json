@@ -2,10 +2,10 @@
   "name": "software-development",
   "description": "People write software for others, remotely, paid per job or per hour.",
   "roles": [
-    { "role": "developer", "posts": "offers" },
-    { "role": "client", "posts": "requests" }
+    { "role": "developer", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
   ],
-  "post": {
+  "listing": {
     "description": { "type": "text", "description": "The work: what the software does, and how it is built." },
     "price": { "type": "money", "description": "The price per hour or for the job: the developer's asking price, or the client's budget.", "per": ["hour"] },
     "kind": { "type": "choice", "description": "What kind of software.", "values": ["website", "web-app", "mobile-app", "desktop-app", "backend", "data", "ai", "automation", "game", "embedded", "smart-contract"], "labels": { "ai": "AI" }, "many": true },

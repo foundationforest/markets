@@ -2,10 +2,10 @@
   "name": "home-repair",
   "description": "People fix things in other people's homes, such as plumbing, electrical work and small repairs, paid per hour or per job.",
   "roles": [
-    { "role": "repairer", "posts": "offers" },
-    { "role": "client", "posts": "requests" }
+    { "role": "repairer", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
   ],
-  "post": {
+  "listing": {
     "description": { "type": "text", "description": "The work: what is fixed, and how." },
     "price": { "type": "money", "description": "The price per hour, or for the whole job.", "per": ["hour"] },
     "repairs": { "type": "choice", "description": "The kinds of work.", "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "plastering", "tiling", "flooring", "roofing", "locks", "mounting", "furniture-assembly"], "many": true },

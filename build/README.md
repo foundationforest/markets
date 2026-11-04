@@ -17,10 +17,10 @@ one and ask:
 2. Would a good one be praised for different things?
 3. Would a person want the two kept from each other?
 
-Any yes: it is a new market. All no: it is the same market, and your topic is a field. Posts that
+Any yes: it is a new market. All no: it is the same market, and your topic is a field. Listings that
 need different fields are no reason to split: women's boots and men's coats are one market, and
-[`when`](#the-file) asks each post only what fits it. A review names its post, so an index can
-still tell plumbing from painting.
+[`when`](#the-file) asks each listing only what fits it. A review names its listing, so an index
+can still tell plumbing from painting.
 
 ## Naming
 
@@ -30,23 +30,24 @@ another dealing. A topic is never in a name; it is a field. A name is lowercase 
 single hyphens, at most 64 characters, and no other market's.
 
 Once a market is merged, its name and its roles' words never change, since they are part of every
-profile's key. Anything else may change. A pull request that makes existing posts or reviews stop
-fitting, by removing, retyping or narrowing anything, says so at its top, plainly: which ones stop
-fitting until they are written again.
+profile's key. Anything else may change. A pull request that makes existing listings or reviews
+stop fitting, by removing, retyping or narrowing anything, says so at its top, plainly: which ones
+stop fitting until they are written again.
 
 ## Roles
 
 ```json
 "roles": [
-  { "role": "tutor", "posts": "offers" },
-  { "role": "student", "posts": "requests" }
+  { "role": "tutor", "listings": "offers" },
+  { "role": "student", "listings": "requests" }
 ]
 ```
 
 - `role` is any word, spelled as a name is. A person holds one profile per role, labelled
   `<market>/<role>`.
-- `posts` says how to read the role's posts: `offers` (what it gives), `requests` (what it looks
-  for), or `posts` (plain posts). Every post is at `post/<id>` in its profile's
+- `listings` says what the role's listings are: `offers` (what it gives) or `requests` (what it
+  looks for). Where people of one role look for each other, as tennis players do, they are
+  requests. Every listing is at `listing/<id>` in its profile's
   [folder](https://github.com/foundationforest/standard/blob/main/folders/README.md#folders).
 
 ## What the file becomes
@@ -65,7 +66,7 @@ filters the other side searches with. So:
   simpler: clothing asks one size question, and five fields behind it hold the answer.
 - Use [`when`](#the-file) where a question only makes sense after an answer, such as a shoe size
   after the kind of item. Most markets need none, or one.
-- Before you propose, fill in a post as each role, and search as the other side.
+- Before you propose, fill in a listing as each role, and search as the other side.
 
 ## The file
 
@@ -76,8 +77,8 @@ filters the other side searches with. So:
 | `name` | The name, the same as the file's ([Naming](#naming)). |
 | `description` | What the dealing is, in one line. |
 | `roles` | One role or several ([Roles](#roles)). |
-| `post` | The fields of a post, by name. |
-| `preview` | Optional: the `post` fields that matter first ([below](#preview)). |
+| `listing` | The fields of a listing, by name. |
+| `preview` | Optional: the `listing` fields that matter first ([below](#preview)). |
 | `review` | Optional: fields a review here holds besides [the shared ones](#reviews-vouches-and-reports), by name. |
 
 A field is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line.
@@ -96,8 +97,8 @@ It may add:
   place starts at before the person changes it ([Types](#types)), such as 2 for an item to pick up,
   1 for a home, 5 for where people meet and 10 for where a pro works.
 - `"many": true`: a list of its type, such as several photos. Never on `words`, a list already.
-- `"roles"`: the roles the field is for. In `post`, only their posts hold it; in `review`, only
-  reviews of a profile in them. Left out: every role.
+- `"roles"`: the roles the field is for. In `listing`, only their listings hold it; in `review`,
+  only reviews of a profile in them. Left out: every role.
 - `"when"`: the field applies only when other `choice` fields of the same entry hold one of the
   values listed, such as `"when": { "kind": ["boots", "trainers"] }`. With several fields named,
   all must match; a `many` field matches when any of its values does. It names only `choice`
@@ -107,7 +108,7 @@ It may add:
   `roles` too, both must match.
 
 ```json
-"post": {
+"listing": {
   "description": { "type": "text", "description": "What the session covers." },
   "price": { "type": "money", "description": "The price per hour or per session.", "per": ["hour", "session"] },
   "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true },
@@ -123,17 +124,17 @@ It may add:
 
 A field's name is a key in an entry's body: a lowercase letter, then letters and digits, at most 64
 characters (`startTime`, not `start-time`). It is never `files`, which the standard keeps for an
-entry's files ([Photos](#photos)), never `contact`, which every post may hold
+entry's files ([Photos](#photos)), never `contact`, which every listing may hold
 ([Shared names](#shared-names)), and in `review` never a shared name.
 
 ### Preview
 
-`preview` lists the `post` fields that matter first, most needed first. A form asks them first,
+`preview` lists the `listing` fields that matter first, most needed first. A form asks them first,
 each after any field it depends on through `when`, then the rest; a search result, a short list or
-a spoken summary shows them first, of those the post holds. It names content, never a screen shape.
-Left out, it is `description`, `price`, then the `place` fields, of those the market has. Write it
-only where that is wrong, such as with no price, or where photos or a topic matter first, like
-`levels` above.
+a spoken summary shows them first, of those the listing holds. It names content, never a screen
+shape. Left out, it is `description`, `price`, then the `place` fields, of those the market has.
+Write it only where that is wrong, such as with no price, or where photos or a topic matter first,
+like `levels` above.
 
 ## Reviews, vouches and reports
 
@@ -141,7 +142,7 @@ The same in every market:
 
 | Kind | At | Says | Fields |
 |---|---|---|---|
-| review | `review/<id>` | how a deal with the profile went | `subject`, `score`, `text`, `post`, and the market's `review` fields |
+| review | `review/<id>` | how a deal with the profile went | `subject`, `score`, `text`, `listing`, and the market's `review` fields |
 | vouch | `vouch/<id>` | "I know this profile is real and honest." | `subject`, `text` |
 | report | `report/<id>` | "This profile is fake or a scam." | `subject`, `text` |
 
@@ -149,8 +150,8 @@ The same in every market:
   check demands, since only it says who an entry is about.
 - `score` (number): the rating, `"1"` to `"10"` with at most one decimal, such as `"8.5"`.
 - `text` (text): what the writer says.
-- `post` (text): the address of the post a review is about, `<profile address>/post/<id>`, whoever
-  wrote it.
+- `listing` (text): the address of the listing a review is about,
+  `<profile address>/listing/<id>`, whoever wrote it.
 
 ## Types
 
@@ -190,13 +191,13 @@ Use `choice` for a topic people filter by, and `words` only for open tags.
 
 ## Photos
 
-A photo is one of its entry's files. Give `post` a field of type `file`, `many` for more than one:
+A photo is one of its entry's files. Give `listing` a field of type `file`, `many` for several:
 
 ```json
 "photos": { "type": "file", "description": "Photos of the item.", "many": true }
 ```
 
-A post names each photo there by its SHA-256, and lists it in `files` as
+A listing names each photo there by its SHA-256, and lists it in `files` as
 [the standard names a file](https://github.com/foundationforest/standard/blob/main/folders/README.md#files):
 
 ```json
@@ -213,21 +214,21 @@ A post names each photo there by its SHA-256, and lists it in `files` as
 }
 ```
 
-The app writes the post, then uploads the bytes to the folder's hosts, which keep them while a
+The app writes the listing, then uploads the bytes to the folder's hosts, which keep them while a
 current entry names them: a newer version that leaves a photo out lets it go, and a hash not in
 `files` names nothing. A review holds files the same way.
 
 ## Shared names
 
 These keep their meaning and type in every market, so a program finds them by name: the fields
-every review, vouch and report holds, and three in `post`, none ever `many`:
+every review, vouch and report holds, and three in `listing`, none ever `many`:
 
-- `description` (text): the post's main text, among any other text it holds. A market lists it.
-- `price` (money): what the post costs, however it is paid, and the money a program sorts by. A
-  market lists it where posts have a price.
+- `description` (text): the listing's main text, among any other text it holds. A market lists it.
+- `price` (money): what the listing costs, however it is paid, and the money a program sorts by.
+  A market lists it where listings have a price.
 - `contact` (text): how to reach the writer outside Forest, such as a phone, a handle or an
-  email. Every post may hold it, and no market lists it. It is public to anyone, and the same
-  contact on two profiles links them, so it is the person's choice per post.
+  email. Every listing may hold it, and no market lists it. It is public to anyone, and the same
+  contact on two profiles links them, so it is the person's choice per listing.
 
 ## Propose
 
@@ -256,10 +257,10 @@ import { loadMarkets } from '@foundationforest/markets'
 const markets = loadMarkets() // the checkout the package is in; loadMarkets(dir) reads another
 markets.directory // directory.json
 markets.market('tutoring') // markets/tutoring.json
-markets.checkEntry('tutoring', 'tutor', 'post', { subjects: ['knitting'] })
+markets.checkEntry('tutoring', 'tutor', 'listing', { subjects: ['knitting'] })
 // 'subjects takes a list, each different, each one of maths, physics, …'
-markets.checkEntry('clothing', 'seller', 'post', { kind: 'coat', footLength: '24.5' })
-// 'footLength is only for a post whose kind is trainers, boots, sandals, heels, flats or slippers'
+markets.checkEntry('clothing', 'seller', 'listing', { kind: 'coat', footLength: '24.5' })
+// 'footLength is only for a listing whose kind is trainers, boots, sandals, heels, flats or slippers'
 markets.checkEntry('home-repair', 'client', 'review', { subject, onTime: 'yes' }, 'repairer')
 // null
 ```
@@ -281,17 +282,17 @@ const markets = loadMarkets({ directory, types, markets: [clothing, electronics 
 Both entries run the same code. It imports nothing, makes no code from strings, and reads
 `build/types.json` as data, so a page and a program give every entry the same answer.
 
-`checkEntry(market, role, kind, body, aboutRole?)` checks a post, a review, a vouch or a report by a
-`role` profile as this manual says, and answers `null` when it fits, else the first field that does
-not, in plain words. For a review, `aboutRole` is the role of the profile it is about: a field kept
-for some roles is checked against it, and goes unchecked without it. It demands no field but the
-`subject` of a review, a vouch or a report. Whether `subject`, or the profile in `post`, is an
-address, and the body's `files`, are
+`checkEntry(market, role, kind, body, aboutRole?)` checks a listing, a review, a vouch or a report
+by a `role` profile as this manual says, and answers `null` when it fits, else the first field that
+does not, in plain words. For a review, `aboutRole` is the role of the profile it is about: a field
+kept for some roles is checked against it, and goes unchecked without it. It demands no field but
+the `subject` of a review, a vouch or a report. Whether `subject`, or the profile in `listing`, is
+an address, and the body's `files`, are
 [the standard's](https://github.com/foundationforest/standard/blob/main/folders/README.md) checks.
 
 The package also exports `SHARED`, the fields each kind holds in every market beyond its market's,
-as a market's fields are written: a post's `contact`, and what every review, vouch and report
-holds. `previewOf(market)` gives the names of a market's post fields that matter first, most
+as a market's fields are written: a listing's `contact`, and what every review, vouch and report
+holds. `previewOf(market)` gives the names of a market's listing fields that matter first, most
 needed first, as [Preview](#preview) says: its `preview`, or else `description`, `price`, then its
 `place` fields, of those it has. `npm test` runs its tests; `npm run check` type-checks it, and the
 browser entry again without Node's types.
