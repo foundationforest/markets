@@ -12,8 +12,8 @@ import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { loadMarkets as loadGiven } from '../src/browser.ts'
-import { SHARED, loadMarkets, type Markets } from '../src/index.ts'
+import { loadMarkets as loadGiven, previewOf as previewGiven } from '../src/browser.ts'
+import { SHARED, loadMarkets, previewOf, type Markets } from '../src/index.ts'
 import { fromFiles } from '../src/markets.ts'
 import { browser, files } from './browser.ts'
 
@@ -150,6 +150,15 @@ test('every place field sets the radius an app starts at', () => {
     'clothing location': 2, 'electronics location': 2, 'home-cleaning base': 10, 'home-cleaning home': 1, 'home-repair base': 10,
     'home-repair home': 1, 'sports-coaching place': 5, 'tennis-matches place': 5, 'tutoring place': 5,
   })
+})
+
+test("previewOf gives a market's preview, or else description, price, then its place fields, of those it has", () => {
+  for (const { name } of markets.directory.markets) assert.deepEqual(previewOf(markets.market(name)!), markets.market(name)!.preview)
+  const { preview: _repair, ...homeRepair } = markets.market('home-repair')!
+  assert.deepEqual(previewOf(homeRepair), ['description', 'price', 'base', 'home'])
+  const { preview: _tennis, ...tennis } = markets.market('tennis-matches')!
+  assert.deepEqual(previewOf(tennis), ['description', 'place'])
+  assert.equal(previewGiven, previewOf)
 })
 
 test('home-cleaning and home-repair split place by role: the area the pro works in, and where the home is', () => {

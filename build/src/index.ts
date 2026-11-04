@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fromFiles, type Directory, type Market, type Markets } from './markets.ts'
 
-export { SHARED, type Directory, type Field, type Fields, type Kind, type Market, type Markets, type Role, type Type } from './markets.ts'
+export { SHARED, previewOf, type Directory, type Field, type Fields, type Kind, type Market, type Markets, type Role, type Type } from './markets.ts'
 
 /** The checkout this package sits in: src/ and dist/ are in build/, which is in the checkout. */
 const HERE = fileURLToPath(new URL('../../', import.meta.url))

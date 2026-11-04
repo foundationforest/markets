@@ -1,7 +1,7 @@
 # Runs build/check.sh on every pull request and every push to main: every market file against
 # build/market.schema.json and build/types.json, and directory.json and directory.md as the market
-# files write them. Then the package in build/ type-checks and passes its tests; a test that skips
-# fails: the summary must say "# skipped 0".
+# files write them. Then the package in build/ type-checks, builds as every reader imports it, and
+# passes its tests; a test that skips fails: the summary must say "# skipped 0".
 
 name: check
 
@@ -33,6 +33,9 @@ jobs:
       - name: Type-check
         working-directory: build
         run: npm run check
+      - name: Build
+        working-directory: build
+        run: npm run build
       - name: Test
         working-directory: build
         run: |
