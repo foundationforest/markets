@@ -16,6 +16,8 @@ export type Field = {
   type: Type
   description: string
   values?: string[]
+  /** For a choice field: how people read a value whose words are wrong, such as XL for xl; every other value reads as its words. */
+  labels?: { [value: string]: string }
   per?: string[]
   /** For a place field: the radius, in whole kilometres, a new place starts at. */
   radiusKm?: number

@@ -84,6 +84,10 @@ It may add:
 
 - `"values"`, for a `choice` and only for one: the list to choose from. Values never overlap, and
   none is `other`, `either` or `both`: leaving the field out says other, and `many` says both.
+- `"labels"`, for a `choice` and only for one: how people read a value whose words are wrong,
+  such as `{ "xl": "XL" }`. A value's words are the value with hyphens as spaces and a capital
+  first letter, such as `New with tags`. Readers show a value's label where the field has one,
+  otherwise the value in words.
 - `"per"`, for a `money` field and only for one: what its amount may be for, such as
   `["hour", "session"]`. An amount may always leave `per` out, for the whole deal; with no list,
   it always does, as the price of a jacket.

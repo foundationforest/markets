@@ -15,6 +15,7 @@
       "type": "choice",
       "description": "The size of adult clothes, by the letter on the label, such as m.",
       "values": ["xxs", "xs", "s", "m", "l", "xl", "xxl", "3xl", "4xl", "one-size"],
+      "labels": { "xxs": "XXS", "xs": "XS", "xl": "XL", "xxl": "XXL", "3xl": "3XL", "4xl": "4XL" },
       "when": {
         "wearer": ["women", "men"],
         "kind": ["top", "shirt", "jumper", "dress", "skirt", "leggings", "joggers", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
@@ -33,6 +34,7 @@
       "type": "choice",
       "description": "The size of baby clothes, by age in months as the label prints it, such as 6-9m.",
       "values": ["newborn", "0-3m", "3-6m", "6-9m", "9-12m", "12-18m", "18-24m"],
+      "labels": { "0-3m": "0-3 months", "3-6m": "3-6 months", "6-9m": "6-9 months", "9-12m": "9-12 months", "12-18m": "12-18 months", "18-24m": "18-24 months" },
       "when": {
         "wearer": ["baby"],
         "kind": ["top", "shirt", "jumper", "dress", "skirt", "trousers", "jeans", "leggings", "joggers", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
@@ -42,6 +44,7 @@
       "type": "choice",
       "description": "The size of children's clothes, by age in years as the label prints it, such as 4-5y.",
       "values": ["2-3y", "3-4y", "4-5y", "5-6y", "6-7y", "7-8y", "8-9y", "9-10y", "10-11y", "11-12y", "12-13y", "13-14y", "14-15y", "15-16y"],
+      "labels": { "2-3y": "2-3 years", "3-4y": "3-4 years", "4-5y": "4-5 years", "5-6y": "5-6 years", "6-7y": "6-7 years", "7-8y": "7-8 years", "8-9y": "8-9 years", "9-10y": "9-10 years", "10-11y": "10-11 years", "11-12y": "11-12 years", "12-13y": "12-13 years", "13-14y": "13-14 years", "14-15y": "14-15 years", "15-16y": "15-16 years" },
       "when": {
         "wearer": ["girls", "boys"],
         "kind": ["top", "shirt", "jumper", "dress", "skirt", "trousers", "jeans", "leggings", "joggers", "shorts", "jumpsuit", "suit", "jacket", "coat", "swimwear", "nightwear", "underwear"]
@@ -51,6 +54,7 @@
       "type": "choice",
       "description": "The shoe size in centimetres, the length of foot it fits, as the label prints it after CM, in half steps from children's to adults', such as 29 for a men's US 11.",
       "values": ["7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "12.5", "13", "13.5", "14", "14.5", "15", "15.5", "16", "16.5", "17", "17.5", "18", "18.5", "19", "19.5", "20", "20.5", "21", "21.5", "22", "22.5", "23", "23.5", "24", "24.5", "25", "25.5", "26", "26.5", "27", "27.5", "28", "28.5", "29", "29.5", "30", "30.5", "31", "31.5", "32", "32.5", "33"],
+      "labels": { "7": "7 cm", "7.5": "7.5 cm", "8": "8 cm", "8.5": "8.5 cm", "9": "9 cm", "9.5": "9.5 cm", "10": "10 cm", "10.5": "10.5 cm", "11": "11 cm", "11.5": "11.5 cm", "12": "12 cm", "12.5": "12.5 cm", "13": "13 cm", "13.5": "13.5 cm", "14": "14 cm", "14.5": "14.5 cm", "15": "15 cm", "15.5": "15.5 cm", "16": "16 cm", "16.5": "16.5 cm", "17": "17 cm", "17.5": "17.5 cm", "18": "18 cm", "18.5": "18.5 cm", "19": "19 cm", "19.5": "19.5 cm", "20": "20 cm", "20.5": "20.5 cm", "21": "21 cm", "21.5": "21.5 cm", "22": "22 cm", "22.5": "22.5 cm", "23": "23 cm", "23.5": "23.5 cm", "24": "24 cm", "24.5": "24.5 cm", "25": "25 cm", "25.5": "25.5 cm", "26": "26 cm", "26.5": "26.5 cm", "27": "27 cm", "27.5": "27.5 cm", "28": "28 cm", "28.5": "28.5 cm", "29": "29 cm", "29.5": "29.5 cm", "30": "30 cm", "30.5": "30.5 cm", "31": "31 cm", "31.5": "31.5 cm", "32": "32 cm", "32.5": "32.5 cm", "33": "33 cm" },
       "when": { "kind": ["trainers", "boots", "sandals", "heels", "flats", "slippers"] }
     },
     "brand": { "type": "text", "description": "The brand, if any." },

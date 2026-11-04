@@ -9,7 +9,7 @@
     "description": { "type": "text", "description": "The item and anything to know about it." },
     "price": { "type": "money", "description": "The price of the item, without shipping." },
     "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] },
-    "kind": { "type": "choice", "description": "What kind of item it is.", "values": ["phone", "tablet", "laptop", "desktop", "monitor", "console", "camera", "audio", "tv", "watch"] },
+    "kind": { "type": "choice", "description": "What kind of item it is.", "values": ["phone", "tablet", "laptop", "desktop", "monitor", "console", "camera", "audio", "tv", "watch"], "labels": { "tv": "TV" } },
     "model": { "type": "text", "description": "The brand and model, such as iPhone 13 128 GB." },
     "condition": { "type": "choice", "description": "The item's condition.", "values": ["new", "like-new", "good", "fair", "for-parts"] },
     "delivery": { "type": "choice", "description": "Picked up, shipped, or both.", "values": ["pickup", "shipping"], "many": true },
