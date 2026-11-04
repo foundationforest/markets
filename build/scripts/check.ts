@@ -40,15 +40,15 @@ if (types === undefined || schema === undefined) finish()
 ajv.compile(types)
 const validateMarket = ajv.compile(schema)
 
-// The types are the names types.json defines, and the names every post and every review holds are
-// the package's (src/markets.ts). The schema lists them too, for anyone who reads it alone; each list
-// must agree, so each is checked once, against its source.
+// The types are the names types.json defines, and the names every listing and every review holds
+// are the package's (src/markets.ts). The schema lists them too, for anyone who reads it alone; each
+// list must agree, so each is checked once, against its source.
 const typeNames = Object.keys(types.$defs)
 const schemaTypes: string[] = schema.$defs.field.properties.type.enum
 if (!isDeepStrictEqual([...schemaTypes].sort(), [...typeNames].sort())) {
   report('build/market.schema.json', `its field types (${schemaTypes.join(', ')}) differ from build/types.json's (${typeNames.join(', ')})`)
 }
-for (const kind of ['post', 'review'] as const) {
+for (const kind of ['listing', 'review'] as const) {
   const sharedNames = Object.keys(SHARED[kind])
   const schemaShared: string[] | undefined = schema.properties?.[kind]?.propertyNames?.not?.enum
   if (!isDeepStrictEqual(schemaShared, sharedNames)) {
@@ -60,22 +60,22 @@ for (const kind of ['post', 'review'] as const) {
 const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/word/pattern': 'must be lowercase letters, digits and single hyphens',
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
-  '#/properties/post/properties/description/not': 'must not hold "many": description is a shared name, and a post holds one',
-  '#/properties/post/properties/price/not': 'must not hold "many": price is a shared name, and a post holds one',
+  '#/properties/listing/properties/description/not': 'must not hold "many": description is a shared name, and a listing holds one',
+  '#/properties/listing/properties/price/not': 'must not hold "many": price is a shared name, and a listing holds one',
 }
 function say(e: ErrorObject): string {
   const at = e.instancePath || 'the file'
   if (e.propertyName !== undefined) {
     const name = JSON.stringify(e.propertyName)
     if (e.keyword === 'not' && e.propertyName === 'files') return `${at}: ${name} is not a field name: the standard keeps it for the files an entry names`
-    if (e.keyword === 'not' && at === '/post') return `${at}: ${name} is a field every post may hold: build/README.md defines it, and no market lists it`
+    if (e.keyword === 'not' && at === '/listing') return `${at}: ${name} is a field every listing may hold: build/README.md defines it, and no market lists it`
     if (e.keyword === 'not') return `${at}: ${name} is a field every review holds: build/README.md defines it, and a market adds only others`
     return `${at}: ${name} is not a field name: a lowercase letter, then letters and digits, at most 64 characters`
   }
   if (e.keyword === 'minItems') return `${at} must hold at least ${e.params.limit}`
   if (e.keyword === 'minProperties') return `${at} must name at least one field`
   if (PLAIN[e.schemaPath]) return `${at} ${PLAIN[e.schemaPath]}`
-  if (e.keyword === 'const' && e.schemaPath.startsWith('#/properties/post/properties/')) {
+  if (e.keyword === 'const' && e.schemaPath.startsWith('#/properties/listing/properties/')) {
     return `${at} must be ${JSON.stringify(e.params.allowedValue)}: ${e.instancePath.split('/')[2]} is a shared name`
   }
   // A key kept for one type, such as values for a choice: the field's rule in the schema names both.
@@ -86,7 +86,7 @@ function say(e: ErrorObject): string {
     return `${at}: "${rule.else.not.required[0]}" is only for a ${rule.if.properties.type.const} field`
   }
   if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
-  if (e.keyword === 'const' && /^\/(post|review)\/[^/]+\/many$/.test(e.instancePath)) {
+  if (e.keyword === 'const' && /^\/(listing|review)\/[^/]+\/many$/.test(e.instancePath)) {
     return `${at} must be ${e.params.allowedValue}, or left out`
   }
   if (e.keyword === 'required') return `${at}: "${e.params.missingProperty}" is missing`
@@ -97,7 +97,7 @@ function say(e: ErrorObject): string {
 // Errors that only repeat another: an "if" repeats its "then", a "propertyNames" its name's error,
 // and a field's type outside the schema's list is said once, by the check against types.json.
 const repeats = (e: ErrorObject) =>
-  e.keyword === 'if' || e.keyword === 'propertyNames' || (e.keyword === 'enum' && /^\/(post|review)\/[^/]+\/type$/.test(e.instancePath))
+  e.keyword === 'if' || e.keyword === 'propertyNames' || (e.keyword === 'enum' && /^\/(listing|review)\/[^/]+\/type$/.test(e.instancePath))
 
 const isObject = (v: unknown): v is { [key: string]: any } => typeof v === 'object' && v !== null && !Array.isArray(v)
 
@@ -119,7 +119,7 @@ for (const file of files) {
   for (const word of new Set(words.filter((w, i) => typeof w === 'string' && words.indexOf(w) !== i))) {
     report(where, `the role "${word}" is listed twice`)
   }
-  for (const [at, block] of [['/post', market?.post], ['/review', market?.review]]) {
+  for (const [at, block] of [['/listing', market?.listing], ['/review', market?.review]]) {
     if (typeof block !== 'object' || block === null) continue
     for (const [name, field] of Object.entries<any>(block)) {
       if (typeof field?.type === 'string' && !typeNames.includes(field.type)) {
@@ -167,11 +167,11 @@ for (const file of files) {
     }
     for (const name of Object.keys(block)) visit(name, [])
   }
-  // preview: each name one of the market's post fields.
-  const postNames = typeof market?.post === 'object' && market.post !== null ? Object.keys(market.post) : []
+  // preview: each name one of the market's listing fields.
+  const listingNames = typeof market?.listing === 'object' && market.listing !== null ? Object.keys(market.listing) : []
   for (const name of Array.isArray(market?.preview) ? market.preview : []) {
-    if (typeof name === 'string' && !postNames.includes(name)) {
-      report(where, `/preview: "${name}" is not a field in "post": the fields are ${postNames.join(', ')}`)
+    if (typeof name === 'string' && !listingNames.includes(name)) {
+      report(where, `/preview: "${name}" is not a field in "listing": the fields are ${listingNames.join(', ')}`)
     }
   }
 }
@@ -179,7 +179,7 @@ for (const file of files) {
 // 3: directory.json and directory.md, written from the market files once they all pass.
 if (problems.size === 0) {
   const listed = markets
-    .map(({ name, description, roles }) => ({ name, description, roles: roles.map(({ role, posts }: any) => ({ role, posts })) }))
+    .map(({ name, description, roles }) => ({ name, description, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
   const lines = [
     '# Directory',
@@ -192,7 +192,7 @@ if (problems.size === 0) {
   if (listed.length === 0) lines.push('No markets yet.')
   for (const { name, description, roles } of listed) {
     const end = /[.!?]$/.test(description) ? '' : '.'
-    lines.push(`- [\`${name}\`](markets/${name}.json): ${description}${end} Roles: ${roles.map((r: any) => `${r.role} (${r.posts})`).join(', ')}.`)
+    lines.push(`- [\`${name}\`](markets/${name}.json): ${description}${end} Roles: ${roles.map((r: any) => `${r.role} (${r.listings})`).join(', ')}.`)
   }
   const written = {
     'directory.json': `${JSON.stringify({ markets: listed }, null, 2)}\n`,

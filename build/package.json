@@ -2,7 +2,7 @@
   "name": "@foundationforest/markets",
   "version": "0.0.0",
   "private": true,
-  "description": "The Forest markets: the directory, each market file, and checkEntry, which checks a post, a review, a vouch or a report against its market. The package reads them from a markets checkout; its browser entry takes the same files as data, and runs no code made from strings. check.sh checks every market file, and writes directory.json and directory.md from them.",
+  "description": "The Forest markets: the directory, each market file, and checkEntry, which checks a listing, a review, a vouch or a report against its market. The package reads them from a markets checkout; its browser entry takes the same files as data, and runs no code made from strings. check.sh checks every market file, and writes directory.json and directory.md from them.",
   "license": "CC0-1.0",
   "type": "module",
   "engines": {

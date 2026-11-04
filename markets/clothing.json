@@ -2,10 +2,10 @@
   "name": "clothing",
   "description": "People sell clothes and shoes they own, picked up in person or shipped.",
   "roles": [
-    { "role": "seller", "posts": "offers" },
-    { "role": "buyer", "posts": "requests" }
+    { "role": "seller", "listings": "offers" },
+    { "role": "buyer", "listings": "requests" }
   ],
-  "post": {
+  "listing": {
     "description": { "type": "text", "description": "The item and anything to know about it, such as the exact size on its label." },
     "price": { "type": "money", "description": "The price of the item, without shipping." },
     "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] },
@@ -64,6 +64,6 @@
   },
   "preview": ["photos", "description", "price", "size", "waist", "babySize", "kidsSize", "footLength", "brand", "condition", "location"],
   "review": {
-    "asDescribed": { "type": "choice", "description": "Whether the item was as the post said.", "values": ["yes", "no"], "roles": ["seller"] }
+    "asDescribed": { "type": "choice", "description": "Whether the item was as the listing said.", "values": ["yes", "no"], "roles": ["seller"] }
   }
 }

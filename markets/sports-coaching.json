@@ -2,10 +2,10 @@
   "name": "sports-coaching",
   "description": "Coaches teach a sport one on one or in small groups, paid per session or per hour, in person or online.",
   "roles": [
-    { "role": "coach", "posts": "offers" },
-    { "role": "student", "posts": "requests" }
+    { "role": "coach", "listings": "offers" },
+    { "role": "student", "listings": "requests" }
   ],
-  "post": {
+  "listing": {
     "description": { "type": "text", "description": "The coaching: what is taught, and how." },
     "price": { "type": "money", "description": "The price per person: per hour, per session, or for a whole course.", "per": ["hour", "session"] },
     "sports": { "type": "choice", "description": "The sports the coaching is for; football is soccer, and hockey is field hockey.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "american-football", "basketball", "volleyball", "rugby", "hockey", "ice-hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics"], "many": true },

@@ -2,10 +2,10 @@
   "name": "home-cleaning",
   "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
   "roles": [
-    { "role": "cleaner", "posts": "offers" },
-    { "role": "client", "posts": "requests" }
+    { "role": "cleaner", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
   ],
-  "post": {
+  "listing": {
     "description": { "type": "text", "description": "The cleaning: what is cleaned, and how." },
     "price": { "type": "money", "description": "The price per hour or per visit, or for the whole job.", "per": ["hour", "visit"] },
     "base": { "type": "place", "description": "The area the cleaner works in.", "radiusKm": 10, "roles": ["cleaner"] },

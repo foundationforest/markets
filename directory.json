@@ -6,11 +6,11 @@
       "roles": [
         {
           "role": "seller",
-          "posts": "offers"
+          "listings": "offers"
         },
         {
           "role": "buyer",
-          "posts": "requests"
+          "listings": "requests"
         }
       ]
     },
@@ -20,11 +20,11 @@
       "roles": [
         {
           "role": "seller",
-          "posts": "offers"
+          "listings": "offers"
         },
         {
           "role": "buyer",
-          "posts": "requests"
+          "listings": "requests"
         }
       ]
     },
@@ -34,11 +34,11 @@
       "roles": [
         {
           "role": "cleaner",
-          "posts": "offers"
+          "listings": "offers"
         },
         {
           "role": "client",
-          "posts": "requests"
+          "listings": "requests"
         }
       ]
     },
@@ -48,11 +48,11 @@
       "roles": [
         {
           "role": "repairer",
-          "posts": "offers"
+          "listings": "offers"
         },
         {
           "role": "client",
-          "posts": "requests"
+          "listings": "requests"
         }
       ]
     },
@@ -62,11 +62,11 @@
       "roles": [
         {
           "role": "developer",
-          "posts": "offers"
+          "listings": "offers"
         },
         {
           "role": "client",
-          "posts": "requests"
+          "listings": "requests"
         }
       ]
     },
@@ -76,11 +76,11 @@
       "roles": [
         {
           "role": "coach",
-          "posts": "offers"
+          "listings": "offers"
         },
         {
           "role": "student",
-          "posts": "requests"
+          "listings": "requests"
         }
       ]
     },
@@ -90,7 +90,7 @@
       "roles": [
         {
           "role": "player",
-          "posts": "posts"
+          "listings": "requests"
         }
       ]
     },
@@ -100,11 +100,11 @@
       "roles": [
         {
           "role": "tutor",
-          "posts": "offers"
+          "listings": "offers"
         },
         {
           "role": "student",
-          "posts": "requests"
+          "listings": "requests"
         }
       ]
     }

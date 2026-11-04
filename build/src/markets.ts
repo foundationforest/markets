@@ -1,15 +1,15 @@
-// The markets from their files, given as data, and checkEntry, which checks a post, a review, a vouch
-// or a report against its market as the manual says (build/README.md). Both entries use it: index.ts
-// reads the files from a checkout, browser.ts takes them from a page. It imports nothing and makes no
-// code from strings, so it runs where a content security policy forbids eval.
+// The markets from their files, given as data, and checkEntry, which checks a listing, a review, a
+// vouch or a report against its market as the manual says (build/README.md). Both entries use it:
+// index.ts reads the files from a checkout, browser.ts takes them from a page. It imports nothing and
+// makes no code from strings, so it runs where a content security policy forbids eval.
 //
 // A body fits when each of its fields is one its market names for that kind and role, or a shared
 // one, held only where its `when` matches, of its type (build/types.json): a choice among its values,
 // money with a `per` its field lists or none, a place with a point and a radius, `many` a list of
-// distinct values, a `file` the SHA-256 of one of the body's `files`. `files` is the
-// standard's, checked with the entry, and no market's field. No field must be held, except that a
-// review, a vouch and a report name their subject: only it says who one is about. Whether `subject`,
-// or the profile in a review's `post`, is an address is the standard's check (folders), not this one.
+// distinct values, a `file` the SHA-256 of one of the body's `files`. `files` is the standard's,
+// checked with the entry, and no market's field. No field must be held, except that a review, a
+// vouch and a report name their subject: only it says who one is about. Whether `subject`, or the
+// profile in a review's `listing`, is an address is the standard's check (folders), not this one.
 
 export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 'moment' | 'file' | 'hours'
 export type Field = {
@@ -27,32 +27,32 @@ export type Field = {
   when?: { [field: string]: string[] }
 }
 export type Fields = { [name: string]: Field }
-export type Role = { role: string; posts: 'offers' | 'requests' | 'posts' }
+export type Role = { role: string; listings: 'offers' | 'requests' }
 /** A market file, markets/<name>.json, as build/market.schema.json defines it. */
-export type Market = { name: string; description: string; roles: Role[]; post: Fields; preview?: string[]; review?: Fields }
+export type Market = { name: string; description: string; roles: Role[]; listing: Fields; preview?: string[]; review?: Fields }
 /** directory.json: every market, its description and its roles. */
 export type Directory = { markets: Array<Pick<Market, 'name' | 'description' | 'roles'>> }
 /** The files the markets are read from: directory.json, build/types.json, and the market file of each market the directory lists. */
 export type Files = { directory: Directory; types: unknown; markets: Market[] }
 
-const KINDS = ['post', 'review', 'vouch', 'report'] as const
+const KINDS = ['listing', 'review', 'vouch', 'report'] as const
 /** The kinds of entry, each at `<kind>/<id>` in a profile's folder. */
 export type Kind = (typeof KINDS)[number]
 
 /**
  * The fields each kind holds in every market, beyond its market's, as the manual defines them: a
- * post's contact (Shared names), and what every review, vouch and report holds (Reviews, vouches and
- * reports). A market adds fields to its reviews only, and never lists contact.
+ * listing's contact (Shared names), and what every review, vouch and report holds (Reviews, vouches
+ * and reports). A market adds fields to its reviews only, and never lists contact.
  */
 export const SHARED: { [kind in Kind]: Fields } = {
-  post: {
+  listing: {
     contact: { type: 'text', description: 'How to reach the writer outside Forest, such as a phone, a handle or an email.' },
   },
   review: {
     subject: { type: 'text', description: 'The address of the profile the review is about, in the same market.' },
     score: { type: 'number', description: 'The rating, from "1" to "10" with at most one decimal, such as "8.5".' },
     text: { type: 'text', description: 'What the reviewer says.' },
-    post: { type: 'text', description: 'The address of the post the review is about, <profile address>/post/<id>, whoever wrote it.' },
+    listing: { type: 'text', description: 'The address of the listing the review is about, <profile address>/listing/<id>, whoever wrote it.' },
   },
   vouch: {
     subject: { type: 'text', description: 'The address of the profile the vouch is about, in the same market.' },
@@ -65,18 +65,18 @@ export const SHARED: { [kind in Kind]: Fields } = {
 }
 
 /**
- * The names of a market's post fields that matter first, most needed first, as the manual's Preview
+ * The names of a market's listing fields that matter first, most needed first, as the manual's Preview
  * says: its preview, or else description, price, then its place fields, of those it has.
  */
 export function previewOf(market: Market): string[] {
-  const { post } = market
-  return market.preview ?? [...['description', 'price'].filter((name) => Object.hasOwn(post, name)), ...Object.keys(post).filter((name) => post[name]!.type === 'place')]
+  const { listing } = market
+  return market.preview ?? [...['description', 'price'].filter((name) => Object.hasOwn(listing, name)), ...Object.keys(listing).filter((name) => listing[name]!.type === 'place')]
 }
 
 /** What a shared name takes beyond its type. */
 const MEANS: { [name: string]: { fits: RegExp; takes: string } } = {
   score: { fits: /^(10(\.0)?|[1-9](\.[0-9])?)$/, takes: 'a number from "1" to "10" with at most one decimal, such as "8.5"' },
-  post: { fits: /^[^/]+\/post\/[^/]+$/, takes: "a post's address, <profile address>/post/<id>" },
+  listing: { fits: /^[^/]+\/listing\/[^/]+$/, takes: "a listing's address, <profile address>/listing/<id>" },
 }
 
 /** What each type takes, in words; choice and money say what their field allows. */
@@ -153,20 +153,20 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
       if (!market) return `${name} is not a market in the directory`
       const roles = market.roles.map((r) => r.role)
       if (!roles.includes(role)) return `${role} is not a role in ${name}: its roles are ${roles.join(', ')}`
-      if (!(KINDS as readonly string[]).includes(kind)) return `${kind} is not a kind of entry: the kinds are post, review, vouch and report`
+      if (!(KINDS as readonly string[]).includes(kind)) return `${kind} is not a kind of entry: the kinds are listing, review, vouch and report`
       if (aboutRole !== undefined && !roles.includes(aboutRole)) return `${aboutRole} is not a role in ${name}: its roles are ${roles.join(', ')}`
       if (!isObject(body)) return `a ${kind} is an object of its fields`
       const shared = SHARED[kind as Kind]
-      if (kind !== 'post' && !Object.hasOwn(body, 'subject')) return `a ${kind} names its subject: the address of the profile it is about`
-      const fields: Fields = kind === 'post' ? { ...market.post, ...shared } : kind === 'review' ? { ...shared, ...market.review } : shared
+      if (kind !== 'listing' && !Object.hasOwn(body, 'subject')) return `a ${kind} names its subject: the address of the profile it is about`
+      const fields: Fields = kind === 'listing' ? { ...market.listing, ...shared } : kind === 'review' ? { ...shared, ...market.review } : shared
       const files = filesOf(body)
       for (const [key, value] of Object.entries(body)) {
         if (key === 'files') continue
         if (!Object.hasOwn(fields, key)) return `a ${kind} in ${name} has no field ${key}`
         const field = fields[key]!
-        const is = kind === 'post' ? role : aboutRole
+        const is = kind === 'listing' ? role : aboutRole
         if (field.roles && is !== undefined && !field.roles.includes(is)) {
-          return `${key} is for ${kind === 'post' ? 'posts by' : `${kind}s of`} ${field.roles.join(' or ')}`
+          return `${key} is for ${kind === 'listing' ? 'listings by' : `${kind}s of`} ${field.roles.join(' or ')}`
         }
         // when: each field it names holds one of its values; a many field, any of them.
         const when = Object.entries(field.when ?? {})
