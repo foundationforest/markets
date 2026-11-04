@@ -30,8 +30,9 @@ another dealing. A topic is never in a name; it is a field. A name is lowercase 
 single hyphens, at most 64 characters, and no other market's.
 
 Once a market is merged, its name and its roles' words never change, since they are part of every
-profile's key. Fields can be added, and a field's `values`, `per` and `when` lists can grow;
-nothing is removed, retyped or narrowed.
+profile's key. Anything else may change. A pull request that makes existing posts or reviews stop
+fitting, by removing, retyping or narrowing anything, says so at its top, plainly: which ones stop
+fitting until they are written again.
 
 ## Roles
 
@@ -290,5 +291,7 @@ address, and the body's `files`, are
 
 The package also exports `SHARED`, the fields each kind holds in every market beyond its market's,
 as a market's fields are written: a post's `contact`, and what every review, vouch and report
-holds. `npm test` runs its tests; `npm run check` type-checks it, and the browser entry again
-without Node's types.
+holds. `previewOf(market)` gives the names of a market's post fields that matter first, most
+needed first, as [Preview](#preview) says: its `preview`, or else `description`, `price`, then its
+`place` fields, of those it has. `npm test` runs its tests; `npm run check` type-checks it, and the
+browser entry again without Node's types.

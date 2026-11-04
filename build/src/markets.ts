@@ -64,6 +64,15 @@ export const SHARED: { [kind in Kind]: Fields } = {
   },
 }
 
+/**
+ * The names of a market's post fields that matter first, most needed first, as the manual's Preview
+ * says: its preview, or else description, price, then its place fields, of those it has.
+ */
+export function previewOf(market: Market): string[] {
+  const { post } = market
+  return market.preview ?? [...['description', 'price'].filter((name) => Object.hasOwn(post, name)), ...Object.keys(post).filter((name) => post[name]!.type === 'place')]
+}
+
 /** What a shared name takes beyond its type. */
 const MEANS: { [name: string]: { fits: RegExp; takes: string } } = {
   score: { fits: /^(10(\.0)?|[1-9](\.[0-9])?)$/, takes: 'a number from "1" to "10" with at most one decimal, such as "8.5"' },
