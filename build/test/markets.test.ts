@@ -5,7 +5,9 @@
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
@@ -250,6 +252,36 @@ test('choices hold no other, either or both: leaving a field out says other, and
       for (const value of ['other', 'either', 'both', 'unisex']) assert.ok(!field.values?.includes(value), `${name} ${key} holds ${value}`)
     }
   }
+})
+
+/** What build/check.sh's check prints for a checkout of this one's types and schema and one market file. */
+const checkFile = (market: { name: string }) => {
+  const dir = mkdtempSync(join(tmpdir(), 'markets-'))
+  try {
+    for (const path of ['build', 'markets']) mkdirSync(join(dir, path))
+    for (const path of ['build/types.json', 'build/market.schema.json']) copyFileSync(join(ROOT, path), join(dir, path))
+    writeFileSync(join(dir, `markets/${market.name}.json`), JSON.stringify(market))
+    const script = fileURLToPath(new URL('../scripts/check.ts', import.meta.url))
+    return spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', script, dir], { encoding: 'utf8' })
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+test('the check refuses labels on a field that is not a choice', () => {
+  const clothing = json('markets/clothing.json')
+  clothing.post.brand.labels = { gap: 'GAP' }
+  const run = checkFile(clothing)
+  assert.equal(run.stderr, 'markets/clothing.json:\n  - /post/brand: "labels" is only for a choice field\n')
+  assert.equal(run.status, 1)
+})
+
+test("the check refuses a label for a value its field does not list", () => {
+  const clothing = json('markets/clothing.json')
+  clothing.post.size.labels = { ...clothing.post.size.labels, '5xl': '5XL' }
+  const run = checkFile(clothing)
+  assert.equal(run.stderr, `markets/clothing.json:\n  - /post/size/labels: "5xl" is not one of size's values\n`)
+  assert.equal(run.status, 1)
 })
 
 test('the first field that does not fit is the one answered', () => {

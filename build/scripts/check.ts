@@ -9,7 +9,8 @@ import { Ajv2020, type ErrorObject } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
 import { SHARED } from '../src/markets.ts'
 
-const ROOT = fileURLToPath(new URL('../../', import.meta.url))
+// The checkout to check: this one, or the one its first argument names, as the tests do.
+const ROOT = process.argv[2] ?? fileURLToPath(new URL('../../', import.meta.url))
 const root = (path: string) => join(ROOT, path)
 const problems = new Map<string, string[]>()
 const report = (where: string, error: string) => problems.set(where, [...(problems.get(where) ?? []), error])
@@ -127,6 +128,12 @@ for (const file of files) {
       for (const role of Array.isArray(field?.roles) ? field.roles : []) {
         if (typeof role === 'string' && !words.includes(role)) {
           report(where, `${at}/${name}/roles: "${role}" is not a role here: the roles are ${words.join(', ')}`)
+        }
+      }
+      // labels: each one for a value the field lists. On a field of another type, the schema says so.
+      if (field?.type === 'choice' && Array.isArray(field.values) && isObject(field.labels)) {
+        for (const value of Object.keys(field.labels)) {
+          if (!field.values.includes(value)) report(where, `${at}/${name}/labels: ${JSON.stringify(value)} is not one of ${name}'s values`)
         }
       }
       // when: each name a choice field of the same entry, each value one of its values, and the field

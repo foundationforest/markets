@@ -98,6 +98,11 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/line" }
         },
+        "labels": {
+          "description": "For a choice: how people read a value whose words are wrong, such as XL for xl. A value's words are the value with hyphens as spaces and a capital first letter. Each key is one of the field's values; build/check.sh checks that it is. Left out: every value reads as its words.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/line" }
+        },
         "per": {
           "description": "For a money field: what its amount may be for, such as hour or session. An amount may always leave per out, for the whole deal. Left out: it always does.",
           "type": "array",
@@ -138,6 +143,10 @@
           "if": { "properties": { "type": { "const": "choice" } } },
           "then": { "required": ["values"] },
           "else": { "not": { "required": ["values"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "choice" } } },
+          "else": { "not": { "required": ["labels"] } }
         },
         {
           "if": { "properties": { "type": { "const": "words" } } },
