@@ -254,7 +254,7 @@ test('a field with roles and when holds only where both match, in a listing and 
   assert.equal(knitting.checkEntry('knitting', 'knitter', 'review', { subject, late: 'yes', days: '2' }, 'client'), 'days is for reviews of knitter')
 })
 
-test('choices hold no other, either or both: leaving a field out says other, and many says both', () => {
+test('choices hold no other, either or both: a field is left out when no value fits, and many says both', () => {
   for (const { name } of markets.directory.markets) {
     const { listing, review = {} } = markets.market(name)!
     for (const [key, field] of Object.entries({ ...listing, ...review })) {

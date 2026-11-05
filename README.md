@@ -14,7 +14,7 @@ A market is a kind of dealing, like tutoring or selling electronics. This repo h
 
 - A profile's label names its market and its role, like `tutoring/tutor`.
 - A role's listings are offers or requests, at `listing/<id>`, with the fields its market lists.
-- Reviews, vouches and reports have one shape in every market. A market may add fields to its reviews only.
+- Reviews, vouches and reports have one shape in every market: a review says how a deal with a profile went, with a score; a vouch is a review with no score and no deal ("I know they're real and honest"); a report says "this is fake or a scam". A market may add fields to its reviews only.
 - Payments come later, through the standard's [escrow](https://github.com/foundationforest/standard/blob/main/escrows/README.md).
 
 ## Add a market
