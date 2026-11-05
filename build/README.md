@@ -5,9 +5,10 @@ format, and [`types.json`](types.json) its types.
 
 ## Is it a market
 
-A person holds one profile per market and role, and nothing public links them, so a reputation in
-one market counts in another only if the person shows it there, with a reputation proof. Keep a
-market as narrow as the dealing people look for, never wider to pool reputation.
+A seed, the secret a person's profiles are made from, holds one profile per market and role, and
+one person may hold more than one seed. Nothing public links one profile to another, so a
+reputation in one market counts in another only if the person shows it there, with a reputation
+proof. Keep a market as narrow as the dealing people look for, never wider to pool reputation.
 
 First check [`directory.md`](../directory.md): the market may be there. If not, take the nearest
 one and ask:
@@ -43,8 +44,7 @@ stop fitting until they are written again.
 ]
 ```
 
-- `role` is any word, spelled as a name is. A person holds one profile per role, labelled
-  `<market>/<role>`.
+- `role` is any word, spelled as a name is. A profile's label is `<market>/<role>`.
 - `listings` says what the role's listings are: `offers` (what it gives) or `requests` (what it
   looks for). Where people of one role look for each other, as tennis players do, they are
   requests. Every listing is at `listing/<id>` in its profile's
@@ -52,8 +52,8 @@ stop fitting until they are written again.
 
 ## What the file becomes
 
-A market file becomes two things: the form a stranger fills in on a phone in a minute, and the
-filters the other side searches with. So:
+A market file becomes two things: the form a stranger fills in on a phone in a minute, and what an
+index can turn into filters for the other side, as each index chooses. So:
 
 - Start from how the best marketplaces for that dealing ask today, across countries, not in one,
   then cut what Forest doesn't need. A market serves every country, so each field holds in all.
@@ -81,11 +81,15 @@ filters the other side searches with. So:
 | `preview` | Optional: the `listing` fields that matter first ([below](#preview)). |
 | `review` | Optional: fields a review here holds besides [the shared ones](#reviews-vouches-and-reports), by name. |
 
+An entry may leave out any field, except that a review, a vouch and a report must name their
+`subject`, since only it says who one is about.
+
 A field is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line.
 It may add:
 
-- `"values"`, for a `choice` and only for one: the list to choose from. Values never overlap, and
-  none is `other`, `either` or `both`: leaving the field out says other, and `many` says both.
+- `"values"`, for a `choice` and only for one: the list to choose from. Values never overlap,
+  and none is `other`, `either` or `both`: leave the field out when no value fits, and `many`
+  says both.
 - `"labels"`, for a `choice` and only for one: how people read a value whose words are wrong,
   such as `{ "xl": "XL" }`. A value's words are the value with hyphens as spaces and a capital
   first letter, such as `New with tags`. Readers show a value's label where the field has one,
@@ -146,8 +150,8 @@ The same in every market:
 | vouch | `vouch/<id>` | "I know this profile is real and honest." | `subject`, `text` |
 | report | `report/<id>` | "This profile is fake or a scam." | `subject`, `text` |
 
-- `subject` (text): the address of the profile it is about, in the same market; the one field a
-  check demands, since only it says who an entry is about.
+- `subject` (text): the address of the profile it is about, in the same market, and the one field
+  it must hold.
 - `score` (number): the rating, `"1"` to `"10"` with at most one decimal, such as `"8.5"`.
 - `text` (text): what the writer says.
 - `listing` (text): the address of the listing a review is about,
@@ -286,8 +290,8 @@ Both entries run the same code. It imports nothing, makes no code from strings, 
 by a `role` profile as this manual says, and answers `null` when it fits, else the first field that
 does not, in plain words. For a review, `aboutRole` is the role of the profile it is about: a field
 kept for some roles is checked against it, and goes unchecked without it. It demands no field but
-the `subject` of a review, a vouch or a report. Whether `subject`, or the profile in `listing`, is
-an address, and the body's `files`, are
+`subject` ([The file](#the-file)). Whether `subject`, or the profile in `listing`, is an address,
+and the body's `files`, are
 [the standard's](https://github.com/foundationforest/standard/blob/main/folders/README.md) checks.
 
 The package also exports `SHARED`, the fields each kind holds in every market beyond its market's,
