@@ -1,8 +1,9 @@
 {
   "name": "tours",
   "summary": "Local guides show a group around, paid on the day.",
-  "description": "The tour may be a food, walking, history or nature tour, or any other kind. For adults.",
+  "description": "The tour may be a food, walking, history or nature tour, or any other kind, and is paid per person or, for a private tour, for the whole group. For adults.",
   "status": "beta",
+  "icon": "map-trifold",
   "number": 11,
   "roles": [
     { "role": "guide", "listings": "offers" },
@@ -10,7 +11,7 @@
   ],
   "listing": {
     "description": { "type": "text", "description": "The tour, in the writer's words: where it goes, what it shows, and how." },
-    "price": { "type": "money", "description": "The price per person, or for the whole group on a private tour; 0 per person, in the local currency, for a tour paid by tips or what people want; in a request, the most the guest would pay.", "per": ["person"] },
+    "price": { "type": "money", "description": "Each price of the tour: per person, with a count for a set number of people, such as 45 for 2, and with no per for a private tour of the whole group; 0 per person, in the local currency, for a tour paid by tips or what people want; in a request, the most the guest would pay.", "per": ["person"] },
     "themes": { "type": "choice", "description": "What the tour is about, and how it goes: walking is a tour the writer says goes on foot.", "values": ["food", "walking", "history", "nature", "art"], "many": true },
     "languages": {
       "type": "choice",
@@ -19,8 +20,8 @@
       "labels": { "aa": "Afar", "ab": "Abkhazian", "ae": "Avestan", "af": "Afrikaans", "ak": "Akan", "am": "Amharic", "an": "Aragonese", "ar": "Arabic", "as": "Assamese", "av": "Avaric", "ay": "Aymara", "az": "Azerbaijani", "ba": "Bashkir", "be": "Belarusian", "bg": "Bulgarian", "bi": "Bislama", "bm": "Bambara", "bn": "Bangla", "bo": "Tibetan", "br": "Breton", "bs": "Bosnian", "ca": "Catalan", "ce": "Chechen", "ch": "Chamorro", "co": "Corsican", "cr": "Cree", "cs": "Czech", "cu": "Church Slavic", "cv": "Chuvash", "cy": "Welsh", "da": "Danish", "de": "German", "dv": "Divehi", "dz": "Dzongkha", "ee": "Ewe", "el": "Greek", "en": "English", "eo": "Esperanto", "es": "Spanish", "et": "Estonian", "eu": "Basque", "fa": "Persian", "ff": "Fula", "fi": "Finnish", "fj": "Fijian", "fo": "Faroese", "fr": "French", "fy": "Western Frisian", "ga": "Irish", "gd": "Scottish Gaelic", "gl": "Galician", "gn": "Guarani", "gu": "Gujarati", "gv": "Manx", "ha": "Hausa", "he": "Hebrew", "hi": "Hindi", "ho": "Hiri Motu", "hr": "Croatian", "ht": "Haitian Creole", "hu": "Hungarian", "hy": "Armenian", "hz": "Herero", "ia": "Interlingua", "id": "Indonesian", "ie": "Interlingue", "ig": "Igbo", "ii": "Sichuan Yi", "ik": "Inupiaq", "io": "Ido", "is": "Icelandic", "it": "Italian", "iu": "Inuktitut", "ja": "Japanese", "jv": "Javanese", "ka": "Georgian", "kg": "Kongo", "ki": "Kikuyu", "kj": "Kuanyama", "kk": "Kazakh", "kl": "Kalaallisut", "km": "Khmer", "kn": "Kannada", "ko": "Korean", "kr": "Kanuri", "ks": "Kashmiri", "ku": "Kurdish", "kv": "Komi", "kw": "Cornish", "ky": "Kyrgyz", "la": "Latin", "lb": "Luxembourgish", "lg": "Ganda", "li": "Limburgish", "ln": "Lingala", "lo": "Lao", "lt": "Lithuanian", "lu": "Luba-Katanga", "lv": "Latvian", "mg": "Malagasy", "mh": "Marshallese", "mi": "Māori", "mk": "Macedonian", "ml": "Malayalam", "mn": "Mongolian", "mr": "Marathi", "ms": "Malay", "mt": "Maltese", "my": "Burmese", "na": "Nauru", "nb": "Norwegian Bokmål", "nd": "North Ndebele", "ne": "Nepali", "ng": "Ndonga", "nl": "Dutch", "nn": "Norwegian Nynorsk", "no": "Norwegian", "nr": "South Ndebele", "nv": "Navajo", "ny": "Nyanja", "oc": "Occitan", "oj": "Ojibwa", "om": "Oromo", "or": "Odia", "os": "Ossetic", "pa": "Punjabi", "pi": "Pali", "pl": "Polish", "ps": "Pashto", "pt": "Portuguese", "qu": "Quechua", "rm": "Romansh", "rn": "Rundi", "ro": "Romanian", "ru": "Russian", "rw": "Kinyarwanda", "sa": "Sanskrit", "sc": "Sardinian", "sd": "Sindhi", "se": "Northern Sami", "sg": "Sango", "si": "Sinhala", "sk": "Slovak", "sl": "Slovenian", "sm": "Samoan", "sn": "Shona", "so": "Somali", "sq": "Albanian", "sr": "Serbian", "ss": "Swati", "st": "Southern Sotho", "su": "Sundanese", "sv": "Swedish", "sw": "Swahili", "ta": "Tamil", "te": "Telugu", "tg": "Tajik", "th": "Thai", "ti": "Tigrinya", "tk": "Turkmen", "tl": "Tagalog", "tn": "Tswana", "to": "Tongan", "tr": "Turkish", "ts": "Tsonga", "tt": "Tatar", "tw": "Twi", "ty": "Tahitian", "ug": "Uyghur", "uk": "Ukrainian", "ur": "Urdu", "uz": "Uzbek", "ve": "Venda", "vi": "Vietnamese", "vo": "Volapük", "wa": "Walloon", "wo": "Wolof", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "za": "Zhuang", "zh": "Chinese", "zu": "Zulu" },
       "many": true
     },
-    "duration": { "type": "number", "description": "How long the tour lasts, such as 2.5.", "unit": "hours" },
-    "groupSize": { "type": "number", "description": "The most people in one group.", "unit": "people", "roles": ["guide"] },
+    "duration": { "type": "number", "description": "How long the tour lasts, such as 2.5, or the shortest and the longest, such as 2 to 3.", "unit": "hours", "range": true },
+    "groupSize": { "type": "number", "description": "How many people in one group: up to a most, such as up to 12, or the fewest the tour runs with and the most, such as 2 to 12.", "unit": "people", "range": true, "roles": ["guide"] },
     "people": { "type": "number", "description": "How many people come, the guest included.", "unit": "people", "roles": ["guest"] },
     "start": { "type": "place", "description": "Where the tour starts: a public spot, such as a square or a station, exact; or, while no spot is set, a circle round the area.", "radiusKm": 0, "roles": ["guide"] },
     "destination": { "type": "place", "description": "Where the guest wants a tour: anywhere in the circle.", "radiusKm": 10, "roles": ["guest"] },

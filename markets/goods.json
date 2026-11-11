@@ -3,6 +3,7 @@
   "summary": "People sell everyday things, new or used.",
   "description": "Things are handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
   "status": "beta",
+  "icon": "tag",
   "number": 4,
   "roles": [
     { "role": "seller", "listings": "offers" },
@@ -14,7 +15,7 @@
     "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] },
     "category": {
       "type": "choice",
-      "description": "What kind of thing it is. Accessories are bags, jewellery and the like; home is things for the home, such as kitchenware, but not furniture or appliances; music is instruments and records; games are board games and video games; baby is prams, cots and the like, not clothes or shoes; sports is gear for a sport; bikes include children's bikes.",
+      "description": "What kind of thing it is. Electronics are phones, computers, cameras, TVs and audio; accessories are bags, jewellery and the like; home is things for the home, such as kitchenware, but not furniture or appliances; music is instruments and records; games are board games, video games and game consoles; baby is prams, cots and the like, not clothes or shoes; sports is gear for a sport; bikes include children's bikes.",
       "values": ["clothes", "shoes", "accessories", "electronics", "appliances", "furniture", "home", "garden", "tools", "books", "music", "games", "toys", "baby", "sports", "bikes"]
     },
     "condition": {
@@ -26,10 +27,10 @@
     "wearer": { "type": "choice", "description": "Who it is made for, as the person says: children include babies; for both women and men, both.", "values": ["women", "men", "children"], "many": true, "when": { "category": ["clothes", "shoes"] } },
     "size": {
       "type": "choice",
-      "description": "The letter size on the label, such as m.",
+      "description": "The letter size on the label, such as m, or a bike's frame size in letters.",
       "values": ["xxs", "xs", "s", "m", "l", "xl", "xxl", "3xl", "4xl", "one-size"],
       "labels": { "xxs": "XXS", "xs": "XS", "xl": "XL", "xxl": "XXL", "3xl": "3XL", "4xl": "4XL" },
-      "when": { "category": ["clothes"] }
+      "when": { "category": ["clothes", "bikes"] }
     },
     "waist": {
       "type": "choice",

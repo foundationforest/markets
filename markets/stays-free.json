@@ -1,8 +1,9 @@
 {
   "name": "stays-free",
   "summary": "Hosts give guests a couch or a room for free.",
-  "description": "Hosts ask only for good company: no tasks and no money between them. For adults.",
+  "description": "Hosts ask only for good company: no tasks and no money between them; a bed for help is stays-work. For adults.",
   "status": "beta",
+  "icon": "couch",
   "number": 9,
   "roles": [
     { "role": "host", "listings": "offers" },
@@ -12,15 +13,14 @@
     "description": { "type": "text", "description": "The stay, in the writer's words: the home, the host or the guest, and what they would like to share." },
     "bed": {
       "type": "choice",
-      "description": "Where the guest sleeps: a couch in a shared space, a room shared with people outside the guest's own party, or a room for the guest's party alone.",
+      "description": "Where the guest sleeps, a couch in a shared space, a room shared with people outside the guest's own party, or a room for the guest's party alone: in a host's listing, each the host offers; in a guest's, each the guest would take.",
       "values": ["couch", "shared-room", "private-room"],
-      "roles": ["host"]
+      "many": true
     },
     "welcomes": { "type": "choice", "description": "Who the host takes in, for a host who takes only women or only men; left out, anyone.", "values": ["women", "men"], "many": true, "roles": ["host"] },
-    "guests": { "type": "number", "description": "The most guests the host takes at once.", "unit": "people", "roles": ["host"] },
+    "guests": { "type": "number", "description": "How many guests the host takes at once, from every party together: up to a most, such as up to 2, or the fewest and the most.", "unit": "people", "range": true, "roles": ["host"] },
     "travellers": { "type": "number", "description": "How many people travel together, the guest included.", "unit": "people", "roles": ["guest"] },
-    "maxNights": { "type": "number", "description": "The most nights a guest can stay; a week is 7 nights.", "unit": "nights", "roles": ["host"] },
-    "nights": { "type": "number", "description": "How many nights the guest wants to stay with one host, within dates; a week is 7 nights; left out when dates are the day they arrive and the day they leave.", "unit": "nights", "roles": ["guest"] },
+    "nights": { "type": "number", "description": "How many nights one stay lasts, a week as 7: in a host's listing, the stays the host takes, such as up to 3, or 2 to 4; in a guest's, how long they want to stay with one host, within dates, such as 2, left out when dates are the day they arrive and the day they leave.", "unit": "nights", "range": true },
     "dates": { "type": "moment", "description": "When: in a host's listing, the span the host takes guests in; in a guest's, from the earliest day they could arrive to the latest day they would leave." },
     "languages": {
       "type": "choice",
