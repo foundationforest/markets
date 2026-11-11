@@ -13,9 +13,9 @@
     "description": { "type": "text", "description": "The stay, in the writer's words: the home, the host or the guest, and what they would like to share." },
     "bed": {
       "type": "choice",
-      "description": "Where the guest sleeps: a couch in a shared space, a room shared with people outside the guest's own party, or a room for the guest's party alone.",
+      "description": "Where the guest sleeps, a couch in a shared space, a room shared with people outside the guest's own party, or a room for the guest's party alone: in a host's listing, each the host offers; in a guest's, each the guest would take.",
       "values": ["couch", "shared-room", "private-room"],
-      "roles": ["host"]
+      "many": true
     },
     "welcomes": { "type": "choice", "description": "Who the host takes in, for a host who takes only women or only men; left out, anyone.", "values": ["women", "men"], "many": true, "roles": ["host"] },
     "guests": { "type": "number", "description": "How many guests the host takes at once, from every party together: up to a most, such as up to 2, or the fewest and the most.", "unit": "people", "range": true, "roles": ["host"] },

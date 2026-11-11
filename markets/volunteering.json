@@ -22,7 +22,8 @@
     "dates": { "type": "moment", "description": "When, for help on set days: in an offer, when it starts, or the span it runs, such as a cleanup from 10:00 to 13:00; in a request, the span the volunteer is free, such as while they are in town." },
     "hours": { "type": "hours", "description": "When, for help every week: in an offer, the shifts, such as Saturdays from 9:00 to 12:00; in a request, when the volunteer is free each week." },
     "weeklyHours": { "type": "number", "description": "For help every week, how many hours a week: what the organizer asks, or what the volunteer gives, such as 5, or 2 to 4.", "unit": "hours", "range": true },
-    "volunteers": { "type": "number", "description": "How many volunteers the organizer needs at once, or for each shift: such as 10, or the fewest and the most, such as 10 to 20, or at least 5.", "unit": "people", "range": true, "roles": ["organizer"] },
+    "shiftHours": { "type": "number", "description": "How long one shift lasts, or the shortest and the longest, such as 2 to 3.", "unit": "hours", "range": true },
+    "volunteers": { "type": "number", "description": "How many volunteers the organizer needs, in all or for each shift, the description saying which: such as 10, or the fewest and the most, such as 10 to 20, or at least 5.", "unit": "people", "range": true, "roles": ["organizer"] },
     "people": { "type": "number", "description": "How many come together, the volunteer included, such as 4 for a group of friends or coworkers.", "unit": "people", "roles": ["volunteer"] },
     "languages": {
       "type": "choice",

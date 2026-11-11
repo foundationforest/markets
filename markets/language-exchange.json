@@ -35,6 +35,6 @@
   },
   "preview": ["learns", "speaks", "level", "description", "mode", "place"],
   "review": {
-    "showedUp": { "type": "choice", "description": "Whether they came every time as agreed, online or in person: no if they missed a meeting, or cancelled it too late to plan around.", "values": ["yes", "no"] }
+    "showedUp": { "type": "choice", "description": "Whether they came every time as agreed, online or in person: no if they missed a meeting, or cancelled it too late to plan around; coming late is still yes, with how late in the text.", "values": ["yes", "no"] }
   }
 }
