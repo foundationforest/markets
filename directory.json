@@ -2,7 +2,8 @@
   "markets": [
     {
       "name": "freelance-design",
-      "description": "Freelancers design logos, brands, websites, apps and illustrations. Work is delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
+      "summary": "Freelancers design logos, brands, websites, apps and illustrations.",
+      "description": "Work is delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
       "status": "beta",
       "roles": [
         {
@@ -17,7 +18,8 @@
     },
     {
       "name": "freelance-software",
-      "description": "Freelancers build and fix software, delivered remotely. Pay piece by piece, each piece once delivered, so neither side risks much.",
+      "summary": "Freelancers build and fix software, delivered remotely.",
+      "description": "Pay piece by piece, each piece once delivered, so neither side risks much.",
       "status": "beta",
       "roles": [
         {
@@ -32,7 +34,8 @@
     },
     {
       "name": "freelance-video",
-      "description": "Freelancers edit videos and make animations and motion graphics. Work is delivered remotely, with no filming at events; pay piece by piece, each piece once delivered, so neither side risks much.",
+      "summary": "Freelancers edit videos and make animations and motion graphics.",
+      "description": "Work is delivered remotely, with no filming at events; pay piece by piece, each piece once delivered, so neither side risks much.",
       "status": "beta",
       "roles": [
         {
@@ -47,7 +50,8 @@
     },
     {
       "name": "goods",
-      "description": "People sell everyday things, new or used. Things are handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
+      "summary": "People sell everyday things, new or used.",
+      "description": "Things are handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
       "status": "beta",
       "roles": [
         {
@@ -62,7 +66,8 @@
     },
     {
       "name": "home-cleaning",
-      "description": "Cleaners clean people's homes, paid by the visit, often every week.",
+      "summary": "Cleaners clean people's homes.",
+      "description": "Cleaners are paid by the visit, and often come every week.",
       "status": "beta",
       "roles": [
         {
@@ -77,7 +82,8 @@
     },
     {
       "name": "home-repair",
-      "description": "Repairers do plumbing, electrical and handyman jobs in people's homes. Each job is paid once it is done; not renovations paid in stages.",
+      "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
+      "description": "Each job is paid once it is done; not renovations paid in stages.",
       "status": "beta",
       "roles": [
         {
@@ -92,7 +98,8 @@
     },
     {
       "name": "language-exchange",
-      "description": "Two people practise each other's language, taking turns. They meet online or in person, with no money between them. For adults.",
+      "summary": "Two people practise each other's language, taking turns.",
+      "description": "Partners meet online or in person, with no money between them. For adults.",
       "status": "beta",
       "roles": [
         {
@@ -103,7 +110,8 @@
     },
     {
       "name": "sports-coaching",
-      "description": "Coaches teach a sport or fitness, one on one or in groups. They coach in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
+      "summary": "Coaches teach a sport or fitness, one on one or in groups.",
+      "description": "Coaching is in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
       "status": "beta",
       "roles": [
         {
@@ -118,7 +126,8 @@
     },
     {
       "name": "stays-free",
-      "description": "Hosts give guests a couch or a room for free. They ask only for good company: no tasks and no money between them. For adults.",
+      "summary": "Hosts give guests a couch or a room for free.",
+      "description": "Hosts ask only for good company: no tasks and no money between them. For adults.",
       "status": "beta",
       "roles": [
         {
@@ -133,7 +142,8 @@
     },
     {
       "name": "stays-work",
-      "description": "Hosts give guests a bed, and often meals, for their help. Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
+      "summary": "Hosts give guests a bed, and often meals, for their help.",
+      "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
       "status": "beta",
       "roles": [
         {
@@ -148,7 +158,8 @@
     },
     {
       "name": "tours",
-      "description": "Local guides show a group around, paid on the day. The tour may be a food, walking, history or nature tour, or any other kind. For adults.",
+      "summary": "Local guides show a group around, paid on the day.",
+      "description": "The tour may be a food, walking, history or nature tour, or any other kind. For adults.",
       "status": "beta",
       "roles": [
         {
@@ -163,7 +174,8 @@
     },
     {
       "name": "tutoring",
-      "description": "Tutors teach school subjects, languages, chess and other desk subjects. They teach online or in person, paid by the lesson or the hour; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
+      "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
+      "description": "Lessons are online or in person, paid by the lesson or the hour; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
       "status": "beta",
       "roles": [
         {

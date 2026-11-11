@@ -1,15 +1,17 @@
 {
   "name": "knitting",
-  "description": "Knitters knit clothes to order. Jumpers, scarves, hats and socks, handed over in person or shipped.",
+  "summary": "Knitters knit clothes to order.",
+  "description": "Knitters knit jumpers, scarves, hats and socks to the wearer's measure, handed over in person or shipped.",
   "status": "live",
   "icon": "yarn",
+  "color": "purple",
   "roles": [
     { "role": "knitter", "listings": "offers" },
     { "role": "client", "listings": "requests" }
   ],
   "listing": {
     "description": { "type": "text", "description": "What is knitted, and how." },
-    "price": { "type": "money", "description": "Each price: per item, per hour, or for the whole order, with a count for a pack, such as 3 pairs of socks.", "per": ["item", "hour"], "many": true },
+    "price": { "type": "money", "description": "Each price: per item, per hour, or for the whole order, with a count for a pack, such as 3 pairs of socks.", "per": ["item", "hour"] },
     "deposit": { "type": "money", "description": "What is paid before the knitting starts." },
     "wearer": { "type": "choice", "description": "Who it is for.", "values": ["women", "men", "children"], "many": true },
     "kind": { "type": "choice", "description": "What is knitted.", "values": ["jumper", "cardigan", "scarf", "hat", "socks"] },

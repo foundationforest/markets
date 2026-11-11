@@ -1,6 +1,7 @@
 {
   "name": "home-repair",
-  "description": "Repairers do plumbing, electrical and handyman jobs in people's homes. Each job is paid once it is done; not renovations paid in stages.",
+  "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
+  "description": "Each job is paid once it is done; not renovations paid in stages.",
   "status": "beta",
   "roles": [
     { "role": "repairer", "listings": "offers" },

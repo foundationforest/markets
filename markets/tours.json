@@ -1,6 +1,7 @@
 {
   "name": "tours",
-  "description": "Local guides show a group around, paid on the day. The tour may be a food, walking, history or nature tour, or any other kind. For adults.",
+  "summary": "Local guides show a group around, paid on the day.",
+  "description": "The tour may be a food, walking, history or nature tour, or any other kind. For adults.",
   "status": "beta",
   "roles": [
     { "role": "guide", "listings": "offers" },

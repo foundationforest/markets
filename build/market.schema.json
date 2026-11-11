@@ -2,17 +2,23 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, what the dealing is, whether it is live or beta, its icon, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, the line an app shows for it, what the dealing is, whether it is live or beta, its icon and color, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
   "type": "object",
-  "required": ["name", "description", "status", "roles", "listing"],
+  "required": ["name", "summary", "description", "status", "roles", "listing"],
   "additionalProperties": false,
   "properties": {
     "name": {
       "description": "The market's name, the first half of each of its labels, market/role.",
       "$ref": "#/$defs/word"
     },
+    "summary": {
+      "description": "What the dealing is, in one plain line of at most 80 characters, which an app shows where someone picks a market.",
+      "type": "string",
+      "$ref": "#/$defs/line",
+      "maxLength": 80
+    },
     "description": {
-      "description": "What the dealing is, in one line. Its first sentence stands alone, at most 80 characters, as the plain line an app shows where someone picks a market; build/check.sh checks its length. It ends at the first full stop, question mark or exclamation mark followed by a space. The rest says what an AI needs to post here.",
+      "description": "What an AI needs to know of the dealing to post here, beyond the summary, in one line: what is in and what is out, how people pay, and who it is for.",
       "$ref": "#/$defs/line"
     },
     "status": {
@@ -23,6 +29,10 @@
       "description": "The name of an icon from Phosphor (phosphoricons.com), such as yarn, that an app shows for the market, as where someone picks one. One of the names in build/icons.json, and no other market's; build/check.sh checks both. It may change even when the market is live: no entry holds it. Left out: an app shows the name's first letter.",
       "$ref": "#/$defs/word"
     },
+    "color": {
+      "description": "One of a fixed list of hues, for an app to show the market in. Each app and index picks its own shade of it, for light and dark; markets of a family may share one. It may change even when the market is live: no entry holds it. Left out: an app shows its own neutral color.",
+      "enum": ["red", "orange", "yellow", "lime", "green", "teal", "cyan", "blue", "indigo", "purple", "pink", "brown"]
+    },
     "roles": {
       "description": "The roles a profile here can hold, one profile each. Labels use these words.",
       "type": "array",
@@ -30,12 +40,12 @@
       "items": { "$ref": "#/$defs/role" }
     },
     "listing": {
-      "description": "The fields of a listing here, by name. A listing may leave out any of them, and holds a field only for the roles it names and when its when matches. The shared names keep their type: description is one text, and price is money, a list of them where it is many. Never contact, which every listing may hold.",
+      "description": "The fields of a listing here, by name. A listing may leave out any of them, and holds a field only for the roles it names and when its when matches. The shared names keep their type: description is one text, and price is always a list of one or more money, which the format sets, so a market never writes many on it. Never contact, which every listing may hold.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
         "description": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } },
-        "price": { "type": "object", "properties": { "type": { "const": "money" } } }
+        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } }
       },
       "propertyNames": { "not": { "enum": ["contact"] } }
     },

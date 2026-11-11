@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { Ajv2020, type ErrorObject } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { SHARED, UNITS, firstSentence } from '../src/markets.ts'
+import { COLORS, SHARED, UNITS } from '../src/markets.ts'
 
 // The checkout to check: this one, or the one its first argument names, as the tests do. The second
 // names a copy of main's markets/ and build/types.json to compare the markets live there with, as
@@ -50,11 +50,9 @@ const validateMarket = ajv.compile(schema)
 // the network.
 const iconNames = new Set<unknown>(Array.isArray(icons.icons) ? icons.icons : [])
 if (iconNames.size === 0) report('build/icons.json', 'holds no list of icons')
-/** The most characters a description's first sentence holds: an app shows it alone, where someone picks a market. */
-const FIRST_SENTENCE = 80
 
-// The types are the names types.json defines, and the units and the names every listing and every
-// review holds are the package's (src/markets.ts). The schema lists them too, for anyone who reads it
+// The types are the names types.json defines, and the units, the colors and the names every listing
+// and every review holds are the package's (src/markets.ts). The schema lists them too, for anyone who reads it
 // alone; each list must agree, so each is checked once, against its source.
 const typeNames = Object.keys(types.$defs)
 const schemaTypes: string[] = schema.$defs.field.properties.type.enum
@@ -64,6 +62,10 @@ if (!isDeepStrictEqual([...schemaTypes].sort(), [...typeNames].sort())) {
 const schemaUnits: string[] | undefined = schema.$defs.field.properties.unit?.enum
 if (!isDeepStrictEqual(schemaUnits, [...UNITS])) {
   report('build/market.schema.json', `its units (${schemaUnits?.join(', ')}) differ from the ones in src/markets.ts (${UNITS.join(', ')})`)
+}
+const schemaColors: string[] | undefined = schema.properties?.color?.enum
+if (!isDeepStrictEqual(schemaColors, [...COLORS])) {
+  report('build/market.schema.json', `its colors (${schemaColors?.join(', ')}) differ from the ones in src/markets.ts (${COLORS.join(', ')})`)
 }
 for (const kind of ['listing', 'review'] as const) {
   const sharedNames = Object.keys(SHARED[kind])
@@ -77,7 +79,9 @@ for (const kind of ['listing', 'review'] as const) {
 const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/word/pattern': 'must be lowercase letters, digits and single hyphens',
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
+  '#/properties/summary/maxLength': 'must be at most 80 characters: an app shows it where someone picks a market, and the description says the rest',
   '#/properties/listing/properties/description/not': 'must not hold "many": description is a shared name, and a listing holds one',
+  '#/properties/listing/properties/price/not': 'must not hold "many": price is a shared name, always a list of one or more, as the format sets it',
 }
 function say(e: ErrorObject): string {
   const at = e.instancePath || 'the file'
@@ -141,12 +145,6 @@ for (const file of files) {
 
   if (typeof market?.name === 'string' && `${market.name}.json` !== file) {
     report(where, `its name is "${market.name}", so it must be markets/${market.name}.json`)
-  }
-  if (typeof market?.description === 'string') {
-    const length = [...firstSentence(market.description)].length
-    if (length > FIRST_SENTENCE) {
-      report(where, `/description: its first sentence is ${length} characters, and at most ${FIRST_SENTENCE} fit: an app shows it alone, where someone picks a market, so the rest goes in the sentences after it`)
-    }
   }
   if (typeof market?.icon === 'string' && !iconNames.has(market.icon)) {
     report(where, `/icon: "${market.icon}" is not a Phosphor icon: build/icons.json lists them`)
@@ -361,7 +359,7 @@ if (MAIN !== undefined) {
 // 4: directory.json and directory.md, written from the market files once they all pass.
 if (problems.size === 0) {
   const listed = markets
-    .map(({ name, description, status, icon, roles }) => ({ name, description, status, icon, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
+    .map(({ name, summary, description, status, icon, color, roles }) => ({ name, summary, description, status, icon, color, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
   const lines = [
     '# Directory',
@@ -375,9 +373,10 @@ if (problems.size === 0) {
     '',
   ]
   if (listed.length === 0) lines.push('No markets yet.')
-  for (const { name, description, status, roles } of listed) {
-    const end = /[.!?]$/.test(description) ? '' : '.'
-    lines.push(`- [\`${name}\`](markets/${name}.json) (${status}): ${description}${end} Roles: ${roles.map((r: any) => `${r.role} (${r.listings})`).join(', ')}.`)
+  /** A line as a sentence: with a full stop, unless it ends in one, a question mark or an exclamation mark. */
+  const sentence = (line: string) => (/[.!?]$/.test(line) ? line : `${line}.`)
+  for (const { name, summary, description, status, roles } of listed) {
+    lines.push(`- [\`${name}\`](markets/${name}.json) (${status}): ${sentence(summary)} ${sentence(description)} Roles: ${roles.map((r: any) => `${r.role} (${r.listings})`).join(', ')}.`)
   }
   const written = {
     'directory.json': `${JSON.stringify({ markets: listed }, null, 2)}\n`,

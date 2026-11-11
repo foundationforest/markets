@@ -1,6 +1,7 @@
 {
   "name": "language-exchange",
-  "description": "Two people practise each other's language, taking turns. They meet online or in person, with no money between them. For adults.",
+  "summary": "Two people practise each other's language, taking turns.",
+  "description": "Partners meet online or in person, with no money between them. For adults.",
   "status": "beta",
   "roles": [
     { "role": "partner", "listings": "requests" }

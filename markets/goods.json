@@ -1,6 +1,7 @@
 {
   "name": "goods",
-  "description": "People sell everyday things, new or used. Things are handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
+  "summary": "People sell everyday things, new or used.",
+  "description": "Things are handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
   "status": "beta",
   "roles": [
     { "role": "seller", "listings": "offers" },

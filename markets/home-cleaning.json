@@ -1,6 +1,7 @@
 {
   "name": "home-cleaning",
-  "description": "Cleaners clean people's homes, paid by the visit, often every week.",
+  "summary": "Cleaners clean people's homes.",
+  "description": "Cleaners are paid by the visit, and often come every week.",
   "status": "beta",
   "roles": [
     { "role": "cleaner", "listings": "offers" },

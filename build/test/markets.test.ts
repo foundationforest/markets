@@ -14,8 +14,8 @@ import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { firstSentence as firstGiven, loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
-import { SHARED, UNITS, firstSentence, loadMarkets, previewOf, type Directory, type Market, type Markets } from '../src/index.ts'
+import { loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
+import { COLORS, SHARED, UNITS, loadMarkets, previewOf, type Directory, type Market, type Markets } from '../src/index.ts'
 import { fromFiles } from '../src/markets.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
@@ -23,7 +23,9 @@ const json = (path: string) => JSON.parse(readFileSync(join(ROOT, path), 'utf8')
 const knitting: Market = JSON.parse(readFileSync(new URL('knitting.json', import.meta.url), 'utf8'))
 
 /** The test market's files, and a checkout of them alone, for the Node entry to read. */
-const directory: Directory = { markets: [{ name: knitting.name, description: knitting.description, status: knitting.status, icon: knitting.icon, roles: knitting.roles }] }
+const directory: Directory = {
+  markets: [{ name: knitting.name, summary: knitting.summary, description: knitting.description, status: knitting.status, icon: knitting.icon, color: knitting.color, roles: knitting.roles }],
+}
 const files: Files = { directory, types: json('build/types.json'), markets: [knitting] }
 const checkout = mkdtempSync(join(tmpdir(), 'markets-'))
 after(() => rmSync(checkout, { recursive: true, force: true }))
@@ -148,7 +150,7 @@ test('money takes a per its field lists, or none for the whole deal, and a count
   for (const per of ['item', 'hour']) assert.equal(check(K, 'knitter', 'listing', { price: [{ ...price, per }] }), null)
   assert.equal(check(K, 'knitter', 'listing', { price: [{ amount: '300', currency: 'USD' }] }), null)
   assert.equal(check(K, 'knitter', 'listing', { price: [{ ...price, count: 1 }] }), null)
-  const each = 'price takes a list, each different, each { amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, and count, only with a per, how many of it the amount buys, a whole number'
+  const each = 'price takes a list of one or more, each different, each { amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, and count, only with a per, how many of it the amount buys, a whole number'
   for (const wrong of [{ ...price, per: 'night' }, { amount: '300', currency: 'USD', count: 2 }, { ...price, count: 0 }, { ...price, count: 1.5 }, { ...price, count: '5' }]) {
     assert.equal(check(K, 'knitter', 'listing', { price: [wrong] }), each)
   }
@@ -158,14 +160,15 @@ test('money takes a per its field lists, or none for the whole deal, and a count
   assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR', count: 2 } }), noPer)
 })
 
-test('a price that is many holds every price its writer charges, each different, a pack with its count', () => {
+test("a listing's price is always a list of one or more, each different, a pack with its count, though no market writes many", () => {
+  assert.equal(knitting.listing.price!.many, undefined)
   // A pair of socks for 35, 3 pairs for 90, and 300 for the whole order.
   const socks = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }, { amount: '300', currency: 'EUR' }]
   assert.equal(check(K, 'knitter', 'listing', { price: socks }), null)
   assert.equal(check(K, 'client', 'listing', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: 3 }] }), null)
-  const each = /^price takes a list, each different, each \{ amount, currency, per, count \}/
-  assert.match(check(K, 'knitter', 'listing', { price })!, each)
-  assert.match(check(K, 'knitter', 'listing', { price: [price, { ...price }] })!, each)
+  const each = /^price takes a list of one or more, each different, each \{ amount, currency, per, count \}/
+  for (const wrong of [price, [], [price, { ...price }], null]) assert.match(check(K, 'knitter', 'listing', { price: wrong })!, each)
+  // Only price, of a listing: another money field holds one amount, unless its market makes it many.
   assert.match(check(K, 'knitter', 'listing', { deposit: [{ amount: '40', currency: 'EUR' }] })!, /^deposit takes \{ amount, currency \}/)
 })
 
@@ -204,16 +207,6 @@ test('each span in a list runs forward too', () => {
   const forward = { from: '2026-11-02T18:00:00Z', to: '2026-11-03T18:00:00Z' }
   assert.equal(free.checkEntry(K, 'knitter', 'listing', { free: [forward, '2026-12-01T09:00:00Z'] }), null)
   assert.match(free.checkEntry(K, 'knitter', 'listing', { free: [forward, { from: forward.to, to: forward.from }] })!, /^free takes a list, each different, each a time in RFC 3339 .* from no later than to$/)
-})
-
-test("firstSentence gives a description's first sentence: up to the first full stop, question mark or exclamation mark before a space", () => {
-  assert.equal(firstSentence(knitting.description), 'Knitters knit clothes to order.')
-  assert.equal(firstSentence('Socks on 2.5 mm needles. Shipped.'), 'Socks on 2.5 mm needles.')
-  assert.equal(firstSentence('Need a jumper? Ask a knitter.'), 'Need a jumper?')
-  assert.equal(firstSentence('Warm socks! Made to order.'), 'Warm socks!')
-  assert.equal(firstSentence('Knitters knit to order.'), 'Knitters knit to order.')
-  assert.equal(firstSentence('Knitters knit to order'), 'Knitters knit to order')
-  assert.equal(firstGiven, firstSentence)
 })
 
 test('a place is a point and a radius, with an area name if wanted', () => {
@@ -332,12 +325,13 @@ test('a vouch and a report hold subject and text, the same in every market', () 
   assert.equal(check(K, 'client', 'report', { subject, onTime: 'no' }), 'a report in knitting has no field onTime')
 })
 
-test("the shared fields are of types.json's types, and the schema keeps a listing's and a review's names for them and lists the package's units", () => {
+test("the shared fields are of types.json's types, and the schema keeps a listing's and a review's names for them and lists the package's units and colors", () => {
   const types = Object.keys(json('build/types.json').$defs)
   for (const fields of Object.values(SHARED)) for (const field of Object.values(fields)) assert.ok(types.includes(field.type))
   const schema = json('build/market.schema.json')
   for (const kind of ['listing', 'review'] as const) assert.deepEqual(schema.properties[kind].propertyNames.not.enum, Object.keys(SHARED[kind]))
   assert.deepEqual(schema.$defs.field.properties.unit.enum, [...UNITS])
+  assert.deepEqual(schema.properties.color.enum, [...COLORS])
 })
 
 test('values at the edges of each type answer as ajv answers them', () => {

@@ -1,6 +1,7 @@
 {
   "name": "stays-work",
-  "description": "Hosts give guests a bed, and often meals, for their help. Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
+  "summary": "Hosts give guests a bed, and often meals, for their help.",
+  "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
   "status": "beta",
   "roles": [
     { "role": "host", "listings": "offers" },

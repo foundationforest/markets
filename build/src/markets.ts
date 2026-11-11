@@ -5,9 +5,10 @@
 //
 // A body fits when each of its fields is one its market names for that kind and role, or a shared
 // one, held only where its `when` matches, of its type (build/types.json): a choice among its values,
-// money with a `per` its field lists or none, a place with a point and a radius, a number or a range
-// where its field allows one, `many` a list of distinct values, each range and span from no later
-// than to, a `file` the SHA-256 of one of the body's `files`. `files` is the standard's,
+// money with a `per` its field lists or none, a listing's price always a list of one or more, a
+// place with a point and a radius, a number or a range where its field allows one, `many` a list of
+// distinct values, each range and span from no later than to, a `file` the SHA-256 of one of the
+// body's `files`. `files` is the standard's,
 // checked with the entry, and no market's field. No field must be held, except that a review, a
 // vouch and a report name their subject: only it says who one is about. Whether `subject`, or the
 // profile in a review's `listing`, is an address is the standard's check (folders), not this one.
@@ -21,6 +22,13 @@ export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 
  */
 export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'years', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people', 'rooms'] as const
 export type Unit = (typeof UNITS)[number]
+
+/**
+ * The hues a market's color may name. Each app and index picks its own shade of each, for light and
+ * dark, so a market file names a hue, never a shade; markets of a family may share one.
+ */
+export const COLORS = ['red', 'orange', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'indigo', 'purple', 'pink', 'brown'] as const
+export type Color = (typeof COLORS)[number]
 
 export type Field = {
   type: Type
@@ -48,12 +56,24 @@ export type Role = { role: string; listings: 'offers' | 'requests' }
  */
 export type Status = 'live' | 'beta'
 /**
- * A market file, markets/<name>.json, as build/market.schema.json defines it. Its icon is the name of a
- * Phosphor icon, which no other market names; without one, an app shows the name's first letter.
+ * A market file, markets/<name>.json, as build/market.schema.json defines it. Its summary is the line
+ * an app shows where someone picks a market, its description what an AI needs. Its icon is the name
+ * of a Phosphor icon, which no other market names; without one, an app shows the name's first letter.
  */
-export type Market = { name: string; description: string; status: Status; icon?: string; roles: Role[]; listing: Fields; preview?: string[]; review?: Fields }
-/** directory.json: every market, its description, its status, its icon if it has one, and its roles. */
-export type Directory = { markets: Array<Pick<Market, 'name' | 'description' | 'status' | 'icon' | 'roles'>> }
+export type Market = {
+  name: string
+  summary: string
+  description: string
+  status: Status
+  icon?: string
+  color?: Color
+  roles: Role[]
+  listing: Fields
+  preview?: string[]
+  review?: Fields
+}
+/** directory.json: every market, with its summary, description, status, icon and color, and its roles. */
+export type Directory = { markets: Array<Pick<Market, 'name' | 'summary' | 'description' | 'status' | 'icon' | 'color' | 'roles'>> }
 /** The files the markets are read from: directory.json, build/types.json, and the market file of each market the directory lists. */
 export type Files = { directory: Directory; types: unknown; markets: Market[] }
 
@@ -95,14 +115,6 @@ export function previewOf(market: Market): string[] {
   return market.preview ?? [...['description', 'price'].filter((name) => Object.hasOwn(listing, name)), ...Object.keys(listing).filter((name) => listing[name]!.type === 'place')]
 }
 
-/**
- * A description's first sentence, the line an app shows where someone picks a market: up to the
- * first full stop, question mark or exclamation mark followed by a space, or else all of it.
- */
-export function firstSentence(description: string): string {
-  return /^.*?[.!?](?= )/.exec(description)?.[0] ?? description
-}
-
 /** What a shared name takes beyond its type. */
 const MEANS: { [name: string]: { fits: RegExp; takes: string } } = {
   score: { fits: /^(10(\.0)?|[1-9](\.[0-9])?)$/, takes: 'a number from "1" to "10" with at most one decimal, such as "8.5"' },
@@ -120,7 +132,8 @@ const TAKES: { [type in Exclude<Type, 'choice' | 'money'>]: string } = {
   hours: '{ zone, slots: [{ days, from, to }] }: days as monday to sunday, times as HH:MM',
 }
 
-const takes = (field: Field) => {
+/** What a field takes, in words; `least` says a list holds at least one, as a listing's price does. */
+const takes = (field: Field, least = false) => {
   const one =
     field.type === 'choice'
       ? `one of ${field.values!.join(', ')}`
@@ -131,7 +144,7 @@ const takes = (field: Field) => {
         : field.type === 'number' && field.range
           ? `${TAKES.number}, or { from, to }: two such numbers, from no more than to, either left out for no limit that way`
           : TAKES[field.type]
-  return field.many ? `a list, each different, each ${one}` : one
+  return field.many ? `a list${least ? ' of one or more' : ''}, each different, each ${one}` : one
 }
 
 const isObject = (v: unknown): v is { [key: string]: unknown } => typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -207,7 +220,10 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
       for (const [key, value] of Object.entries(body)) {
         if (key === 'files') continue
         if (!Object.hasOwn(fields, key)) return `a ${kind} in ${name} has no field ${key}`
-        const field = fields[key]!
+        // A listing's price is always a list of one or more prices, each different: the format sets
+        // it, and no market writes many on it. A single price is a list of one.
+        const price = kind === 'listing' && key === 'price'
+        const field: Field = price ? { ...fields[key]!, many: true } : fields[key]!
         const is = kind === 'listing' ? role : aboutRole
         if (field.roles && is !== undefined && !field.roles.includes(is)) {
           return `${key} is for ${kind === 'listing' ? 'listings by' : `${kind}s of`} ${field.roles.join(' or ')}`
@@ -219,7 +235,7 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
           return (fields[other]?.many && Array.isArray(held) ? held : [held]).some((v) => values.includes(v as string))
         })
         if (!applies) return `${key} is only for a ${kind} whose ${when.map(([other, values]) => `${other} is ${or(values)}`).join(', and whose ')}`
-        if (!fits(field, value) || !inOrder(field, value)) return `${key} takes ${takes(field)}`
+        if (!fits(field, value) || !inOrder(field, value) || (price && (value as unknown[]).length === 0)) return `${key} takes ${takes(field, price)}`
         if (field.type === 'file' && !(field.many ? (value as string[]) : [value]).every((sha256) => files.includes(sha256))) {
           return `${key} names a file the body's files do not list`
         }
