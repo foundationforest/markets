@@ -27,10 +27,10 @@
     "wearer": { "type": "choice", "description": "Who it is made for, as the person says: children include babies; for both women and men, both.", "values": ["women", "men", "children"], "many": true, "when": { "category": ["clothes", "shoes"] } },
     "size": {
       "type": "choice",
-      "description": "The letter size on the label, such as m.",
+      "description": "The letter size on the label, such as m, or a bike's frame size in letters.",
       "values": ["xxs", "xs", "s", "m", "l", "xl", "xxl", "3xl", "4xl", "one-size"],
       "labels": { "xxs": "XXS", "xs": "XS", "xl": "XL", "xxl": "XXL", "3xl": "3XL", "4xl": "4XL" },
-      "when": { "category": ["clothes"] }
+      "when": { "category": ["clothes", "bikes"] }
     },
     "waist": {
       "type": "choice",

@@ -13,7 +13,7 @@
     "description": { "type": "text", "description": "The help, in the writer's words: in an offer, the cause, the tasks and what to bring; in a request, what the volunteer would like to do, and what they bring, such as a skill." },
     "help": {
       "type": "choice",
-      "description": "What the help is and what it is for, every value that applies, such as translation and animals for translating an animal rescue's website: cleanup is picking up litter, in parks, on beaches, by rivers or in streets; food is sorting, packing, cooking or handing out food, as at a food bank; events is setting up, running and clearing up community events, such as a fair, a race or a festival; nature is planting trees and caring for land and wildlife, litter apart; animals is helping animals, as at a shelter or a rescue; translation, writing and design are for a cause's papers, posts and posters; digital work is websites, social media and data.",
+      "description": "What the help is, and for nature and animals what it is for, every value that applies, such as translation and animals for translating an animal rescue's website; a cause no value names, such as refugees, goes in the description: cleanup is picking up litter, in parks, on beaches, by rivers or in streets; food is sorting, packing, cooking or handing out food, as at a food bank; events is setting up, running and clearing up community events, such as a fair, a race or a festival; nature is planting trees and caring for land and wildlife, litter apart; animals is helping animals, as at a shelter or a rescue; translation, writing and design are for a cause's papers, posts and posters; digital work is websites, social media and data.",
       "values": ["cleanup", "food", "events", "nature", "animals", "translation", "writing", "design", "digital-work"],
       "many": true
     },
@@ -21,6 +21,7 @@
     "place": { "type": "place", "description": "Where the help is: in an offer, where volunteers meet, exact if it is a public spot such as a park gate or a food bank, else a circle round the area; in a request, anywhere in the circle the volunteer will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
     "dates": { "type": "moment", "description": "When, for help on set days: in an offer, when it starts, or the span it runs, such as a cleanup from 10:00 to 13:00; in a request, the span the volunteer is free, such as while they are in town." },
     "hours": { "type": "hours", "description": "When, for help every week: in an offer, the shifts, such as Saturdays from 9:00 to 12:00; in a request, when the volunteer is free each week." },
+    "weeklyHours": { "type": "number", "description": "For help every week, how many hours a week: what the organizer asks, or what the volunteer gives, such as 5, or 2 to 4.", "unit": "hours", "range": true },
     "volunteers": { "type": "number", "description": "How many volunteers the organizer needs at once, or for each shift: such as 10, or the fewest and the most, such as 10 to 20, or at least 5.", "unit": "people", "range": true, "roles": ["organizer"] },
     "people": { "type": "number", "description": "How many come together, the volunteer included, such as 4 for a group of friends or coworkers.", "unit": "people", "roles": ["volunteer"] },
     "languages": {

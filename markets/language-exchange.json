@@ -25,7 +25,7 @@
     },
     "level": {
       "type": "choice",
-      "description": "How well the writer speaks the language they want to practise, by its CEFR level: a1 is a beginner, a2 elementary, b1 intermediate, b2 upper intermediate, c1 advanced, and c2 proficient, close to a native speaker.",
+      "description": "How well the writer speaks the language they want to practise, by its CEFR level: a1 is a beginner, from zero, a2 elementary, b1 intermediate, b2 upper intermediate, c1 advanced, and c2 proficient, close to a native speaker.",
       "values": ["a1", "a2", "b1", "b2", "c1", "c2"],
       "labels": { "a1": "A1, beginner", "a2": "A2, elementary", "b1": "B1, intermediate", "b2": "B2, upper intermediate", "c1": "C1, advanced", "c2": "C2, proficient" }
     },
