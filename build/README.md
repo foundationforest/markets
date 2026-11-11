@@ -144,12 +144,22 @@ offer the other side, and what an AI reads to post for someone. So:
 - **Every number names its unit** ([a rule](#the-file)), so an app or an AI can show and convert it
   without reading the description; since a unit can't change once a market is live, a number
   posted keeps its meaning.
-- **Store values that hold in every country**, and let apps and AIs translate: a foot's length in
-  centimetres, not a shoe size that differs by country; a point for a place; a price in the person's
-  own currency, which it keeps, since rates move.
+- **Store values that hold in every country**, and let apps and AIs translate: a point for a place;
+  a price in the person's own currency, which it keeps, since rates move. Ask what the person can
+  give without converting it, since a conversion is a guess, and a size shows the steps: a measure
+  where they can take one, as knitting asks the chest, or as a shoe's label prints its length after
+  CM; else the system most labels share, as a picker, such as letters, a waist in inches or a
+  child's age; and text with its system only where labels share none, as a dress's EU 38 or UK 10.
 - **Write values as lowercase English words joined by hyphens**, such as `in-person`, so their words
   read right and apps translate them. A list may be as long as people need, and grows by pull
   request when someone needs a value it lacks.
+- **Where a standard names the values the same in every country, use its codes**, each labelled
+  with its English name, such as ISO 639-1's `es`, Spanish, and copy the list as another market
+  holds it, so a value means one thing in every market. A language's name differs by country; its
+  code doesn't.
+- **Say where two values meet**, in the description: what `like-new` means against `good`, or each
+  level on the scale people already use, as CEFR's B2. Without the line, the same item gets either
+  value, and a filter on one misses the other.
 - **Copy the fields of apps people already use for that dealing**, across countries: they have
   learned what people ask. Then cut what Forest doesn't need, and what would tell strangers more
   about a person than the deal needs.
@@ -362,12 +372,12 @@ and to this table, in the market's pull request. No unit leaves while a live mar
 
 | Measures | Units |
 |---|---|
-| time | `minutes`, `hours`, `days` |
+| time | `seconds`, for a short span such as a video's length, which minutes would give in fractions; `minutes`, `hours`, `days` |
 | nights of a stay | `nights`, which convert to no other unit |
 | length | `centimetres`, `metres`, `kilometres` |
 | area | `square-metres` |
 | weight | `grams`, `kilograms` |
-| a count | `people` |
+| a count | `people`; `rooms`, a home's rooms of one kind, such as its bedrooms, which every country counts alike |
 
 ## Photos
 
@@ -396,8 +406,8 @@ every review, vouch and report holds, and three in `listing`, none ever `many`:
 
 - `description` (text): the listing's main text, among any other text it holds. A market lists it,
   since every listing says something.
-- `price` (money): what the listing costs, however it is paid, and the money a program sorts by.
-  A market lists it where listings have a price.
+- `price` (money): what the listing costs, however it is paid, and in a request the most its writer
+  would pay; the money a program sorts by. A market lists it where listings have a price.
 - `contact` (text): how to reach the writer outside Forest, such as a phone, a handle or an
   email. Every listing may hold it, and no market lists it. It is public to anyone, and the same
   contact on two profiles links them, so it is the person's choice per listing.
@@ -408,11 +418,11 @@ every review, vouch and report holds, and three in `listing`, none ever `many`:
 2. Run `build/check.sh` (Node 22.18 or later, npm and git), and fix what it prints. It compares
    each market live on `origin/main` with yours, or on the commit you name, as in
    `build/check.sh HEAD~1`. Once every market passes, it rewrites a stale `directory.json` or
-   `directory.md` and fails, so run it again. Never edit either by hand.
-3. Run `npm test` in `build/`. [`test/content.test.ts`](test/content.test.ts) pins what the markets
-   hold, so a pull request that changes a market changes it too.
-4. Commit the market file, both directory files and the test.
-5. Open a pull request. The check and the tests run again and must pass; then the Forest Foundation
+   `directory.md` and fails, so run it again. Never edit either by hand. Then run `npm test` in
+   `build/`: [`test/content.test.ts`](test/content.test.ts) holds every market to the rules on its
+   values, and names none.
+3. Commit the market file and both directory files.
+4. Open a pull request. The check and the tests run again and must pass; then the Forest Foundation
    reviews it, as [the README](../README.md#who-decides-what) says, and merges it.
 
 ## From a program
@@ -441,7 +451,11 @@ markets.checkEntry('knitting', 'client', 'review', { subject, onTime: 'no', days
 // null
 ```
 
-A program reads the markets at the commit its checkout holds.
+A program reads the markets at the commit its checkout holds. One that hands a market to an AI, to
+post for someone, hands it [`market.schema.json`](market.schema.json)'s descriptions and
+[`types.json`](types.json) too: a market file alone does not say that `many` makes a list, that
+`radiusKm` is only where a new place starts, that `roles` on a review field names the profile
+reviewed, or that any field may be left out, and an AI given the file alone guesses each.
 
 A page reads no files, and its content security policy may forbid `eval`. It imports
 `@foundationforest/markets/browser` and gives it the same files as data: `directory.json`,

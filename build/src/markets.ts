@@ -16,9 +16,9 @@ export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 
 /**
  * The units a number field names, one each, so an app or an AI can show and convert it without
  * reading its description. The manual says what each one measures; nights count the nights of a
- * stay, and convert to nothing.
+ * stay, and convert to nothing; rooms count a home's rooms of one kind, such as its bedrooms.
  */
-export const UNITS = ['minutes', 'hours', 'days', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people'] as const
+export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people', 'rooms'] as const
 export type Unit = (typeof UNITS)[number]
 
 export type Field = {

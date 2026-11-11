@@ -1,6 +1,6 @@
 # markets
 
-A market is a kind of dealing, like tutoring or selling electronics. This repo holds [Forest](https://github.com/foundationforest)'s markets: for each one, the roles people play in it and what their listings and reviews hold. Apps, indexes and AIs read these files, so everyone in a market writes the same shape. Everything here is [CC0](LICENSE): anyone can copy it.
+A market is a kind of dealing, like tutoring or selling things you own. This repo holds [Forest](https://github.com/foundationforest)'s markets: for each one, the roles people play in it and what their listings and reviews hold. Apps, indexes and AIs read these files, so everyone in a market writes the same shape. Everything here is [CC0](LICENSE): anyone can copy it.
 
 ## What's here
 

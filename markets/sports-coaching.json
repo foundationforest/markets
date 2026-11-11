@@ -1,22 +1,30 @@
 {
   "name": "sports-coaching",
-  "description": "Coaches teach a sport one on one or in small groups, paid per session or per hour, in person or online.",
+  "description": "Coaches teach a sport or fitness, one on one or in groups, in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
   "status": "beta",
   "roles": [
     { "role": "coach", "listings": "offers" },
     { "role": "student", "listings": "requests" }
   ],
   "listing": {
-    "description": { "type": "text", "description": "The coaching: what is taught, and how." },
-    "price": { "type": "money", "description": "The price per person: per hour, per session, or for a whole course.", "per": ["hour", "session"] },
-    "sports": { "type": "choice", "description": "The sports the coaching is for; football is soccer, and hockey is field hockey.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "american-football", "basketball", "volleyball", "rugby", "hockey", "ice-hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics"], "many": true },
-    "levels": { "type": "choice", "description": "The levels the coaching is for.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
-    "ages": { "type": "choice", "description": "The ages the coaching is for.", "values": ["children", "teens", "adults", "seniors"], "many": true },
-    "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one.", "unit": "people" },
-    "minutes": { "type": "number", "description": "How long one session lasts, in minutes.", "unit": "minutes" },
-    "mode": { "type": "choice", "description": "How sessions are held: in person, online, or both.", "values": ["in-person", "online"], "many": true },
-    "place": { "type": "place", "description": "Where sessions can be held: a club, or anywhere in the circle the person will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
+    "description": { "type": "text", "description": "The coaching, in the writer's words: what is taught, how, and for whom." },
+    "price": { "type": "money", "description": "What each person pays, for a group their own share: per hour, per session, or with no per for a whole course; in a request, the most the student would pay.", "per": ["hour", "session"] },
+    "sports": {
+      "type": "choice",
+      "description": "The sports taught; football is soccer, hockey is field hockey, and fitness is strength and conditioning, as a personal trainer teaches.",
+      "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "american-football", "basketball", "volleyball", "rugby", "hockey", "ice-hockey", "baseball", "cricket", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics", "fitness", "yoga", "pilates"],
+      "many": true
+    },
+    "levels": { "type": "choice", "description": "The levels the coaching is for, each one; all levels is every value.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
+    "ages": { "type": "choice", "description": "The ages the coaching is for: children are under 13, teens 13 to 17, and seniors over 65.", "values": ["children", "teens", "adults", "seniors"], "many": true },
+    "groupSize": { "type": "number", "description": "The most learners in one session, not counting the coach: 1 for one on one; in a request, the largest group the student would join.", "unit": "people" },
+    "minutes": { "type": "number", "description": "How long one session lasts.", "unit": "minutes" },
+    "mode": { "type": "choice", "description": "How sessions are held: online, in person, or both.", "values": ["in-person", "online"], "many": true },
+    "place": { "type": "place", "description": "Where sessions can be held in person: in an offer, a club, a court, or the area the coach will go to; in a request, where the student is or will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
     "hours": { "type": "hours", "description": "When sessions can be held, each week." }
   },
-  "preview": ["sports", "description", "price", "mode", "place"]
+  "preview": ["sports", "description", "price", "mode", "place"],
+  "review": {
+    "paid": { "type": "choice", "description": "Whether the student paid as agreed.", "values": ["yes", "no"], "roles": ["student"] }
+  }
 }

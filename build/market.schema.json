@@ -26,7 +26,7 @@
       "items": { "$ref": "#/$defs/role" }
     },
     "listing": {
-      "description": "The fields of a listing here, by name. The shared names keep their type: description is one text, price is one money. Never contact, which every listing may hold.",
+      "description": "The fields of a listing here, by name. A listing may leave out any of them, and holds a field only for the roles it names and when its when matches. The shared names keep their type: description is one text, price is one money. Never contact, which every listing may hold.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
@@ -43,7 +43,7 @@
       "items": { "description": "The name of one of the market's listing fields; build/check.sh checks that it is.", "type": "string" }
     },
     "review": {
-      "description": "The fields a review here holds besides the ones every review holds (subject, score, text and listing), by name. Left out: none.",
+      "description": "The fields a review here holds besides the ones every review holds (subject, score, text and listing), by name. A review may leave out any of them, and every shared one but subject. Left out: none.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "propertyNames": { "not": { "enum": ["subject", "score", "text", "listing"] } }
@@ -115,16 +115,16 @@
           "items": { "$ref": "#/$defs/word" }
         },
         "radiusKm": {
-          "description": "For a place field, and always on one: the radius, in whole kilometres, a new place starts at before the person changes it.",
+          "description": "For a place field, and always on one: the radius, in whole kilometres, a new place starts at before the person changes it. A place may hold any whole radius.",
           "type": "integer",
           "minimum": 0
         },
         "unit": {
           "description": "For a number field, and always on one: what the number counts or measures, from one shared list, so an app or an AI can show and convert it without reading the description. build/README.md says what each one measures.",
-          "enum": ["minutes", "hours", "days", "nights", "centimetres", "metres", "kilometres", "square-metres", "grams", "kilograms", "people"]
+          "enum": ["seconds", "minutes", "hours", "days", "nights", "centimetres", "metres", "kilometres", "square-metres", "grams", "kilograms", "people", "rooms"]
         },
         "many": {
-          "description": "The field holds a list of its type. Never for words, which is a list already. Left out otherwise.",
+          "description": "The field holds a list of its type, each item different, such as [\"weekly\", \"monthly\"] for a choice, even for one item. Never for words, which is a list already. Left out otherwise.",
           "const": true
         },
         "roles": {

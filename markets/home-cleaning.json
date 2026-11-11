@@ -1,20 +1,27 @@
 {
   "name": "home-cleaning",
-  "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
+  "description": "Cleaners clean people's homes, paid by the visit, often every week.",
   "status": "beta",
   "roles": [
     { "role": "cleaner", "listings": "offers" },
     { "role": "client", "listings": "requests" }
   ],
   "listing": {
-    "description": { "type": "text", "description": "The cleaning: what is cleaned, and how." },
-    "price": { "type": "money", "description": "The price per hour or per visit, or for the whole job.", "per": ["hour", "visit"] },
-    "base": { "type": "place", "description": "The area the cleaner works in.", "radiusKm": 10, "roles": ["cleaner"] },
-    "home": { "type": "place", "description": "Where the home is.", "radiusKm": 1, "roles": ["client"] },
-    "frequency": { "type": "choice", "description": "How often the home is cleaned; biweekly is every two weeks.", "values": ["once", "weekly", "biweekly", "monthly"], "many": true },
+    "description": { "type": "text", "description": "The cleaning, in the writer's words: what is cleaned, and how." },
+    "price": { "type": "money", "description": "The price per visit or per hour.", "per": ["visit", "hour"] },
+    "frequency": { "type": "choice", "description": "How often the home is cleaned.", "values": ["once", "weekly", "every-two-weeks", "monthly"], "many": true },
+    "visitHours": { "type": "number", "description": "How long one visit lasts.", "unit": "hours" },
+    "bedrooms": { "type": "number", "description": "How many bedrooms the home has.", "unit": "rooms", "roles": ["client"] },
+    "bathrooms": { "type": "number", "description": "How many bathrooms the home has.", "unit": "rooms", "roles": ["client"] },
     "supplies": { "type": "choice", "description": "Who brings the cleaning supplies.", "values": ["cleaner", "client"] },
+    "base": { "type": "place", "description": "The area the cleaner works in: anywhere in the circle.", "radiusKm": 10, "roles": ["cleaner"] },
+    "home": { "type": "place", "description": "Roughly where the home is.", "radiusKm": 1, "roles": ["client"] },
     "hours": { "type": "hours", "description": "When the cleaning can be done, each week." },
-    "time": { "type": "moment", "description": "When the cleaning is wanted, or first wanted if it repeats: a time, or a span to fit it in.", "roles": ["client"] }
+    "time": { "type": "moment", "description": "When the first visit is wanted: a time, or a span to fit it in.", "roles": ["client"] }
   },
-  "preview": ["description", "price", "base", "home", "frequency"]
+  "preview": ["description", "price", "frequency", "base", "home"],
+  "review": {
+    "onTime": { "type": "choice", "description": "Whether the cleaner came at the time agreed.", "values": ["yes", "no"], "roles": ["cleaner"] },
+    "paid": { "type": "choice", "description": "Whether the client paid for each visit as agreed.", "values": ["yes", "no"], "roles": ["client"] }
+  }
 }
