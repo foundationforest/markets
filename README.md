@@ -8,7 +8,7 @@ A market is a kind of dealing, like tutoring or selling things you own. This rep
 |---|---|
 | [`directory.json`](directory.json), [`directory.md`](directory.md) | The list of markets |
 | [`markets/<name>.json`](markets/) | One market: whether it is live or beta, its roles, its listing fields, and any extra review fields |
-| [`build/`](build/) | The manual for writing a market, the shared types, the check, and the package programs import |
+| [`build/`](build/) | The manual for writing a market, the shared types, the icons a market may name, the check, and the package programs import |
 
 ## How a market works
 
@@ -25,7 +25,7 @@ Open a pull request with one file in `markets/` and its line in the directory, f
 
 - **[The standard](https://github.com/foundationforest/standard):** how anything is signed and stored. It names no content.
 - **This repo:** what every entry holds, in each market.
-- **Whoever proposes a market:** where its line is, its name and its fields, by [the manual](build/README.md)'s reasons. [`build/check.sh`](build/check.sh) holds the file to the manual's rules.
+- **Whoever proposes a market:** where its line is, its name, its icon and its fields, by [the manual](build/README.md)'s reasons. [`build/check.sh`](build/check.sh) holds the file to the manual's rules.
 - **The Forest Foundation:** only whether this repo takes a market: that it fits the manual, isn't here already, and is under [the line for which markets the repo takes now](build/README.md#which-markets-this-repo-takes); never whether the market is worth having.
 - **Each index:** which directory and markets it reads, and how it ranks.
 - **Each app or AI:** how it shows a market.

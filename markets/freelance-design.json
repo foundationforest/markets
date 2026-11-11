@@ -1,6 +1,6 @@
 {
   "name": "freelance-design",
-  "description": "Freelancers design logos, brands, websites, apps and illustrations, delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
+  "description": "Freelancers design logos, brands, websites, apps and illustrations. Work is delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
   "status": "beta",
   "roles": [
     { "role": "freelancer", "listings": "offers" },

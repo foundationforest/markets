@@ -1,6 +1,6 @@
 // build/check.sh's check, scripts/check.ts, on checkouts made for each case from the test market,
 // knitting.json, with this checkout's build/types.json and build/market.schema.json unless a case
-// gives its own; and, for the rule that a market live on main only grows, a copy of main made the
+// gives its own, and its build/icons.json; and, for the rule that a market live on main only grows, a copy of main made the
 // same way. A checkout made here has no directory yet, so one whose markets all pass fails only with
 // both directory files stale.
 
@@ -16,8 +16,15 @@ import { UNITS } from '../src/markets.ts'
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const json = (path: string) => JSON.parse(readFileSync(join(ROOT, path), 'utf8'))
 const knitting = JSON.parse(readFileSync(new URL('knitting.json', import.meta.url), 'utf8'))
-/** A copy of the test market to change, by another name if given. */
-const copy = (name = 'knitting'): any => ({ ...structuredClone(knitting), name })
+/**
+ * A copy of the test market to change, by another name if given. Only the test market keeps its icon,
+ * since no two markets share one.
+ */
+const copy = (name = 'knitting'): any => {
+  const market = { ...structuredClone(knitting), name }
+  if (name !== knitting.name) delete market.icon
+  return market
+}
 
 type Checkout = { markets: any[]; types?: object; schema?: object }
 
@@ -30,6 +37,7 @@ const run = (checkout: Checkout, main?: Checkout) => {
     for (const path of ['build', 'markets']) mkdirSync(join(dir, path))
     writeFileSync(join(dir, 'build/types.json'), JSON.stringify(types))
     writeFileSync(join(dir, 'build/market.schema.json'), JSON.stringify(schema))
+    writeFileSync(join(dir, 'build/icons.json'), JSON.stringify(json('build/icons.json')))
     for (const market of markets) writeFileSync(join(dir, `markets/${market.name}.json`), JSON.stringify(market))
     return dir
   }
@@ -48,11 +56,13 @@ const run = (checkout: Checkout, main?: Checkout) => {
 const stale = 'directory.json:\n  - was stale: rewritten from the market files; commit it\ndirectory.md:\n  - was stale: rewritten from the market files; commit it\n'
 const closing = 'A market live on main only grows: one that must break becomes a new market, with a new name.\n'
 
-test('the test market passes, and the directory shows whether each market is live or beta', () => {
+test('the test market passes, and the directory shows whether each market is live or beta, and its icon if it has one', () => {
   const ran = run({ markets: [copy(), { ...copy('weaving'), status: 'beta' }] })
   assert.equal(ran.stderr, stale)
   const listed = JSON.parse(ran.directory!).markets
-  assert.deepEqual(listed[0], { name: 'knitting', description: knitting.description, status: 'live', roles: knitting.roles })
+  assert.deepEqual(listed[0], { name: 'knitting', description: knitting.description, status: 'live', icon: 'yarn', roles: knitting.roles })
+  assert.deepEqual(Object.keys(listed[0]), ['name', 'description', 'status', 'icon', 'roles'])
+  assert.deepEqual(Object.keys(listed[1]), ['name', 'description', 'status', 'roles'])
   assert.deepEqual(listed.map((m: any) => [m.name, m.status]), [['knitting', 'live'], ['weaving', 'beta']])
   assert.match(ran.md!, /^A live market needs no payment between people yet, is polished, and from now on only grows\. A$/m)
   assert.match(ran.md!, /^- \[`knitting`\]\(markets\/knitting\.json\) \(live\): Knitters knit /m)
@@ -104,6 +114,48 @@ test('the check refuses a label for a value its field does not list', () => {
   assert.equal(ran.status, 1)
 })
 
+test('range is only for a number field, and never with many; a price may be many', () => {
+  const market = copy()
+  market.listing.yarns.range = true
+  market.listing.days.range = true
+  market.listing.days.many = true
+  assert.equal(run({ markets: [market] }).stderr, [
+    'markets/knitting.json:',
+    '  - /listing/days: "range" and "many" never go together: a field holds a range or a list, never a list of them',
+    '  - /listing/yarns: "range" is only for a number field',
+    '',
+  ].join('\n'))
+  // The test market, whose price is many and whose age takes a range, passes: the first test.
+  assert.equal(knitting.listing.price.many, true)
+  assert.equal(knitting.listing.age.range, true)
+})
+
+test('an icon is one of the Phosphor icons in build/icons.json, and no two markets share one', () => {
+  assert.equal(run({ markets: [{ ...copy(), icon: 'knitting-needles' }] }).stderr, 'markets/knitting.json:\n  - /icon: "knitting-needles" is not a Phosphor icon: build/icons.json lists them\n')
+  const shared = 'no two markets share one, so a list of them tells each apart'
+  const markets = [copy(), { ...copy('weaving'), icon: 'yarn' }, { ...copy('spinning'), icon: 'yarn' }, { ...copy('sewing'), icon: 'needle' }, copy('felting')]
+  assert.equal(run({ markets }).stderr, [
+    'markets/knitting.json:',
+    `  - /icon: "yarn" is also the icon of spinning and weaving: ${shared}`,
+    'markets/spinning.json:',
+    `  - /icon: "yarn" is also the icon of knitting and weaving: ${shared}`,
+    'markets/weaving.json:',
+    `  - /icon: "yarn" is also the icon of knitting and spinning: ${shared}`,
+    '',
+  ].join('\n'))
+})
+
+test("a description's first sentence is at most 80 characters, and the rest any length", () => {
+  const sentence = (length: number) => `Knitters knit ${'a'.repeat(length - 'Knitters knit .'.length)}.`
+  const rest = ` Then what an AI needs to know: ${'more, '.repeat(30)}and the end.`
+  assert.equal(run({ markets: [{ ...copy(), description: `${sentence(80)}${rest}` }] }).stderr, stale)
+  assert.equal(run({ markets: [{ ...copy(), description: `${sentence(81)}${rest}` }] }).stderr, [
+    'markets/knitting.json:',
+    '  - /description: its first sentence is 81 characters, and at most 80 fit: an app shows it alone, where someone picks a market, so the rest goes in the sentences after it',
+    '',
+  ].join('\n'))
+})
+
 // Each case is a market of its own, named for the case, live on main unless it says otherwise, and
 // changed here as the case says.
 
@@ -136,6 +188,8 @@ test('a market live on main may grow: each of these changes passes', () => {
       delete m.listing.studio.when
     },
     'radius': (m) => (m.listing.studio.radiusKm = 20),
+    'range-added': (m) => (m.listing.days.range = true),
+    'icon-added': (m) => (m.icon = 'scissors'),
     'preview': (m) => (m.preview = ['description', 'kind']),
     'order': (m) => {
       m.roles.reverse()
@@ -153,6 +207,9 @@ test('a market live on main may grow: each of these changes passes', () => {
   const plain = (name: string, status: string) => ({ name, description: 'Knitters knit to order.', status, roles: [{ role: 'knitter', listings: 'offers' }], listing: {} })
   main.push({ ...copy('beta-to-live'), status: 'beta' }, { ...copy('beta-breaks'), status: 'beta' }, { ...copy('beta-gone'), status: 'beta' })
   here.push(copy('beta-to-live'), plain('beta-breaks', 'beta'), plain('new-beta', 'beta'))
+  // An icon is display, and no entry holds it: a live market may change it or drop it.
+  main.push({ ...copy('icon-changed'), icon: 'needle' }, { ...copy('icon-gone'), icon: 'hoodie' })
+  here.push({ ...copy('icon-changed'), icon: 'sock' }, copy('icon-gone'))
   assert.equal(run({ markets: here }, { markets: main }).stderr, stale)
 })
 
@@ -179,10 +236,18 @@ test('a market live on main only grows: each of these changes fails, saying what
       `/listing/days/type is text, and number on main: ${posted('listing', 'that hold days')}`,
     ]],
     ['many-added', (m) => (m.listing.kind.many = true), [`/listing/kind holds a list, and one value on main: ${posted('listing', 'that hold kind')}`]],
-    ['many-dropped', (m) => delete m.listing.wearer.many, [`/listing/wearer holds one value, and a list on main: ${posted('listing', 'that hold wearer')}`]],
+    ['many-dropped', (m) => {
+      delete m.listing.price.many
+      delete m.listing.wearer.many
+    }, [
+      `/listing/price holds one value, and a list on main: ${posted('listing', 'that hold price')}`,
+      `/listing/wearer holds one value, and a list on main: ${posted('listing', 'that hold wearer')}`,
+    ]],
+    ['range-gone', (m) => delete m.listing.age.range, [`/listing/age takes no range, and a range on main: ${posted('listing', 'whose age is a range')}`]],
     ['value-gone', (m) => {
       m.listing.kind.values = m.listing.kind.values.filter((v: string) => v !== 'hat')
       m.listing.wearer.values[2] = 'kids'
+      delete m.listing.age.when
     }, [
       `/listing/wearer/values: "children" is gone: ${posted('listing', 'whose wearer holds children')}`,
       `/listing/kind/values: "hat" is gone: ${posted('listing', 'whose kind is hat')}`,
@@ -282,6 +347,7 @@ test('with no copy of main, nothing is compared, and with one the check says how
       writeFileSync(join(at, 'markets/knitting.json'), JSON.stringify(knitting))
     }
     writeFileSync(join(dir, 'build/market.schema.json'), JSON.stringify(json('build/market.schema.json')))
+    writeFileSync(join(dir, 'build/icons.json'), JSON.stringify(json('build/icons.json')))
     writeFileSync(join(dir, 'directory.json'), ran.directory!.replace('"beta"', '"live"'))
     writeFileSync(join(dir, 'directory.md'), ran.md!.replace('(beta)', '(live)'))
     const script = fileURLToPath(new URL('../scripts/check.ts', import.meta.url))

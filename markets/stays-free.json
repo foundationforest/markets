@@ -1,6 +1,6 @@
 {
   "name": "stays-free",
-  "description": "Hosts give guests a couch or a room for free, asking only for good company: no tasks and no money between them. For adults.",
+  "description": "Hosts give guests a couch or a room for free. They ask only for good company: no tasks and no money between them. For adults.",
   "status": "beta",
   "roles": [
     { "role": "host", "listings": "offers" },

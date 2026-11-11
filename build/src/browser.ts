@@ -4,7 +4,7 @@
 
 import { fromFiles, type Files, type Markets } from './markets.ts'
 
-export { SHARED, UNITS, previewOf, type Directory, type Field, type Fields, type Files, type Kind, type Market, type Markets, type Role, type Status, type Type, type Unit } from './markets.ts'
+export { SHARED, UNITS, firstSentence, previewOf, type Directory, type Field, type Fields, type Files, type Kind, type Market, type Markets, type Role, type Status, type Type, type Unit } from './markets.ts'
 
 /** The markets in `files`: directory.json, build/types.json, and the market file of each market the directory lists. */
 export function loadMarkets(files: Files): Markets {

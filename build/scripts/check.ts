@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { Ajv2020, type ErrorObject } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { SHARED, UNITS } from '../src/markets.ts'
+import { SHARED, UNITS, firstSentence } from '../src/markets.ts'
 
 // The checkout to check: this one, or the one its first argument names, as the tests do. The second
 // names a copy of main's markets/ and build/types.json to compare the markets live there with, as
@@ -42,9 +42,16 @@ const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false }
 formats.default(ajv)
 const types = readJson('build/types.json')
 const schema = readJson('build/market.schema.json')
-if (types === undefined || schema === undefined) finish()
+const icons = readJson('build/icons.json')
+if (types === undefined || schema === undefined || icons === undefined) finish()
 ajv.compile(types)
 const validateMarket = ajv.compile(schema)
+// The Phosphor icons a market may name, pinned in build/icons.json, so the check reads nothing over
+// the network.
+const iconNames = new Set<unknown>(Array.isArray(icons.icons) ? icons.icons : [])
+if (iconNames.size === 0) report('build/icons.json', 'holds no list of icons')
+/** The most characters a description's first sentence holds: an app shows it alone, where someone picks a market. */
+const FIRST_SENTENCE = 80
 
 // The types are the names types.json defines, and the units and the names every listing and every
 // review holds are the package's (src/markets.ts). The schema lists them too, for anyone who reads it
@@ -71,7 +78,6 @@ const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/word/pattern': 'must be lowercase letters, digits and single hyphens',
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
   '#/properties/listing/properties/description/not': 'must not hold "many": description is a shared name, and a listing holds one',
-  '#/properties/listing/properties/price/not': 'must not hold "many": price is a shared name, and a listing holds one',
 }
 function say(e: ErrorObject): string {
   const at = e.instancePath || 'the file'
@@ -95,7 +101,12 @@ function say(e: ErrorObject): string {
     const rule = schema.$defs.field.allOf[Number(only[1])]
     return `${at}: "${rule.else.not.required[0]}" is only for a ${rule.if.properties.type.const} field`
   }
-  if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
+  // A key that never goes with many: the rule names it in its "if", or, for words, the type does.
+  const never = /\/allOf\/(\d+)\/then\/not$/.exec(e.schemaPath)
+  if (never) {
+    const key = schema.$defs.field.allOf[Number(never[1])].if.required?.[0]
+    return key ? `${at}: "${key}" and "many" never go together: a field holds a ${key} or a list, never a list of them` : `${at} must not hold "many": words is a list already`
+  }
   if (e.keyword === 'const' && /^\/(listing|review)\/[^/]+\/many$/.test(e.instancePath)) {
     return `${at} must be ${e.params.allowedValue}, or left out`
   }
@@ -111,8 +122,8 @@ const repeats = (e: ErrorObject) =>
 
 const isObject = (v: unknown): v is { [key: string]: any } => typeof v === 'object' && v !== null && !Array.isArray(v)
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
-/** A list as words do it: "a", "a or b", "a, b or c". */
-const or = (items: unknown[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items.join(''))
+/** A list as words do it: "a", "a or b", "a, b or c"; and with and. */
+const or = (items: unknown[], word = 'or') => (items.length > 1 ? `${items.slice(0, -1).join(', ')} ${word} ${items.at(-1)}` : items.join(''))
 
 // 1 and 2: each market file.
 const files = existsSync(root('markets')) ? readdirSync(root('markets')).filter((f) => f.endsWith('.json')).sort() : []
@@ -130,6 +141,15 @@ for (const file of files) {
 
   if (typeof market?.name === 'string' && `${market.name}.json` !== file) {
     report(where, `its name is "${market.name}", so it must be markets/${market.name}.json`)
+  }
+  if (typeof market?.description === 'string') {
+    const length = [...firstSentence(market.description)].length
+    if (length > FIRST_SENTENCE) {
+      report(where, `/description: its first sentence is ${length} characters, and at most ${FIRST_SENTENCE} fit: an app shows it alone, where someone picks a market, so the rest goes in the sentences after it`)
+    }
+  }
+  if (typeof market?.icon === 'string' && !iconNames.has(market.icon)) {
+    report(where, `/icon: "${market.icon}" is not a Phosphor icon: build/icons.json lists them`)
   }
   const words: unknown[] = Array.isArray(market?.roles) ? market.roles.map((r: any) => r?.role) : []
   for (const word of new Set(words.filter((w, i) => typeof w === 'string' && words.indexOf(w) !== i))) {
@@ -189,6 +209,14 @@ for (const file of files) {
     if (typeof name === 'string' && !listingNames.includes(name)) {
       report(where, `/preview: "${name}" is not a field in "listing": the fields are ${listingNames.join(', ')}`)
     }
+  }
+}
+// icon: no two markets the same, so a list of them tells each apart.
+const byIcon = new Map<string, string[]>()
+for (const [name, market] of byName) if (typeof market?.icon === 'string') byIcon.set(market.icon, [...(byIcon.get(market.icon) ?? []), name])
+for (const [icon, names] of byIcon) {
+  for (const name of names.length > 1 ? names : []) {
+    report(`markets/${name}.json`, `/icon: "${icon}" is also the icon of ${or(names.filter((other) => other !== name), 'and')}: no two markets share one, so a list of them tells each apart`)
   }
 }
 
@@ -265,6 +293,8 @@ if (MAIN !== undefined) {
         }
         const holds = (many: unknown) => (many ? 'a list' : 'one value')
         if (Boolean(is.many) !== Boolean(field.many)) broke(`${at} holds ${holds(is.many)}, and ${holds(field.many)} on main: ${posted} that hold ${key} would stop fitting`)
+        // range: a field may come to take one, since one number still fits, and never stop.
+        if (field.range && !is.range) broke(`${at} takes no range, and a range on main: ${posted} whose ${key} is a range would stop fitting`)
         for (const value of list(field.values)) {
           if (!list(is.values).includes(value)) broke(`${at}/values: ${JSON.stringify(value)} is gone: ${posted} whose ${key} ${field.many ? 'holds' : 'is'} ${value} would stop fitting`)
         }
@@ -331,7 +361,7 @@ if (MAIN !== undefined) {
 // 4: directory.json and directory.md, written from the market files once they all pass.
 if (problems.size === 0) {
   const listed = markets
-    .map(({ name, description, status, roles }) => ({ name, description, status, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
+    .map(({ name, description, status, icon, roles }) => ({ name, description, status, icon, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
   const lines = [
     '# Directory',

@@ -14,8 +14,8 @@ import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
-import { SHARED, UNITS, loadMarkets, previewOf, type Directory, type Market, type Markets } from '../src/index.ts'
+import { firstSentence as firstGiven, loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
+import { SHARED, UNITS, firstSentence, loadMarkets, previewOf, type Directory, type Market, type Markets } from '../src/index.ts'
 import { fromFiles } from '../src/markets.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
@@ -23,7 +23,7 @@ const json = (path: string) => JSON.parse(readFileSync(join(ROOT, path), 'utf8')
 const knitting: Market = JSON.parse(readFileSync(new URL('knitting.json', import.meta.url), 'utf8'))
 
 /** The test market's files, and a checkout of them alone, for the Node entry to read. */
-const directory: Directory = { markets: [{ name: knitting.name, description: knitting.description, status: knitting.status, roles: knitting.roles }] }
+const directory: Directory = { markets: [{ name: knitting.name, description: knitting.description, status: knitting.status, icon: knitting.icon, roles: knitting.roles }] }
 const files: Files = { directory, types: json('build/types.json'), markets: [knitting] }
 const checkout = mkdtempSync(join(tmpdir(), 'markets-'))
 after(() => rmSync(checkout, { recursive: true, force: true }))
@@ -42,11 +42,17 @@ const reference = (() => {
   ajv.addSchema(types)
   const compiled = new Map<string, ValidateFunction>()
   return fromFiles(files, (field, value) => {
-    const key = JSON.stringify([field.type, field.values, field.per, field.many])
+    const key = JSON.stringify([field.type, field.values, field.per, field.many, field.range])
     let validate = compiled.get(key)
     if (!validate) {
       const allows = field.type === 'money' ? { type: 'object', properties: { per: field.per ? { enum: field.per } : false } } : {}
-      const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `${types.$id}#/$defs/${field.type}`, ...allows }
+      const ref = (type: string) => ({ $ref: `${types.$id}#/$defs/${type}` })
+      const one =
+        field.type === 'choice'
+          ? { type: 'string', enum: field.values }
+          : field.type === 'number' && field.range
+            ? { oneOf: [ref('number'), ref('number/$defs/range')] }
+            : { ...ref(field.type), ...allows }
       validate = ajv.compile(field.many ? { type: 'array', uniqueItems: true, items: one } : one)
       compiled.set(key, validate)
     }
@@ -80,6 +86,7 @@ const photo = { sha256: '04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c518
 const place = { lat: '40.42', lon: '-3.70', radiusKm: 5, area: 'Madrid' }
 const price = { amount: '30', currency: 'USD', per: 'hour' }
 const inPerson = { handover: ['in-person'] }
+const kids = { wearer: ['children'] }
 
 test('the package reads a checkout: this one, by default or named, and the test market', () => {
   const here = loadMarkets()
@@ -92,7 +99,8 @@ test('the package reads a checkout: this one, by default or named, and the test 
 })
 
 test("a listing fits when each field is its market's, of its type", () => {
-  assert.equal(check(K, 'knitter', 'listing', { description: 'Jumpers to order', price, wearer: ['women', 'men'], kind: 'jumper', size: 'm', ...inPerson, studio: place }), null)
+  assert.equal(check(K, 'knitter', 'listing', { description: 'Jumpers to order', price: [price], wearer: ['women', 'men'], kind: 'jumper', size: 'm', ...inPerson, studio: place }), null)
+  assert.equal(check(K, 'client', 'listing', { description: 'A hat for my son', ...kids, age: { from: '9', to: '11' }, kind: 'hat' }), null)
   assert.equal(check(K, 'client', 'listing', { description: 'A scarf', due: '2026-11-02T18:00:00+01:00', kind: 'scarf', handover: ['shipped'] }), null)
   assert.equal(check(K, 'knitter', 'listing', { yarns: ['merino', 'cotton'], days: '14' }), null)
   assert.equal(check(K, 'knitter', 'listing', { hours: { zone: 'Europe/Madrid', slots: [{ days: ['monday'], from: '09:00', to: '17:00' }] } }), null)
@@ -126,7 +134,7 @@ test('a field its market does not name does not fit, nor one Object gives every 
 })
 
 test('each value is of its type: a choice among its values, many a list of distinct values', () => {
-  assert.equal(check(K, 'knitter', 'listing', { price: { amount: 30, currency: 'USD' } }), 'price takes { amount, currency, per }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted')
+  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: 30, currency: 'USD' } }), 'deposit takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per or count')
   assert.equal(check(K, 'knitter', 'listing', { wearer: ['dogs'] }), 'wearer takes a list, each different, each one of women, men, children')
   assert.match(check(K, 'knitter', 'listing', { wearer: ['women', 'women'] })!, /^wearer takes a list, each different/)
   assert.match(check(K, 'knitter', 'listing', { wearer: 'women' })!, /^wearer takes a list/)
@@ -136,12 +144,76 @@ test('each value is of its type: a choice among its values, many a list of disti
   assert.match(check(K, 'client', 'listing', { due: '2026-11-02 18:00' })!, /^due takes a time in RFC 3339/)
 })
 
-test('money takes a per its field lists, or none for the whole deal; with no list, never one', () => {
-  for (const per of ['item', 'hour']) assert.equal(check(K, 'knitter', 'listing', { price: { ...price, per } }), null)
-  assert.equal(check(K, 'knitter', 'listing', { price: { amount: '300', currency: 'USD' } }), null)
-  assert.equal(check(K, 'knitter', 'listing', { price: { ...price, per: 'night' } }), 'price takes { amount, currency, per }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted')
+test('money takes a per its field lists, or none for the whole deal, and a count only with a per; with no list, neither', () => {
+  for (const per of ['item', 'hour']) assert.equal(check(K, 'knitter', 'listing', { price: [{ ...price, per }] }), null)
+  assert.equal(check(K, 'knitter', 'listing', { price: [{ amount: '300', currency: 'USD' }] }), null)
+  assert.equal(check(K, 'knitter', 'listing', { price: [{ ...price, count: 1 }] }), null)
+  const each = 'price takes a list, each different, each { amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, and count, only with a per, how many of it the amount buys, a whole number'
+  for (const wrong of [{ ...price, per: 'night' }, { amount: '300', currency: 'USD', count: 2 }, { ...price, count: 0 }, { ...price, count: 1.5 }, { ...price, count: '5' }]) {
+    assert.equal(check(K, 'knitter', 'listing', { price: [wrong] }), each)
+  }
+  const noPer = 'deposit takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per or count'
   assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR' } }), null)
-  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR', per: 'item' } }), 'deposit takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per')
+  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR', per: 'item' } }), noPer)
+  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR', count: 2 } }), noPer)
+})
+
+test('a price that is many holds every price its writer charges, each different, a pack with its count', () => {
+  // A pair of socks for 35, 3 pairs for 90, and 300 for the whole order.
+  const socks = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }, { amount: '300', currency: 'EUR' }]
+  assert.equal(check(K, 'knitter', 'listing', { price: socks }), null)
+  assert.equal(check(K, 'client', 'listing', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: 3 }] }), null)
+  const each = /^price takes a list, each different, each \{ amount, currency, per, count \}/
+  assert.match(check(K, 'knitter', 'listing', { price })!, each)
+  assert.match(check(K, 'knitter', 'listing', { price: [price, { ...price }] })!, each)
+  assert.match(check(K, 'knitter', 'listing', { deposit: [{ amount: '40', currency: 'EUR' }] })!, /^deposit takes \{ amount, currency \}/)
+})
+
+test('a number that allows a range takes one number, or from and to, either left out for no limit that way', () => {
+  for (const age of ['10', { from: '9', to: '11' }, { from: '9', to: '9' }, { from: '13' }, { to: '6' }, { from: '0.5', to: '2' }, { from: '-1', to: '1' }]) {
+    assert.equal(check(K, 'client', 'listing', { ...kids, age }), null)
+  }
+  const takes = 'age takes a number as decimal text, such as "2.5", or { from, to }: two such numbers, from no more than to, either left out for no limit that way'
+  for (const age of [{}, { from: '11', to: '9' }, { from: '10', to: '9.5' }, { from: 9, to: 11 }, { from: '9', to: '11', step: '1' }, { low: '9', high: '11' }, ['9', '11'], '9-11', 10]) {
+    assert.equal(check(K, 'client', 'listing', { ...kids, age }), takes)
+  }
+  assert.equal(check(K, 'knitter', 'listing', { days: { from: '10', to: '14' } }), 'days takes a number as decimal text, such as "2.5"')
+  assert.equal(check(K, 'client', 'listing', { wearer: ['women'], age: '30' }), 'age is only for a listing whose wearer is children')
+})
+
+test('a span runs from no later than to, each in its own zone', () => {
+  const span = (from: string, to: string) => check(K, 'client', 'listing', { due: { from, to } })
+  const takes = 'due takes a time in RFC 3339 with its zone, such as 2026-11-02T18:00:00+01:00, or { from, to }, from no later than to'
+  assert.equal(span('2026-11-02T18:00:00Z', '2026-11-02T20:00:00Z'), null)
+  assert.equal(span('2026-11-02T18:00:00Z', '2026-11-02T18:00:00Z'), null)
+  assert.equal(span('2026-11-02T19:00:00+01:00', '2026-11-02T18:00:00Z'), null)
+  assert.equal(span('2026-11-02T18:30:00+01:00', '2026-11-02T18:00:00Z'), null)
+  assert.equal(span('2026-11-02T20:00:00Z', '2026-11-02T18:00:00Z'), takes)
+  assert.equal(span('2026-11-02T18:00:00Z', '2026-11-02T18:30:00+01:00'), takes)
+  assert.equal(span('2026-11-02T18:00:00.5Z', '2026-11-02T18:00:00.25Z'), takes)
+  // A leap second ends where the next minute starts; a year below 100 is that year.
+  assert.equal(span('2026-12-31T23:59:60Z', '2027-01-01T00:00:00Z'), null)
+  assert.equal(span('2027-01-01T00:00:00.5Z', '2026-12-31T23:59:60Z'), takes)
+  assert.equal(span('0099-01-01T00:00:00Z', '0100-01-01T00:00:00Z'), null)
+  assert.equal(span('0100-01-01T00:00:00Z', '0099-01-01T00:00:00Z'), takes)
+})
+
+test('each span in a list runs forward too', () => {
+  const listing = { ...knitting.listing, free: { type: 'moment', description: 'When the knitter can take an order.', many: true } } as const
+  const free = loadGiven({ ...files, markets: [{ ...knitting, listing }] })
+  const forward = { from: '2026-11-02T18:00:00Z', to: '2026-11-03T18:00:00Z' }
+  assert.equal(free.checkEntry(K, 'knitter', 'listing', { free: [forward, '2026-12-01T09:00:00Z'] }), null)
+  assert.match(free.checkEntry(K, 'knitter', 'listing', { free: [forward, { from: forward.to, to: forward.from }] })!, /^free takes a list, each different, each a time in RFC 3339 .* from no later than to$/)
+})
+
+test("firstSentence gives a description's first sentence: up to the first full stop, question mark or exclamation mark before a space", () => {
+  assert.equal(firstSentence(knitting.description), 'Knitters knit clothes to order.')
+  assert.equal(firstSentence('Socks on 2.5 mm needles. Shipped.'), 'Socks on 2.5 mm needles.')
+  assert.equal(firstSentence('Need a jumper? Ask a knitter.'), 'Need a jumper?')
+  assert.equal(firstSentence('Warm socks! Made to order.'), 'Warm socks!')
+  assert.equal(firstSentence('Knitters knit to order.'), 'Knitters knit to order.')
+  assert.equal(firstSentence('Knitters knit to order'), 'Knitters knit to order')
+  assert.equal(firstGiven, firstSentence)
 })
 
 test('a place is a point and a radius, with an area name if wanted', () => {
@@ -287,6 +359,16 @@ test('values at the edges of each type answer as ajv answers them', () => {
     { amount: '-1', currency: 'USD' }, { amount: '1.', currency: 'USD' }, { amount: '1', currency: 'usd' }, { amount: '1', currency: 'USDT' },
     { amount: '1', currency: 'USD', per: '' }, { amount: '1', currency: 'USD', per: 7 }, { currency: 'USD' }, { amount: '1' },
     { amount: '1', currency: 'USD', each: 'x' }, '30 USD',
+    { amount: '90', currency: 'USD', per: 'item', count: 3 }, { amount: '90', currency: 'USD', per: 'item', count: 1 },
+    { amount: '90', currency: 'USD', count: 3 }, { amount: '90', currency: 'USD', per: 'item', count: 0 },
+    { amount: '90', currency: 'USD', per: 'item', count: -1 }, { amount: '90', currency: 'USD', per: 'item', count: 1.5 },
+    { amount: '90', currency: 'USD', per: 'item', count: 1.0 }, { amount: '90', currency: 'USD', per: 'item', count: '3' },
+    { amount: '90', currency: 'USD', per: 'item', count: null },
+  ]
+  const lists = [...prices.map((one) => [one]), [], [prices[0], prices[0]], [prices[0], prices[1], prices[15]], prices[1]]
+  const ages = [
+    '10', '-1', '1.5', 10, { from: '9', to: '11' }, { from: '9', to: '9' }, { from: '11', to: '9' }, { from: '9' }, { to: '6' }, {},
+    { from: '9', to: null }, { from: 9 }, { from: '09' }, { from: '9', to: '11', step: '1' }, { from: '9', to: '1e1' }, ['9', '11'], '9-11', null,
   ]
   const edges: [role: string, field: string, context: object, values: unknown[]][] = [
     ['knitter', 'contact', {}, ['', 'x', 7, null, ['x'], {}]],
@@ -299,8 +381,9 @@ test('values at the edges of each type answer as ajv answers them', () => {
     ['knitter', 'kind', {}, ['hat', 'HAT', ['hat'], 1]],
     ['knitter', 'studio', inPerson, places],
     ['client', 'home', inPerson, places],
-    ['knitter', 'price', {}, prices],
+    ['knitter', 'price', {}, lists],
     ['knitter', 'deposit', {}, prices],
+    ['client', 'age', kids, ages],
     ['client', 'due', {}, [
       '2024-02-29T00:00:00Z', '2026-02-29T00:00:00Z', '2000-02-29T12:00:00Z', '1900-02-29T12:00:00Z', '2026-04-31T00:00:00Z',
       '2026-04-30T00:00:00Z', '2026-13-01T00:00:00Z', '2026-00-10T00:00:00Z', '2026-01-00T00:00:00Z', '0000-01-01T00:00:00Z',
@@ -310,6 +393,8 @@ test('values at the edges of each type answer as ajv answers them', () => {
       at('18:00:00.+01:00'), '2026-11-02t18:00:00z', '2026-11-02 18:00:00Z', at('18:00:00'), at('18:00Z'), at('18:00:00+0100'),
       { from: at('18:00:00Z'), to: at('20:00:00Z') }, { from: at('18:00:00Z') }, { from: at('18:00:00Z'), to: at('20:00:00Z'), at: 'x' },
       { from: at('18:00:00Z'), to: at('24:00:00Z') }, 1762106400,
+      { from: at('20:00:00Z'), to: at('18:00:00Z') }, { from: at('19:00:00+01:00'), to: at('18:00:00Z') },
+      { from: at('18:00:00.5Z'), to: at('18:00:00Z') }, { from: '2026-12-31T23:59:60Z', to: '2027-01-01T00:00:00Z' },
     ]],
     ['knitter', 'hours', {}, [
       hours({}), hours({}, 'UTC'), hours({}, 'Etc/GMT+1'), hours({}, 'America/Argentina/Buenos_Aires'), hours({}, '/Madrid'),
