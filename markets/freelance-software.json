@@ -8,7 +8,7 @@
   ],
   "listing": {
     "description": { "type": "text", "description": "The work, in the writer's words: in an offer, what the freelancer builds or fixes; in a request, what the software does or should do, and what needs building or fixing." },
-    "price": { "type": "money", "description": "The price per hour, or per project for the whole job, never with no per: the freelancer's price, or the lowest it starts from; in a request, the client's budget.", "per": ["hour", "project"] },
+    "price": { "type": "money", "description": "The price per hour, or with no per for the whole job: the freelancer's price, or the lowest it starts from; in a request, the client's budget.", "per": ["hour"] },
     "kind": {
       "type": "choice",
       "description": "What kind of software: a website is a site people read or shop on, a store on a hosted platform included; a web app is software people use in a browser.",
