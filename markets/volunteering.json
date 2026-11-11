@@ -1,39 +1,41 @@
 {
-  "name": "freelance-design",
-  "summary": "Freelancers design logos, brands, websites, apps and illustrations.",
-  "description": "Work is delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
+  "name": "volunteering",
+  "summary": "Volunteers give their time to cleanups, food banks, events and good causes.",
+  "description": "Organizers offer a spot to help, in person or online, and volunteers ask for one: cleanups, food banks, community events, nature, animal shelters, and remote help for a cause, such as translating or writing. Not a bed for help, which is stays-work, and not caring for children or for people who need care. In person it is for adults only, since strangers meet; online it is open to anyone.",
   "status": "beta",
-  "number": 1,
+  "icon": "hand-heart",
+  "number": 14,
   "roles": [
-    { "role": "freelancer", "listings": "offers" },
-    { "role": "client", "listings": "requests" }
+    { "role": "organizer", "listings": "offers" },
+    { "role": "volunteer", "listings": "requests" }
   ],
   "listing": {
-    "description": { "type": "text", "description": "The work, in the writer's words: what is designed, in what style, and for what." },
-    "price": { "type": "money", "description": "The price per hour, or with no per for the whole job: the freelancer's price, or the lowest it starts from; in a request, the client's budget.", "per": ["hour"] },
-    "work": {
+    "description": { "type": "text", "description": "The help, in the writer's words: in an offer, the cause, the tasks and what to bring; in a request, what the volunteer would like to do, and what they bring, such as a skill." },
+    "help": {
       "type": "choice",
-      "description": "What is designed; branding is a whole look, such as colours and type; print is such as posters, flyers or packaging.",
-      "values": ["logo", "branding", "web-design", "app-design", "illustration", "print"],
+      "description": "The kinds of help, every one that applies: cleanup is picking up litter, in parks, on beaches, by rivers or in streets; food is sorting, packing, cooking or handing out food, as at a food bank; events is setting up, running and clearing up community events, such as a fair, a race or a festival; nature is planting trees and caring for land and wildlife, litter apart; animals is helping at an animal shelter; translation, writing and design are for a cause's papers, posts and posters; digital work is websites, social media and data.",
+      "values": ["cleanup", "food", "events", "nature", "animals", "translation", "writing", "design", "digital-work"],
       "many": true
     },
-    "tools": { "type": "words", "description": "Tools the work is made in, such as figma or illustrator." },
-    "days": { "type": "number", "description": "How many days the freelancer takes to deliver the work, or each piece of it, from the day it is agreed.", "unit": "days", "roles": ["freelancer"] },
-    "due": { "type": "moment", "description": "When the client needs it by, or the span it may come in.", "roles": ["client"] },
-    "samples": { "type": "file", "description": "Images of work the freelancer has done.", "many": true, "roles": ["freelancer"] },
-    "portfolio": { "type": "text", "description": "Links to past work, such as a portfolio site.", "roles": ["freelancer"] },
+    "mode": { "type": "choice", "description": "How the help is given: in person, online, or both.", "values": ["in-person", "online"], "many": true },
+    "place": { "type": "place", "description": "Where the help is: in an offer, where volunteers meet, exact if it is a public spot such as a park gate or a food bank, else a circle round the area; in a request, anywhere in the circle the volunteer will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
+    "dates": { "type": "moment", "description": "When, for help on set days: in an offer, when it starts, or the span it runs, such as a cleanup from 10:00 to 13:00; in a request, the span the volunteer is free, such as while they are in town." },
+    "hours": { "type": "hours", "description": "When, for help every week: in an offer, the shifts, such as Saturdays from 9:00 to 12:00; in a request, when the volunteer is free each week." },
+    "volunteers": { "type": "number", "description": "How many volunteers the organizer needs: such as 10, or the fewest and the most, such as 10 to 20, or at least 5.", "unit": "people", "range": true, "roles": ["organizer"] },
+    "people": { "type": "number", "description": "How many come together, the volunteer included, such as 4 for a group of friends or coworkers.", "unit": "people", "roles": ["volunteer"] },
     "languages": {
       "type": "choice",
-      "description": "The languages the writer works and talks in, by ISO 639-1 code, such as en for English.",
+      "description": "By ISO 639-1 code, such as en for English: in an offer, the languages spoken while helping, or those a translation is from and into; in a request, those the volunteer can help in.",
       "values": ["aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az", "ba", "be", "bg", "bi", "bm", "bn", "bo", "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy", "da", "de", "dv", "dz", "ee", "el", "en", "eo", "es", "et", "eu", "fa", "ff", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl", "gn", "gu", "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz", "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu", "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my", "na", "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny", "oc", "oj", "om", "or", "os", "pa", "pi", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"],
       "labels": { "aa": "Afar", "ab": "Abkhazian", "ae": "Avestan", "af": "Afrikaans", "ak": "Akan", "am": "Amharic", "an": "Aragonese", "ar": "Arabic", "as": "Assamese", "av": "Avaric", "ay": "Aymara", "az": "Azerbaijani", "ba": "Bashkir", "be": "Belarusian", "bg": "Bulgarian", "bi": "Bislama", "bm": "Bambara", "bn": "Bangla", "bo": "Tibetan", "br": "Breton", "bs": "Bosnian", "ca": "Catalan", "ce": "Chechen", "ch": "Chamorro", "co": "Corsican", "cr": "Cree", "cs": "Czech", "cu": "Church Slavic", "cv": "Chuvash", "cy": "Welsh", "da": "Danish", "de": "German", "dv": "Divehi", "dz": "Dzongkha", "ee": "Ewe", "el": "Greek", "en": "English", "eo": "Esperanto", "es": "Spanish", "et": "Estonian", "eu": "Basque", "fa": "Persian", "ff": "Fula", "fi": "Finnish", "fj": "Fijian", "fo": "Faroese", "fr": "French", "fy": "Western Frisian", "ga": "Irish", "gd": "Scottish Gaelic", "gl": "Galician", "gn": "Guarani", "gu": "Gujarati", "gv": "Manx", "ha": "Hausa", "he": "Hebrew", "hi": "Hindi", "ho": "Hiri Motu", "hr": "Croatian", "ht": "Haitian Creole", "hu": "Hungarian", "hy": "Armenian", "hz": "Herero", "ia": "Interlingua", "id": "Indonesian", "ie": "Interlingue", "ig": "Igbo", "ii": "Sichuan Yi", "ik": "Inupiaq", "io": "Ido", "is": "Icelandic", "it": "Italian", "iu": "Inuktitut", "ja": "Japanese", "jv": "Javanese", "ka": "Georgian", "kg": "Kongo", "ki": "Kikuyu", "kj": "Kuanyama", "kk": "Kazakh", "kl": "Kalaallisut", "km": "Khmer", "kn": "Kannada", "ko": "Korean", "kr": "Kanuri", "ks": "Kashmiri", "ku": "Kurdish", "kv": "Komi", "kw": "Cornish", "ky": "Kyrgyz", "la": "Latin", "lb": "Luxembourgish", "lg": "Ganda", "li": "Limburgish", "ln": "Lingala", "lo": "Lao", "lt": "Lithuanian", "lu": "Luba-Katanga", "lv": "Latvian", "mg": "Malagasy", "mh": "Marshallese", "mi": "Māori", "mk": "Macedonian", "ml": "Malayalam", "mn": "Mongolian", "mr": "Marathi", "ms": "Malay", "mt": "Maltese", "my": "Burmese", "na": "Nauru", "nb": "Norwegian Bokmål", "nd": "North Ndebele", "ne": "Nepali", "ng": "Ndonga", "nl": "Dutch", "nn": "Norwegian Nynorsk", "no": "Norwegian", "nr": "South Ndebele", "nv": "Navajo", "ny": "Nyanja", "oc": "Occitan", "oj": "Ojibwa", "om": "Oromo", "or": "Odia", "os": "Ossetic", "pa": "Punjabi", "pi": "Pali", "pl": "Polish", "ps": "Pashto", "pt": "Portuguese", "qu": "Quechua", "rm": "Romansh", "rn": "Rundi", "ro": "Romanian", "ru": "Russian", "rw": "Kinyarwanda", "sa": "Sanskrit", "sc": "Sardinian", "sd": "Sindhi", "se": "Northern Sami", "sg": "Sango", "si": "Sinhala", "sk": "Slovak", "sl": "Slovenian", "sm": "Samoan", "sn": "Shona", "so": "Somali", "sq": "Albanian", "sr": "Serbian", "ss": "Swati", "st": "Southern Sotho", "su": "Sundanese", "sv": "Swedish", "sw": "Swahili", "ta": "Tamil", "te": "Telugu", "tg": "Tajik", "th": "Thai", "ti": "Tigrinya", "tk": "Turkmen", "tl": "Tagalog", "tn": "Tswana", "to": "Tongan", "tr": "Turkish", "ts": "Tsonga", "tt": "Tatar", "tw": "Twi", "ty": "Tahitian", "ug": "Uyghur", "uk": "Ukrainian", "ur": "Urdu", "uz": "Uzbek", "ve": "Venda", "vi": "Vietnamese", "vo": "Volapük", "wa": "Walloon", "wo": "Wolof", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "za": "Zhuang", "zh": "Chinese", "zu": "Zulu" },
       "many": true
-    }
+    },
+    "photos": { "type": "file", "description": "Photos of the place or of past help.", "many": true, "roles": ["organizer"] }
   },
-  "preview": ["work", "samples", "description", "price"],
+  "preview": ["help", "photos", "description", "mode", "place", "dates"],
   "review": {
-    "onTime": { "type": "choice", "description": "Whether the freelancer delivered the work, or each piece of it, by the day agreed.", "values": ["yes", "no"], "roles": ["freelancer"] },
-    "asAgreed": { "type": "choice", "description": "Whether the freelancer's work was what was agreed.", "values": ["yes", "no"], "roles": ["freelancer"] },
-    "paid": { "type": "choice", "description": "Whether the client paid for the work, or each piece of it, as agreed.", "values": ["yes", "no"], "roles": ["client"] }
+    "asDescribed": { "type": "choice", "description": "Whether the help was as the organizer's listing said: the tasks, the place and the times.", "values": ["yes", "no"], "roles": ["organizer"] },
+    "showedUp": { "type": "choice", "description": "Whether the volunteer came as agreed, online or in person: no if they missed it, or cancelled too late to plan around.", "values": ["yes", "no"], "roles": ["volunteer"] },
+    "feltSafe": { "type": "choice", "description": "Whether the writer felt safe with them: no if anything made them uneasy; left out when they never met.", "values": ["yes", "no"] }
   }
 }

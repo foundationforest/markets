@@ -1,0 +1,38 @@
+{
+  "name": "home-gardening",
+  "summary": "Gardeners mow, prune, plant and care for people's gardens.",
+  "description": "Each visit or job is paid once it is done, and gardeners often come every week or two; not landscaping or building, which are paid in stages, nor felling trees.",
+  "status": "beta",
+  "icon": "plant",
+  "number": 15,
+  "roles": [
+    { "role": "gardener", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
+  ],
+  "listing": {
+    "description": { "type": "text", "description": "The garden work, in the writer's words: what needs doing, or what the gardener does, and how." },
+    "price": { "type": "money", "description": "Each price the gardener charges: per hour or per visit, with a count for a pack, such as 4 visits, or with no per for a whole job; in a request, the most the client would pay.", "per": ["hour", "visit"] },
+    "jobs": {
+      "type": "choice",
+      "description": "The kinds of job: mowing is cutting and edging lawns; pruning is cutting back hedges, shrubs and small trees; planting is planting and sowing, and readying the soil for it; leaves is raking and clearing fallen leaves; watering is watering plants, as while the client is away; clearing is cutting back a garden left to grow over; waste removal is taking cuttings and green waste away.",
+      "values": ["mowing", "pruning", "weeding", "planting", "leaves", "watering", "clearing", "waste-removal"],
+      "many": true
+    },
+    "frequency": { "type": "choice", "description": "How often the gardener comes.", "values": ["once", "weekly", "every-two-weeks", "monthly"], "many": true },
+    "visitHours": { "type": "number", "description": "How long one visit lasts, or the shortest and the longest, such as 2 to 3.", "unit": "hours", "range": true },
+    "gardenArea": { "type": "number", "description": "About how big the garden is, in square metres, such as 80 for 10 by 8 metres; left out when the client gives no measure.", "unit": "square-metres", "roles": ["client"] },
+    "tools": { "type": "choice", "description": "Who brings the tools, such as the mower.", "values": ["gardener", "client"] },
+    "base": { "type": "place", "description": "The area the gardener works in: anywhere in the circle.", "radiusKm": 10, "roles": ["gardener"] },
+    "home": { "type": "place", "description": "Roughly where the garden is.", "radiusKm": 1, "roles": ["client"] },
+    "hours": { "type": "hours", "description": "When the gardener works, each week.", "roles": ["gardener"] },
+    "time": { "type": "moment", "description": "When the job, or the first visit, is wanted: a time, or a span to fit it in.", "roles": ["client"] },
+    "photos": { "type": "file", "description": "Photos of the garden and what it needs.", "many": true, "roles": ["client"] },
+    "pastWork": { "type": "file", "description": "Photos of gardens the gardener has worked on.", "many": true, "roles": ["gardener"] }
+  },
+  "preview": ["jobs", "description", "price", "photos", "pastWork", "base", "home"],
+  "review": {
+    "onTime": { "type": "choice", "description": "Whether the gardener came at the time agreed.", "values": ["yes", "no"], "roles": ["gardener"] },
+    "done": { "type": "choice", "description": "Whether the work was done as agreed.", "values": ["yes", "no"], "roles": ["gardener"] },
+    "paid": { "type": "choice", "description": "Whether the client paid as agreed, once the work was done.", "values": ["yes", "no"], "roles": ["client"] }
+  }
+}

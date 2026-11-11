@@ -1,8 +1,9 @@
 {
   "name": "sports-coaching",
   "summary": "Coaches teach a sport or fitness, one on one or in groups.",
-  "description": "Coaching is in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
+  "description": "Coaching is in person or online, paid by the session, the hour or a pack of sessions; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person. Desk subjects and chess are tutoring.",
   "status": "beta",
+  "icon": "soccer-ball",
   "number": 8,
   "roles": [
     { "role": "coach", "listings": "offers" },
@@ -10,7 +11,7 @@
   ],
   "listing": {
     "description": { "type": "text", "description": "The coaching, in the writer's words: what is taught, how, and for whom." },
-    "price": { "type": "money", "description": "What each person pays, for a group their own share: per hour, per session, or with no per for a whole course; in a request, the most the student would pay.", "per": ["hour", "session"] },
+    "price": { "type": "money", "description": "Each price, what each person pays, for a group their own share: per hour or per session, with a count for a pack, such as 10 sessions, or with no per for a whole course; in a request, the most the student would pay.", "per": ["hour", "session"] },
     "sports": {
       "type": "choice",
       "description": "The sports taught; football is soccer, hockey is field hockey, and fitness is strength and conditioning, as a personal trainer teaches.",
@@ -18,9 +19,9 @@
       "many": true
     },
     "levels": { "type": "choice", "description": "The levels the coaching is for, each one; all levels is every value.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
-    "ages": { "type": "choice", "description": "The ages the coaching is for: children are under 13, teens 13 to 17, and seniors over 65.", "values": ["children", "teens", "adults", "seniors"], "many": true },
-    "groupSize": { "type": "number", "description": "The most learners in one session, not counting the coach: 1 for one on one; in a request, the largest group the student would join.", "unit": "people" },
-    "minutes": { "type": "number", "description": "How long one session lasts.", "unit": "minutes" },
+    "ages": { "type": "number", "description": "The learners' ages, in years: in an offer, the ages coached, such as 9 to 11, or 18 and over; in a request, the learner's age, or each learner's, as the youngest to the oldest.", "unit": "years", "range": true },
+    "groupSize": { "type": "number", "description": "How many learners in one session, not counting the coach: 1 for one on one, or the fewest and the most, such as 4 to 8; in a request, the group sizes the student would join, such as 1 to 4.", "unit": "people", "range": true },
+    "minutes": { "type": "number", "description": "How long one session lasts, or the shortest and the longest, such as 45 to 90.", "unit": "minutes", "range": true },
     "mode": { "type": "choice", "description": "How sessions are held: online, in person, or both.", "values": ["in-person", "online"], "many": true },
     "place": { "type": "place", "description": "Where sessions can be held in person: in an offer, a club, a court, or the area the coach will go to; in a request, where the student is or will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
     "hours": { "type": "hours", "description": "When sessions can be held, each week." }

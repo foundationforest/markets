@@ -1,8 +1,9 @@
 {
   "name": "language-exchange",
   "summary": "Two people practise each other's language, taking turns.",
-  "description": "Partners meet online or in person, with no money between them. For adults.",
+  "description": "Partners meet online or in person, with no money between them; paid lessons are tutoring. For adults.",
   "status": "beta",
+  "icon": "translate",
   "number": 7,
   "roles": [
     { "role": "partner", "listings": "requests" }
@@ -24,8 +25,9 @@
     },
     "level": {
       "type": "choice",
-      "description": "How well the writer speaks the language they want to practise: beginner is CEFR A1 and A2, intermediate B1 and B2, upper intermediate included, advanced C1 and C2.",
-      "values": ["beginner", "intermediate", "advanced"]
+      "description": "How well the writer speaks the language they want to practise, by its CEFR level: a1 is a beginner, a2 elementary, b1 intermediate, b2 upper intermediate, c1 advanced, and c2 proficient, close to a native speaker.",
+      "values": ["a1", "a2", "b1", "b2", "c1", "c2"],
+      "labels": { "a1": "A1, beginner", "a2": "A2, elementary", "b1": "B1, intermediate", "b2": "B2, upper intermediate", "c1": "C1, advanced", "c2": "C2, proficient" }
     },
     "mode": { "type": "choice", "description": "How they practise: online, in person, or both.", "values": ["in-person", "online"], "many": true },
     "place": { "type": "place", "description": "Where they can meet in person: anywhere in the circle the writer will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },

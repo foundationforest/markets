@@ -1,8 +1,9 @@
 {
   "name": "stays-work",
   "summary": "Hosts give guests a bed, and often meals, for their help.",
-  "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
+  "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them; never childcare, and help for a cause with no bed is volunteering. For adults.",
   "status": "beta",
+  "icon": "barn",
   "number": 10,
   "roles": [
     { "role": "host", "listings": "offers" },
@@ -23,7 +24,7 @@
       "many": true,
       "when": { "help": ["pet-sitting"] }
     },
-    "weeklyHours": { "type": "number", "description": "How many hours of help a week: what the host asks, or what the guest gives.", "unit": "hours" },
+    "weeklyHours": { "type": "number", "description": "How many hours of help a week, or the fewest and the most, such as 20 to 25, with 4 hours a day for 5 days as 20: what the host asks, or what the guest gives.", "unit": "hours", "range": true },
     "bed": {
       "type": "choice",
       "description": "Where the guest sleeps: the whole home, as when sitting it, a room of their own, a room shared with others, a caravan or a tent.",
@@ -34,10 +35,9 @@
     "meals": { "type": "choice", "description": "The meals the host gives the guest each day.", "values": ["breakfast", "lunch", "dinner"], "many": true, "roles": ["host"] },
     "internet": { "type": "choice", "description": "Whether the guest has internet at the stay.", "values": ["yes", "no"], "roles": ["host"] },
     "welcomes": { "type": "choice", "description": "Who the host takes in, for a host who takes only women or only men; left out, anyone.", "values": ["women", "men"], "many": true, "roles": ["host"] },
-    "guests": { "type": "number", "description": "The most guests the host takes at once.", "unit": "people", "roles": ["host"] },
+    "guests": { "type": "number", "description": "How many guests the host takes at once, from every party together: up to a most, such as up to 4, or the fewest and the most, such as 2 to 4.", "unit": "people", "range": true, "roles": ["host"] },
     "travellers": { "type": "number", "description": "How many people travel together, the guest included.", "unit": "people", "roles": ["guest"] },
-    "minNights": { "type": "number", "description": "The fewest nights a guest can stay; a week is 7 nights, a month 30.", "unit": "nights", "roles": ["host"] },
-    "nights": { "type": "number", "description": "How many nights the guest wants to stay with one host, within dates; a week is 7 nights, a month 30; left out when dates are the day they arrive and the day they leave.", "unit": "nights", "roles": ["guest"] },
+    "nights": { "type": "number", "description": "How many nights one stay lasts, a week as 7 and a month as 30: in a host's listing, the stays the host takes, such as at least 14, or 14 to 90; in a guest's, how long they want to stay with one host, within dates, such as 7 to 14, left out when dates are the day they arrive and the day they leave.", "unit": "nights", "range": true },
     "dates": { "type": "moment", "description": "When: in a host's listing, the span the host takes guests in; in a guest's, from the earliest day they could arrive to the latest day they would leave." },
     "languages": {
       "type": "choice",

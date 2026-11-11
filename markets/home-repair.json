@@ -1,8 +1,9 @@
 {
   "name": "home-repair",
   "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
-  "description": "Each job is paid once it is done; not renovations paid in stages.",
+  "description": "Each job is paid once it is done; not renovations paid in stages. Garden work is home-gardening, and cleaning is home-cleaning.",
   "status": "beta",
+  "icon": "wrench",
   "number": 6,
   "roles": [
     { "role": "repairer", "listings": "offers" },
@@ -10,7 +11,7 @@
   ],
   "listing": {
     "description": { "type": "text", "description": "The job, in the writer's words: what needs fixing, or what the repairer fixes, and how." },
-    "price": { "type": "money", "description": "The price per hour, or for the whole job.", "per": ["hour"] },
+    "price": { "type": "money", "description": "Each price the repairer charges: per hour, or with no per for a whole job, such as mounting a TV; a charge just to come out, on top of it, goes in the description; in a request, the most the client would pay.", "per": ["hour"] },
     "jobs": {
       "type": "choice",
       "description": "The kinds of job; mounting is fixing things to walls, such as shelves or a TV.",

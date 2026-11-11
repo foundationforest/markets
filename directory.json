@@ -1,61 +1,11 @@
 {
   "markets": [
     {
-      "name": "freelance-design",
-      "summary": "Freelancers design logos, brands, websites, apps and illustrations.",
-      "description": "Work is delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
-      "status": "beta",
-      "number": 1,
-      "roles": [
-        {
-          "role": "freelancer",
-          "listings": "offers"
-        },
-        {
-          "role": "client",
-          "listings": "requests"
-        }
-      ]
-    },
-    {
-      "name": "freelance-software",
-      "summary": "Freelancers build and fix software, delivered remotely.",
-      "description": "Pay piece by piece, each piece once delivered, so neither side risks much.",
-      "status": "beta",
-      "number": 2,
-      "roles": [
-        {
-          "role": "freelancer",
-          "listings": "offers"
-        },
-        {
-          "role": "client",
-          "listings": "requests"
-        }
-      ]
-    },
-    {
-      "name": "freelance-video",
-      "summary": "Freelancers edit videos and make animations and motion graphics.",
-      "description": "Work is delivered remotely, with no filming at events; pay piece by piece, each piece once delivered, so neither side risks much.",
-      "status": "beta",
-      "number": 3,
-      "roles": [
-        {
-          "role": "freelancer",
-          "listings": "offers"
-        },
-        {
-          "role": "client",
-          "listings": "requests"
-        }
-      ]
-    },
-    {
       "name": "goods",
       "summary": "People sell everyday things, new or used.",
       "description": "Things are handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
       "status": "beta",
+      "icon": "tag",
       "number": 4,
       "roles": [
         {
@@ -73,6 +23,7 @@
       "summary": "Cleaners clean people's homes.",
       "description": "Cleaners are paid by the visit, and often come every week.",
       "status": "beta",
+      "icon": "broom",
       "number": 5,
       "roles": [
         {
@@ -86,10 +37,29 @@
       ]
     },
     {
+      "name": "home-gardening",
+      "summary": "Gardeners mow, prune, plant and care for people's gardens.",
+      "description": "Each visit or job is paid once it is done, and gardeners often come every week or two; not landscaping or building, which are paid in stages, nor felling trees.",
+      "status": "beta",
+      "icon": "plant",
+      "number": 15,
+      "roles": [
+        {
+          "role": "gardener",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
       "name": "home-repair",
       "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
-      "description": "Each job is paid once it is done; not renovations paid in stages.",
+      "description": "Each job is paid once it is done; not renovations paid in stages. Garden work is home-gardening, and cleaning is home-cleaning.",
       "status": "beta",
+      "icon": "wrench",
       "number": 6,
       "roles": [
         {
@@ -105,8 +75,9 @@
     {
       "name": "language-exchange",
       "summary": "Two people practise each other's language, taking turns.",
-      "description": "Partners meet online or in person, with no money between them. For adults.",
+      "description": "Partners meet online or in person, with no money between them; paid lessons are tutoring. For adults.",
       "status": "beta",
+      "icon": "translate",
       "number": 7,
       "roles": [
         {
@@ -116,10 +87,29 @@
       ]
     },
     {
+      "name": "software",
+      "summary": "Developers build and fix software, AI, data and automation, remotely.",
+      "description": "Building and fixing software of every kind, AI, data, automation and security work included, delivered remotely; not design alone, video or hardware. Pay piece by piece, each piece once delivered, so neither side risks much.",
+      "status": "beta",
+      "icon": "code",
+      "number": 13,
+      "roles": [
+        {
+          "role": "developer",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
       "name": "sports-coaching",
       "summary": "Coaches teach a sport or fitness, one on one or in groups.",
-      "description": "Coaching is in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
+      "description": "Coaching is in person or online, paid by the session, the hour or a pack of sessions; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person. Desk subjects and chess are tutoring.",
       "status": "beta",
+      "icon": "soccer-ball",
       "number": 8,
       "roles": [
         {
@@ -135,8 +125,9 @@
     {
       "name": "stays-free",
       "summary": "Hosts give guests a couch or a room for free.",
-      "description": "Hosts ask only for good company: no tasks and no money between them. For adults.",
+      "description": "Hosts ask only for good company: no tasks and no money between them; a bed for help is stays-work. For adults.",
       "status": "beta",
+      "icon": "couch",
       "number": 9,
       "roles": [
         {
@@ -152,8 +143,9 @@
     {
       "name": "stays-work",
       "summary": "Hosts give guests a bed, and often meals, for their help.",
-      "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
+      "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them; never childcare, and help for a cause with no bed is volunteering. For adults.",
       "status": "beta",
+      "icon": "barn",
       "number": 10,
       "roles": [
         {
@@ -169,8 +161,9 @@
     {
       "name": "tours",
       "summary": "Local guides show a group around, paid on the day.",
-      "description": "The tour may be a food, walking, history or nature tour, or any other kind. For adults.",
+      "description": "The tour may be a food, walking, history or nature tour, or any other kind, and is paid per person or, for a private tour, for the whole group. For adults.",
       "status": "beta",
+      "icon": "map-trifold",
       "number": 11,
       "roles": [
         {
@@ -186,8 +179,9 @@
     {
       "name": "tutoring",
       "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
-      "description": "Lessons are online or in person, paid by the lesson or the hour; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
+      "description": "Lessons are online or in person, paid by the lesson, the hour or a pack of lessons; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person. Sport and fitness are sports-coaching; practising a language for free is language-exchange.",
       "status": "beta",
+      "icon": "graduation-cap",
       "number": 12,
       "roles": [
         {
@@ -196,6 +190,24 @@
         },
         {
           "role": "student",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "volunteering",
+      "summary": "Volunteers give their time to cleanups, food banks, events and good causes.",
+      "description": "Organizers offer a spot to help, in person or online, and volunteers ask for one: cleanups, food banks, community events, nature, animal shelters, and remote help for a cause, such as translating or writing. Not a bed for help, which is stays-work, and not caring for children or for people who need care. In person it is for adults only, since strangers meet; online it is open to anyone.",
+      "status": "beta",
+      "icon": "hand-heart",
+      "number": 14,
+      "roles": [
+        {
+          "role": "organizer",
+          "listings": "offers"
+        },
+        {
+          "role": "volunteer",
           "listings": "requests"
         }
       ]
