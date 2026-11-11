@@ -2,22 +2,37 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, what the dealing is, whether it is live or beta, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, the line an app shows for it, what the dealing is, whether it is live or beta, its icon, its number, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
   "type": "object",
-  "required": ["name", "description", "status", "roles", "listing"],
+  "required": ["name", "summary", "description", "status", "number", "roles", "listing"],
   "additionalProperties": false,
   "properties": {
     "name": {
       "description": "The market's name, the first half of each of its labels, market/role.",
       "$ref": "#/$defs/word"
     },
+    "summary": {
+      "description": "What the dealing is, in one plain line of at most 80 characters, which an app shows where someone picks a market.",
+      "type": "string",
+      "$ref": "#/$defs/line",
+      "maxLength": 80
+    },
     "description": {
-      "description": "What the dealing is, in one line.",
+      "description": "What an AI needs to know of the dealing to post here, beyond the summary, in one line: what is in and what is out, how people pay, and who it is for.",
       "$ref": "#/$defs/line"
     },
     "status": {
       "description": "live or beta. Live: needs no payment between people yet, is polished, and from now on only grows, which build/check.sh holds it to against main. Beta: works, at your own risk, and may still change in any way. A new market starts as beta; a market goes from beta to live, never back.",
       "enum": ["live", "beta"]
+    },
+    "icon": {
+      "description": "The name of an icon from Phosphor (phosphoricons.com), such as yarn, that an app shows for the market, as where someone picks one. One of the names in build/icons.json, and no other market's; build/check.sh checks both. It may change even when the market is live: no entry holds it. Left out: an app shows the name's first letter.",
+      "$ref": "#/$defs/word"
+    },
+    "number": {
+      "description": "A whole number from 1 that no other market holds, which an app tells markets apart by, such as by cycling it through its own palette, so each app chooses how many colors it has. A new market takes the highest number on main plus one, and a live market never changes it; build/check.sh checks all three. It is not an id: the name stays the market's only id.",
+      "type": "integer",
+      "minimum": 1
     },
     "roles": {
       "description": "The roles a profile here can hold, one profile each. Labels use these words.",
@@ -26,7 +41,7 @@
       "items": { "$ref": "#/$defs/role" }
     },
     "listing": {
-      "description": "The fields of a listing here, by name. A listing may leave out any of them, and holds a field only for the roles it names and when its when matches. The shared names keep their type: description is one text, price is one money. Never contact, which every listing may hold.",
+      "description": "The fields of a listing here, by name. A listing may leave out any of them, and holds a field only for the roles it names and when its when matches. The shared names keep their type: description is one text, and price is always a list of one or more money, which the format sets, so a market never writes many on it. Never contact, which every listing may hold.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
@@ -121,10 +136,14 @@
         },
         "unit": {
           "description": "For a number field, and always on one: what the number counts or measures, from one shared list, so an app or an AI can show and convert it without reading the description. build/README.md says what each one measures.",
-          "enum": ["seconds", "minutes", "hours", "days", "nights", "centimetres", "metres", "kilometres", "square-metres", "grams", "kilograms", "people", "rooms"]
+          "enum": ["seconds", "minutes", "hours", "days", "years", "nights", "centimetres", "metres", "kilometres", "square-metres", "grams", "kilograms", "people", "rooms"]
+        },
+        "range": {
+          "description": "For a number field: it may hold a range, { from, to }, instead of one number, such as ages from 9 to 11; either end may be left out, for no limit that way, as from 18 alone is 18 and over. One number still fits. Never with many. Left out: one number only.",
+          "const": true
         },
         "many": {
-          "description": "The field holds a list of its type, each item different, such as [\"weekly\", \"monthly\"] for a choice, even for one item. Never for words, which is a list already. Left out otherwise.",
+          "description": "The field holds a list of its type, each item different, such as [\"weekly\", \"monthly\"] for a choice, even for one item. Never for words, which is a list already, nor with range. Left out otherwise.",
           "const": true
         },
         "roles": {
@@ -173,6 +192,14 @@
           "if": { "properties": { "type": { "const": "number" } } },
           "then": { "required": ["unit"] },
           "else": { "not": { "required": ["unit"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "number" } } },
+          "else": { "not": { "required": ["range"] } }
+        },
+        {
+          "if": { "required": ["range"] },
+          "then": { "not": { "required": ["many"] } }
         }
       ]
     }

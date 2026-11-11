@@ -9,7 +9,19 @@
       "type": "string"
     },
     "number": {
-      "description": "A number, written as decimal text, such as \"3\" or \"2.5\". Filtered by range.",
+      "description": "A number, written as decimal text, such as \"3\" or \"2.5\". Where its field allows a range, it may be a range instead, as $defs/range says. A number is the range from itself to itself, and two match when they overlap.",
+      "$defs": {
+        "range": {
+          "description": "From one number to another, both in the field's unit, such as ages from 9 to 11 years. Either end may be left out, for no limit that way, as from 18 alone is 18 and over, but not both; with both, from is at most to. Two ranges match when each one's from is at most the other's to, a missing end limiting nothing.",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "from": { "description": "The least, or left out for no least.", "$ref": "#/$defs/number" },
+            "to": { "description": "The most, or left out for no most.", "$ref": "#/$defs/number" }
+          }
+        }
+      },
       "type": "string",
       "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
     },
@@ -57,9 +69,10 @@
       }
     },
     "money": {
-      "description": "An amount of one currency, and what it is for. Printed and sorted by.",
+      "description": "An amount of one currency, and what it is for. Printed and sorted by: two amounts compare by amount divided by count, within the same per and currency, so 1300 for 5 lessons is 260 a lesson.",
       "type": "object",
       "required": ["amount", "currency"],
+      "dependentRequired": { "count": ["per"] },
       "additionalProperties": false,
       "properties": {
         "amount": {
@@ -76,11 +89,16 @@
           "description": "What the amount is for, one of the per values its field lists, such as hour. Absent: the whole deal.",
           "type": "string",
           "minLength": 1
+        },
+        "count": {
+          "description": "How many of its per the amount buys, such as 5 for 5 lessons: a whole number, 1 when left out. Only with a per.",
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
     "moment": {
-      "description": "A time, or a span from one time to another, in RFC 3339 with its zone. Filtered by time.",
+      "description": "A time, or a span from one time to another, in RFC 3339 with its zone; a span's from is no later than its to. A time is the span from itself to itself, and two match when they overlap.",
       "$defs": {
         "time": {
           "type": "string",

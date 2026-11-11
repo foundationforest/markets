@@ -1,7 +1,9 @@
 {
   "name": "freelance-software",
-  "description": "Freelancers build and fix software, delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
+  "summary": "Freelancers build and fix software, delivered remotely.",
+  "description": "Pay piece by piece, each piece once delivered, so neither side risks much.",
   "status": "beta",
+  "number": 2,
   "roles": [
     { "role": "freelancer", "listings": "offers" },
     { "role": "client", "listings": "requests" }

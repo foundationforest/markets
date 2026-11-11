@@ -1,18 +1,22 @@
 {
   "name": "knitting",
-  "description": "Knitters knit jumpers, scarves, hats and socks to order, handed over in person or shipped.",
+  "summary": "Knitters knit clothes to order.",
+  "description": "Knitters knit jumpers, scarves, hats and socks to the wearer's measure, handed over in person or shipped.",
   "status": "live",
+  "icon": "yarn",
+  "number": 1,
   "roles": [
     { "role": "knitter", "listings": "offers" },
     { "role": "client", "listings": "requests" }
   ],
   "listing": {
     "description": { "type": "text", "description": "What is knitted, and how." },
-    "price": { "type": "money", "description": "The price per item, per hour, or for the whole order.", "per": ["item", "hour"] },
+    "price": { "type": "money", "description": "Each price: per item, per hour, or for the whole order, with a count for a pack, such as 3 pairs of socks.", "per": ["item", "hour"] },
     "deposit": { "type": "money", "description": "What is paid before the knitting starts." },
     "wearer": { "type": "choice", "description": "Who it is for.", "values": ["women", "men", "children"], "many": true },
     "kind": { "type": "choice", "description": "What is knitted.", "values": ["jumper", "cardigan", "scarf", "hat", "socks"] },
     "size": { "type": "choice", "description": "The size, in letters.", "values": ["xs", "s", "m", "l", "xl"], "labels": { "xs": "XS", "s": "S", "m": "M", "l": "L", "xl": "XL" }, "when": { "wearer": ["women", "men"], "kind": ["jumper", "cardigan"] } },
+    "age": { "type": "number", "description": "The wearer's age, or the ages it fits, in years.", "unit": "years", "range": true, "when": { "wearer": ["children"] } },
     "footLength": { "type": "number", "description": "The foot's length, heel to toe, for socks.", "unit": "centimetres", "when": { "kind": ["socks"] } },
     "days": { "type": "number", "description": "How many days the knitting takes.", "unit": "days" },
     "yarns": { "type": "words", "description": "The yarns it is knitted from, such as merino or cotton." },

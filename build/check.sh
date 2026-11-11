@@ -4,18 +4,22 @@
 #      build/types.json (in listing and review), each role's word once per market, each field's roles
 #      among the market's roles, each label for one of its field's values, each when naming choice
 #      fields of the same entry and values of them, never for a role the named field is not for, and
-#      never in a loop, and each name in preview one of the market's listing fields; and the
-#      schema's lists of types, of units and of the names every listing and every review holds the
-#      same as build/types.json's and the package's (src/markets.ts);
-#   2. each market's name equal to its file's name, which also keeps every name unique;
+#      never in a loop, each name in preview one of the market's listing fields, and each icon one
+#      of the Phosphor icons in build/icons.json; and the schema's lists of types, of units and of
+#      the names every listing and every review holds the same as build/types.json's and the
+#      package's (src/markets.ts);
+#   2. each market's name equal to its file's name, which also keeps every name unique, and no two
+#      markets with the same icon or the same number;
 #   3. against a commit, origin/main or the one the first argument names: each market live there only
-#      grows, so whatever was posted in it still fits and every profile stays what it is, the types
-#      in build/types.json it uses stay as they are but for their descriptions, and a market not
-#      there starts as beta. With no such commit it says so and compares nothing, except in CI,
-#      where it fails;
-#   4. when every market passes, directory.json and directory.md as the market files write them,
-#      sorted by name: when either is stale, rewrites it and fails, so the new copy gets committed.
-#      Nobody edits either by hand.
+#      grows, so whatever was posted in it still fits and every profile stays what it is, and keeps
+#      its number; the types in build/types.json it uses stay as they are but for their
+#      descriptions; and a market not there starts as beta and takes the next number after the
+#      highest there. With no such commit it says so and compares nothing, except in CI, where it
+#      fails;
+#   4. when every market passes, directory.json (each market's name, summary, description, status,
+#      icon, number and roles) and directory.md as the market files write them, sorted by name:
+#      when either is stale, rewrites it and fails, so the new copy gets committed. Nobody edits
+#      either by hand.
 # The check itself is scripts/check.ts. Needs Node 22.18 or later, npm and git; installs the locked
 # packages into build/node_modules on first run. Exit 0 when everything passes, 1 when anything
 # fails.

@@ -1,7 +1,9 @@
 {
   "name": "sports-coaching",
-  "description": "Coaches teach a sport or fitness, one on one or in groups, in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
+  "summary": "Coaches teach a sport or fitness, one on one or in groups.",
+  "description": "Coaching is in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
   "status": "beta",
+  "number": 8,
   "roles": [
     { "role": "coach", "listings": "offers" },
     { "role": "student", "listings": "requests" }

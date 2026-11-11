@@ -5,8 +5,10 @@
 //
 // A body fits when each of its fields is one its market names for that kind and role, or a shared
 // one, held only where its `when` matches, of its type (build/types.json): a choice among its values,
-// money with a `per` its field lists or none, a place with a point and a radius, `many` a list of
-// distinct values, a `file` the SHA-256 of one of the body's `files`. `files` is the standard's,
+// money with a `per` its field lists or none, a listing's price always a list of one or more, a
+// place with a point and a radius, a number or a range where its field allows one, `many` a list of
+// distinct values, each range and span from no later than to, a `file` the SHA-256 of one of the
+// body's `files`. `files` is the standard's,
 // checked with the entry, and no market's field. No field must be held, except that a review, a
 // vouch and a report name their subject: only it says who one is about. Whether `subject`, or the
 // profile in a review's `listing`, is an address is the standard's check (folders), not this one.
@@ -18,7 +20,7 @@ export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 
  * reading its description. The manual says what each one measures; nights count the nights of a
  * stay, and convert to nothing; rooms count a home's rooms of one kind, such as its bedrooms.
  */
-export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people', 'rooms'] as const
+export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'years', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people', 'rooms'] as const
 export type Unit = (typeof UNITS)[number]
 
 export type Field = {
@@ -32,6 +34,8 @@ export type Field = {
   radiusKm?: number
   /** For a number field, and always on one: what it counts or measures. */
   unit?: Unit
+  /** For a number field: it may hold a range, { from, to }, either end left out for no limit, instead of one number. Never with many. */
+  range?: true
   many?: true
   roles?: string[]
   /** The choice fields of the same entry this one depends on, each with the values that make it apply. */
@@ -44,10 +48,27 @@ export type Role = { role: string; listings: 'offers' | 'requests' }
  * your own risk, and may still change in any way. A market goes from beta to live, never back.
  */
 export type Status = 'live' | 'beta'
-/** A market file, markets/<name>.json, as build/market.schema.json defines it. */
-export type Market = { name: string; description: string; status: Status; roles: Role[]; listing: Fields; preview?: string[]; review?: Fields }
-/** directory.json: every market, its description, its status and its roles. */
-export type Directory = { markets: Array<Pick<Market, 'name' | 'description' | 'status' | 'roles'>> }
+/**
+ * A market file, markets/<name>.json, as build/market.schema.json defines it. Its summary is the line
+ * an app shows where someone picks a market, its description what an AI needs. Its icon is the name
+ * of a Phosphor icon, which no other market names; without one, an app shows the name's first letter.
+ * Its number, a whole number from 1 that no other market holds, is how an app tells markets apart,
+ * such as by cycling it through its own palette; the name stays the market's only id.
+ */
+export type Market = {
+  name: string
+  summary: string
+  description: string
+  status: Status
+  icon?: string
+  number: number
+  roles: Role[]
+  listing: Fields
+  preview?: string[]
+  review?: Fields
+}
+/** directory.json: every market, with its summary, description, status, icon and number, and its roles. */
+export type Directory = { markets: Array<Pick<Market, 'name' | 'summary' | 'description' | 'status' | 'icon' | 'number' | 'roles'>> }
 /** The files the markets are read from: directory.json, build/types.json, and the market file of each market the directory lists. */
 export type Files = { directory: Directory; types: unknown; markets: Market[] }
 
@@ -95,27 +116,30 @@ const MEANS: { [name: string]: { fits: RegExp; takes: string } } = {
   listing: { fits: /^[^/]+\/listing\/[^/]+$/, takes: "a listing's address, <profile address>/listing/<id>" },
 }
 
-/** What each type takes, in words; choice and money say what their field allows. */
+/** What each type takes, in words; choice and money say what their field allows, and a number whether it takes a range. */
 const TAKES: { [type in Exclude<Type, 'choice' | 'money'>]: string } = {
   text: 'text',
   number: 'a number as decimal text, such as "2.5"',
   words: 'a list of short words, each different',
   place: '{ lat, lon, radiusKm, area }: lat and lon as decimal text, radiusKm in whole kilometres, and area a name if wanted',
-  moment: 'a time in RFC 3339 with its zone, such as 2026-11-02T18:00:00+01:00, or { from, to }',
+  moment: 'a time in RFC 3339 with its zone, such as 2026-11-02T18:00:00+01:00, or { from, to }, from no later than to',
   file: 'the SHA-256 of one of the files the body lists in files, in lowercase hex',
   hours: '{ zone, slots: [{ days, from, to }] }: days as monday to sunday, times as HH:MM',
 }
 
-const takes = (field: Field) => {
+/** What a field takes, in words; `least` says a list holds at least one, as a listing's price does. */
+const takes = (field: Field, least = false) => {
   const one =
     field.type === 'choice'
       ? `one of ${field.values!.join(', ')}`
       : field.type === 'money'
         ? field.per
-          ? `{ amount, currency, per }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted`
-          : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per'
-        : TAKES[field.type]
-  return field.many ? `a list, each different, each ${one}` : one
+          ? `{ amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, and count, only with a per, how many of it the amount buys, a whole number`
+          : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per or count'
+        : field.type === 'number' && field.range
+          ? `${TAKES.number}, or { from, to }: two such numbers, from no more than to, either left out for no limit that way`
+          : TAKES[field.type]
+  return field.many ? `a list${least ? ' of one or more' : ''}, each different, each ${one}` : one
 }
 
 const isObject = (v: unknown): v is { [key: string]: unknown } => typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -126,6 +150,18 @@ const or = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).join('
 /** The SHA-256 of each file the body lists in `files`. */
 const filesOf = (body: { [key: string]: unknown }): unknown[] =>
   Array.isArray(body.files) ? body.files.map((file: unknown) => (isObject(file) ? file.sha256 : undefined)) : []
+
+/**
+ * Whether each range and span in a value of its field's type runs forward: a number range's from no
+ * more than its to, a moment span's from no later than its to. A range with one end passes.
+ */
+const inOrder = (field: Field, value: unknown): boolean =>
+  (field.many && Array.isArray(value) ? value : [value]).every((v) => {
+    if (!isObject(v) || typeof v.from !== 'string' || typeof v.to !== 'string') return true
+    if (field.type === 'number') return !(Number(v.from) > Number(v.to))
+    if (field.type === 'moment') return !(instant(v.from) > instant(v.to))
+    return true
+  })
 
 export type Markets = {
   /** directory.json, as the checkout holds it. */
@@ -143,7 +179,7 @@ export type Markets = {
 
 /**
  * Whether a value is of a field's type: a choice among its values, money with a `per` its field
- * lists or none, a list of distinct ones when `many`.
+ * lists or none, a number or a range where its field allows one, a list of distinct ones when `many`.
  */
 export type Fits = (field: Field, value: unknown) => boolean
 
@@ -179,7 +215,10 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
       for (const [key, value] of Object.entries(body)) {
         if (key === 'files') continue
         if (!Object.hasOwn(fields, key)) return `a ${kind} in ${name} has no field ${key}`
-        const field = fields[key]!
+        // A listing's price is always a list of one or more prices, each different: the format sets
+        // it, and no market writes many on it. A single price is a list of one.
+        const price = kind === 'listing' && key === 'price'
+        const field: Field = price ? { ...fields[key]!, many: true } : fields[key]!
         const is = kind === 'listing' ? role : aboutRole
         if (field.roles && is !== undefined && !field.roles.includes(is)) {
           return `${key} is for ${kind === 'listing' ? 'listings by' : `${kind}s of`} ${field.roles.join(' or ')}`
@@ -191,7 +230,7 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
           return (fields[other]?.many && Array.isArray(held) ? held : [held]).some((v) => values.includes(v as string))
         })
         if (!applies) return `${key} is only for a ${kind} whose ${when.map(([other, values]) => `${other} is ${or(values)}`).join(', and whose ')}`
-        if (!fits(field, value)) return `${key} takes ${takes(field)}`
+        if (!fits(field, value) || !inOrder(field, value) || (price && (value as unknown[]).length === 0)) return `${key} takes ${takes(field, price)}`
         if (field.type === 'file' && !(field.many ? (value as string[]) : [value]).every((sha256) => files.includes(sha256))) {
           return `${key} names a file the body's files do not list`
         }
@@ -266,6 +305,22 @@ const isDateTime = (text: string): boolean => {
   return second < 60 || (hour * 60 + minute - zone + 1440) % 1440 === 1439
 }
 
+/**
+ * A date-time's instant, in milliseconds since 1970 in UTC: its zone taken off, a leap second as the
+ * next minute's first; NaN for text that is not a date-time.
+ */
+const instant = (text: string): number => {
+  const parts = DATE_TIME.exec(text)
+  if (!parts) return NaN
+  const n = (i: number) => Number(parts[i] ?? 0)
+  const zone = (parts[7] === '-' ? -1 : 1) * (n(8) * 60 + n(9))
+  // setUTCFullYear, unlike Date.UTC, reads a year below 100 as itself.
+  const date = new Date(0)
+  date.setUTCFullYear(n(1), n(2) - 1, n(3))
+  date.setUTCHours(n(4), n(5) - zone)
+  return date.getTime() + n(6) * 1000
+}
+
 /** Whether a value fits build/types.json's type for a field, read as data, with no code made from it. */
 export function checker(types: unknown): Fits {
   if (!isObject(types) || !isObject(types.$defs)) throw new Error('build/types.json holds no $defs')
@@ -305,6 +360,9 @@ export function checker(types: unknown): Fits {
     pattern: (pattern: string, v) => typeof v !== 'string' || patterns.get(pattern)!.test(v),
     format: (_, v) => typeof v !== 'string' || isDateTime(v),
     minItems: (min: number, v) => !Array.isArray(v) || v.length >= min,
+    minProperties: (min: number, v) => !isObject(v) || Object.keys(v).length >= min,
+    dependentRequired: (needs: { [name: string]: string[] }, v) =>
+      !isObject(v) || Object.entries(needs).every(([name, names]) => !has(v, name) || names.every((other) => has(v, other))),
     uniqueItems: (unique: boolean, v) => !unique || !Array.isArray(v) || distinct(v),
     items: (items: Schema, v) => !Array.isArray(v) || v.every((item) => fits(items, item)),
     required: (names: string[], v) => !isObject(v) || names.every((name) => has(v, name)),
@@ -338,8 +396,14 @@ export function checker(types: unknown): Fits {
   // nothing, so with no list it keeps per out.
   const allows = (field: Field): Schema =>
     field.type === 'money' ? { type: 'object', properties: { per: { enum: field.per ?? [] } } } : {}
+  // A number field that allows a range takes one number or the range types.json defines beside it.
   return (field, value) => {
-    const one = field.type === 'choice' ? { type: 'string', enum: field.values } : { $ref: `#/$defs/${field.type}`, ...allows(field) }
+    const one =
+      field.type === 'choice'
+        ? { type: 'string', enum: field.values }
+        : field.type === 'number' && field.range
+          ? { oneOf: [{ $ref: '#/$defs/number' }, { $ref: '#/$defs/number/$defs/range' }] }
+          : { $ref: `#/$defs/${field.type}`, ...allows(field) }
     return fits(field.many ? { type: 'array', uniqueItems: true, items: one } : one, value)
   }
 }

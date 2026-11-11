@@ -16,7 +16,11 @@ const ROOT = process.argv[2] ?? fileURLToPath(new URL('../../', import.meta.url)
 const MAIN = process.argv[3]
 const root = (path: string) => join(ROOT, path)
 const problems = new Map<string, string[]>()
-const report = (where: string, error: string) => problems.set(where, [...(problems.get(where) ?? []), error])
+/** Says an error about a file, once. */
+const report = (where: string, error: string) => {
+  const said = problems.get(where) ?? []
+  if (!said.includes(error)) problems.set(where, [...said, error])
+}
 /** Lines said once, after every problem. */
 const notes = new Set<string>()
 const readJson = (where: string): any => {
@@ -42,9 +46,14 @@ const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false }
 formats.default(ajv)
 const types = readJson('build/types.json')
 const schema = readJson('build/market.schema.json')
-if (types === undefined || schema === undefined) finish()
+const icons = readJson('build/icons.json')
+if (types === undefined || schema === undefined || icons === undefined) finish()
 ajv.compile(types)
 const validateMarket = ajv.compile(schema)
+// The Phosphor icons a market may name, pinned in build/icons.json, so the check reads nothing over
+// the network.
+const iconNames = new Set<unknown>(Array.isArray(icons.icons) ? icons.icons : [])
+if (iconNames.size === 0) report('build/icons.json', 'holds no list of icons')
 
 // The types are the names types.json defines, and the units and the names every listing and every
 // review holds are the package's (src/markets.ts). The schema lists them too, for anyone who reads it
@@ -70,8 +79,11 @@ for (const kind of ['listing', 'review'] as const) {
 const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/word/pattern': 'must be lowercase letters, digits and single hyphens',
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
+  '#/properties/number/type': 'must be a whole number from 1',
+  '#/properties/number/minimum': 'must be a whole number from 1',
+  '#/properties/summary/maxLength': 'must be at most 80 characters: an app shows it where someone picks a market, and the description says the rest',
   '#/properties/listing/properties/description/not': 'must not hold "many": description is a shared name, and a listing holds one',
-  '#/properties/listing/properties/price/not': 'must not hold "many": price is a shared name, and a listing holds one',
+  '#/properties/listing/properties/price/not': 'must not hold "many": price is a shared name, always a list of one or more, as the format sets it',
 }
 function say(e: ErrorObject): string {
   const at = e.instancePath || 'the file'
@@ -95,7 +107,12 @@ function say(e: ErrorObject): string {
     const rule = schema.$defs.field.allOf[Number(only[1])]
     return `${at}: "${rule.else.not.required[0]}" is only for a ${rule.if.properties.type.const} field`
   }
-  if (e.keyword === 'not' && e.schemaPath.endsWith('/then/not')) return `${at} must not hold "many": words is a list already`
+  // A key that never goes with many: the rule names it in its "if", or, for words, the type does.
+  const never = /\/allOf\/(\d+)\/then\/not$/.exec(e.schemaPath)
+  if (never) {
+    const key = schema.$defs.field.allOf[Number(never[1])].if.required?.[0]
+    return key ? `${at}: "${key}" and "many" never go together: a field holds a ${key} or a list, never a list of them` : `${at} must not hold "many": words is a list already`
+  }
   if (e.keyword === 'const' && /^\/(listing|review)\/[^/]+\/many$/.test(e.instancePath)) {
     return `${at} must be ${e.params.allowedValue}, or left out`
   }
@@ -111,8 +128,8 @@ const repeats = (e: ErrorObject) =>
 
 const isObject = (v: unknown): v is { [key: string]: any } => typeof v === 'object' && v !== null && !Array.isArray(v)
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
-/** A list as words do it: "a", "a or b", "a, b or c". */
-const or = (items: unknown[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items.join(''))
+/** A list as words do it: "a", "a or b", "a, b or c"; and with and. */
+const or = (items: unknown[], word = 'or') => (items.length > 1 ? `${items.slice(0, -1).join(', ')} ${word} ${items.at(-1)}` : items.join(''))
 
 // 1 and 2: each market file.
 const files = existsSync(root('markets')) ? readdirSync(root('markets')).filter((f) => f.endsWith('.json')).sort() : []
@@ -130,6 +147,9 @@ for (const file of files) {
 
   if (typeof market?.name === 'string' && `${market.name}.json` !== file) {
     report(where, `its name is "${market.name}", so it must be markets/${market.name}.json`)
+  }
+  if (typeof market?.icon === 'string' && !iconNames.has(market.icon)) {
+    report(where, `/icon: "${market.icon}" is not a Phosphor icon: build/icons.json lists them`)
   }
   const words: unknown[] = Array.isArray(market?.roles) ? market.roles.map((r: any) => r?.role) : []
   for (const word of new Set(words.filter((w, i) => typeof w === 'string' && words.indexOf(w) !== i))) {
@@ -191,6 +211,22 @@ for (const file of files) {
     }
   }
 }
+// icon: no two markets the same, so a list of them tells each apart.
+const byIcon = new Map<string, string[]>()
+for (const [name, market] of byName) if (typeof market?.icon === 'string') byIcon.set(market.icon, [...(byIcon.get(market.icon) ?? []), name])
+for (const [icon, names] of byIcon) {
+  for (const name of names.length > 1 ? names : []) {
+    report(`markets/${name}.json`, `/icon: "${icon}" is also the icon of ${or(names.filter((other) => other !== name), 'and')}: no two markets share one, so a list of them tells each apart`)
+  }
+}
+// number: no two markets the same either, since apps tell markets apart by it.
+const byNumber = new Map<number, string[]>()
+for (const [name, market] of byName) if (Number.isInteger(market?.number)) byNumber.set(market.number, [...(byNumber.get(market.number) ?? []), name])
+for (const [number, names] of byNumber) {
+  for (const name of names.length > 1 ? names : []) {
+    report(`markets/${name}.json`, `/number: ${number} is also the number of ${or(names.filter((other) => other !== name), 'and')}: no two markets share one, since apps tell markets apart by it`)
+  }
+}
 
 // 3: each market live on main only grows, and a market new here starts as beta. Main's files passed
 // this check when they were merged, in the format of their day, so they are read as any too, and
@@ -210,6 +246,16 @@ if (MAIN !== undefined) {
   for (const [name, market] of byName) {
     if (market?.status === 'live' && !onMain.has(name)) {
       report(`markets/${name}.json`, 'is new and live: a market starts as beta; live is a promise made after it has been tried')
+    }
+  }
+  // A market new here takes the next number after the highest on main, so the markets new here
+  // together take the numbers right after it, one each.
+  const top = Math.max(0, ...[...onMain.values()].map((market) => (Number.isInteger(market?.number) ? market.number : 0)))
+  const added = [...byName].filter(([name, market]) => !onMain.has(name) && Number.isInteger(market?.number))
+  const next = added.map((_, i) => top + 1 + i)
+  for (const [name, market] of added) {
+    if (!next.includes(market.number)) {
+      report(`markets/${name}.json`, `/number is ${market.number}, but a market new here takes the next number after the highest on main, ${top}: here ${or(next, 'and')}`)
     }
   }
 
@@ -234,6 +280,9 @@ if (MAIN !== undefined) {
       continue
     }
     if (now?.status === 'beta') broke('/status is beta: a live market never goes back')
+    if (Number.isInteger(was.number) && now?.number !== was.number) {
+      broke(`/number is ${now?.number}, and ${was.number} on main: apps tell markets apart by it, so a live market keeps its own`)
+    }
 
     // Roles: each one still here, its listings what they were, or each profile in it changes what it is.
     const nowRoles = list(now?.roles)
@@ -265,6 +314,8 @@ if (MAIN !== undefined) {
         }
         const holds = (many: unknown) => (many ? 'a list' : 'one value')
         if (Boolean(is.many) !== Boolean(field.many)) broke(`${at} holds ${holds(is.many)}, and ${holds(field.many)} on main: ${posted} that hold ${key} would stop fitting`)
+        // range: a field may come to take one, since one number still fits, and never stop.
+        if (field.range && !is.range) broke(`${at} takes no range, and a range on main: ${posted} whose ${key} is a range would stop fitting`)
         for (const value of list(field.values)) {
           if (!list(is.values).includes(value)) broke(`${at}/values: ${JSON.stringify(value)} is gone: ${posted} whose ${key} ${field.many ? 'holds' : 'is'} ${value} would stop fitting`)
         }
@@ -331,7 +382,7 @@ if (MAIN !== undefined) {
 // 4: directory.json and directory.md, written from the market files once they all pass.
 if (problems.size === 0) {
   const listed = markets
-    .map(({ name, description, status, roles }) => ({ name, description, status, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
+    .map(({ name, summary, description, status, icon, number, roles }) => ({ name, summary, description, status, icon, number, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
   const lines = [
     '# Directory',
@@ -345,9 +396,10 @@ if (problems.size === 0) {
     '',
   ]
   if (listed.length === 0) lines.push('No markets yet.')
-  for (const { name, description, status, roles } of listed) {
-    const end = /[.!?]$/.test(description) ? '' : '.'
-    lines.push(`- [\`${name}\`](markets/${name}.json) (${status}): ${description}${end} Roles: ${roles.map((r: any) => `${r.role} (${r.listings})`).join(', ')}.`)
+  /** A line as a sentence: with a full stop, unless it ends in one, a question mark or an exclamation mark. */
+  const sentence = (line: string) => (/[.!?]$/.test(line) ? line : `${line}.`)
+  for (const { name, summary, description, status, roles } of listed) {
+    lines.push(`- [\`${name}\`](markets/${name}.json) (${status}): ${sentence(summary)} ${sentence(description)} Roles: ${roles.map((r: any) => `${r.role} (${r.listings})`).join(', ')}.`)
   }
   const written = {
     'directory.json': `${JSON.stringify({ markets: listed }, null, 2)}\n`,

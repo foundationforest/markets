@@ -1,7 +1,9 @@
 {
   "name": "tutoring",
-  "description": "Tutors teach school subjects, languages, chess and other desk subjects, online or in person, paid by the lesson or the hour; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
+  "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
+  "description": "Lessons are online or in person, paid by the lesson or the hour; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
   "status": "beta",
+  "number": 12,
   "roles": [
     { "role": "tutor", "listings": "offers" },
     { "role": "student", "listings": "requests" }

@@ -1,10 +1,10 @@
 # Runs build/check.sh on every pull request and every push to main: every market file against
-# build/market.schema.json and build/types.json, each market live on main against its version here,
-# and directory.json and directory.md as the market files write them. A pull request is compared
-# with main; a push to main with the commit before the push, since main is then the pushed commit
-# itself, so a pull request merged on a stale base still turns main red. Then the package in build/
-# type-checks, builds as every reader imports it, and passes its tests; a test that skips fails: the
-# summary must say "# skipped 0".
+# build/market.schema.json, build/types.json and build/icons.json, each market live on main against
+# its version here, and directory.json and directory.md as the market files write them. A pull
+# request is compared with main; a push to main with the commit before the push, since main is then
+# the pushed commit itself, so a pull request merged on a stale base still turns main red. Then the
+# package in build/ type-checks, builds as every reader imports it, and passes its tests; a test
+# that skips fails: the summary must say "# skipped 0".
 
 name: check
 
