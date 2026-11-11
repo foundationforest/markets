@@ -7,7 +7,7 @@ A market is a kind of dealing, like tutoring or selling electronics. This repo h
 | Path | What it is |
 |---|---|
 | [`directory.json`](directory.json), [`directory.md`](directory.md) | The list of markets |
-| [`markets/<name>.json`](markets/) | One market: its roles, its listing fields, and any extra review fields |
+| [`markets/<name>.json`](markets/) | One market: whether it is live or beta, its roles, its listing fields, and any extra review fields |
 | [`build/`](build/) | The manual for writing a market, the shared types, the check, and the package programs import |
 
 ## How a market works

@@ -1,6 +1,7 @@
 {
   "name": "software-development",
   "description": "People write software for others, remotely, paid per job or per hour.",
+  "status": "beta",
   "roles": [
     { "role": "developer", "listings": "offers" },
     { "role": "client", "listings": "requests" }

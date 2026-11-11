@@ -23,9 +23,11 @@ for legal text only. Plain words, no em-dashes.
 - One task per session. Open a pull request; never push to main.
 - A pull request's title says what changed, in plain words, readable on its own: no session codes
   or item numbers. Each pull request lands as one commit under its title.
-- A pull request that breaks what exists, by removing, retyping or narrowing anything, says so at
-  its top, plainly: which entries stop fitting until they are posted again, and who must follow,
-  in order: services first, then the app.
+- A live market only grows: `build/check.sh` fails on any change that would stop a listing or review
+  already posted from fitting, or change what a profile is, and a live market that must break
+  becomes a new market, with a new name. A beta market may change in any way, and a pull request
+  that breaks one still says so at its top, plainly: which entries stop fitting until they are
+  posted again, and who must follow, in order: services first, then the app.
 - A session never opens a pull request or acts in another repo, even to protect something live: it
   flags it and waits.
 - Run `build/check.sh` before you push. It writes both `directory.json` and `directory.md` from

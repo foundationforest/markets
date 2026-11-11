@@ -1,0 +1,32 @@
+{
+  "name": "knitting",
+  "description": "Knitters knit jumpers, scarves, hats and socks to order, handed over in person or shipped.",
+  "status": "live",
+  "roles": [
+    { "role": "knitter", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
+  ],
+  "listing": {
+    "description": { "type": "text", "description": "What is knitted, and how." },
+    "price": { "type": "money", "description": "The price per item, per hour, or for the whole order.", "per": ["item", "hour"] },
+    "deposit": { "type": "money", "description": "What is paid before the knitting starts." },
+    "wearer": { "type": "choice", "description": "Who it is for.", "values": ["women", "men", "children"], "many": true },
+    "kind": { "type": "choice", "description": "What is knitted.", "values": ["jumper", "cardigan", "scarf", "hat", "socks"] },
+    "size": { "type": "choice", "description": "The size, in letters.", "values": ["xs", "s", "m", "l", "xl"], "labels": { "xs": "XS", "s": "S", "m": "M", "l": "L", "xl": "XL" }, "when": { "wearer": ["women", "men"], "kind": ["jumper", "cardigan"] } },
+    "footLength": { "type": "number", "description": "The foot's length, heel to toe, for socks.", "unit": "centimetres", "when": { "kind": ["socks"] } },
+    "days": { "type": "number", "description": "How many days the knitting takes.", "unit": "days" },
+    "yarns": { "type": "words", "description": "The yarns it is knitted from, such as merino or cotton." },
+    "photos": { "type": "file", "description": "Photos of work the knitter has done.", "many": true, "roles": ["knitter"] },
+    "due": { "type": "moment", "description": "When the client needs it by, or the span it may come in.", "roles": ["client"] },
+    "handover": { "type": "choice", "description": "How it is handed over: in person, shipped, or both.", "values": ["in-person", "shipped"], "many": true },
+    "studio": { "type": "place", "description": "Where the knitter works, or anywhere in the circle they will go.", "radiusKm": 10, "roles": ["knitter"], "when": { "handover": ["in-person"] } },
+    "home": { "type": "place", "description": "Roughly where the client lives.", "radiusKm": 1, "roles": ["client"], "when": { "handover": ["in-person"] } },
+    "hours": { "type": "hours", "description": "When the knitter or the client can meet, each week." }
+  },
+  "preview": ["kind", "description", "price", "photos"],
+  "review": {
+    "onTime": { "type": "choice", "description": "Whether it came when promised.", "values": ["yes", "no"], "roles": ["knitter"] },
+    "daysLate": { "type": "number", "description": "How many days late it came.", "unit": "days", "roles": ["knitter"], "when": { "onTime": ["no"] } },
+    "again": { "type": "choice", "description": "Whether the writer would deal with them again.", "values": ["yes", "no"] }
+  }
+}

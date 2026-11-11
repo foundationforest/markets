@@ -1,6 +1,7 @@
 {
   "name": "sports-coaching",
   "description": "Coaches teach a sport one on one or in small groups, paid per session or per hour, in person or online.",
+  "status": "beta",
   "roles": [
     { "role": "coach", "listings": "offers" },
     { "role": "student", "listings": "requests" }
@@ -11,8 +12,8 @@
     "sports": { "type": "choice", "description": "The sports the coaching is for; football is soccer, and hockey is field hockey.", "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "american-football", "basketball", "volleyball", "rugby", "hockey", "ice-hockey", "baseball", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics"], "many": true },
     "levels": { "type": "choice", "description": "The levels the coaching is for.", "values": ["beginner", "intermediate", "advanced", "competitive"], "many": true },
     "ages": { "type": "choice", "description": "The ages the coaching is for.", "values": ["children", "teens", "adults", "seniors"], "many": true },
-    "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one." },
-    "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
+    "groupSize": { "type": "number", "description": "The most people in one session: 1 for one on one.", "unit": "people" },
+    "minutes": { "type": "number", "description": "How long one session lasts, in minutes.", "unit": "minutes" },
     "mode": { "type": "choice", "description": "How sessions are held: in person, online, or both.", "values": ["in-person", "online"], "many": true },
     "place": { "type": "place", "description": "Where sessions can be held: a club, or anywhere in the circle the person will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
     "hours": { "type": "hours", "description": "When sessions can be held, each week." }

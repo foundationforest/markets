@@ -1,0 +1,294 @@
+// build/check.sh's check, scripts/check.ts, on checkouts made for each case from the test market,
+// knitting.json, with this checkout's build/types.json and build/market.schema.json unless a case
+// gives its own; and, for the rule that a market live on main only grows, a copy of main made the
+// same way. A checkout made here has no directory yet, so one whose markets all pass fails only with
+// both directory files stale.
+
+import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { test } from 'node:test'
+import { fileURLToPath } from 'node:url'
+import { UNITS } from '../src/markets.ts'
+
+const ROOT = fileURLToPath(new URL('../../', import.meta.url))
+const json = (path: string) => JSON.parse(readFileSync(join(ROOT, path), 'utf8'))
+const knitting = JSON.parse(readFileSync(new URL('knitting.json', import.meta.url), 'utf8'))
+/** A copy of the test market to change, by another name if given. */
+const copy = (name = 'knitting'): any => ({ ...structuredClone(knitting), name })
+
+type Checkout = { markets: any[]; types?: object; schema?: object }
+
+/** What the check prints for `checkout`, compared with `main` when given, and the directory it writes. */
+const run = (checkout: Checkout, main?: Checkout) => {
+  const dirs: string[] = []
+  const make = ({ markets, types = json('build/types.json'), schema = json('build/market.schema.json') }: Checkout) => {
+    const dir = mkdtempSync(join(tmpdir(), 'markets-'))
+    dirs.push(dir)
+    for (const path of ['build', 'markets']) mkdirSync(join(dir, path))
+    writeFileSync(join(dir, 'build/types.json'), JSON.stringify(types))
+    writeFileSync(join(dir, 'build/market.schema.json'), JSON.stringify(schema))
+    for (const market of markets) writeFileSync(join(dir, `markets/${market.name}.json`), JSON.stringify(market))
+    return dir
+  }
+  try {
+    const dir = make(checkout)
+    const script = fileURLToPath(new URL('../scripts/check.ts', import.meta.url))
+    const args = ['--disable-warning=ExperimentalWarning', script, dir, ...(main ? [make(main)] : [])]
+    const { status, stdout, stderr } = spawnSync(process.execPath, args, { encoding: 'utf8' })
+    const read = (path: string) => (existsSync(join(dir, path)) ? readFileSync(join(dir, path), 'utf8') : undefined)
+    return { status, stdout, stderr, directory: read('directory.json'), md: read('directory.md') }
+  } finally {
+    for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+const stale = 'directory.json:\n  - was stale: rewritten from the market files; commit it\ndirectory.md:\n  - was stale: rewritten from the market files; commit it\n'
+const closing = 'A market live on main only grows: one that must break becomes a new market, with a new name.\n'
+
+test('the test market passes, and the directory shows whether each market is live or beta', () => {
+  const ran = run({ markets: [copy(), { ...copy('weaving'), status: 'beta' }] })
+  assert.equal(ran.stderr, stale)
+  const listed = JSON.parse(ran.directory!).markets
+  assert.deepEqual(listed[0], { name: 'knitting', description: knitting.description, status: 'live', roles: knitting.roles })
+  assert.deepEqual(listed.map((m: any) => [m.name, m.status]), [['knitting', 'live'], ['weaving', 'beta']])
+  assert.match(ran.md!, /^A live market needs no payment between people yet, is polished, and from now on only grows\. A$/m)
+  assert.match(ran.md!, /^- \[`knitting`\]\(markets\/knitting\.json\) \(live\): Knitters knit /m)
+  assert.match(ran.md!, /^- \[`weaving`\]\(markets\/weaving\.json\) \(beta\): Knitters knit /m)
+})
+
+test('a market says whether it is live or beta', () => {
+  const { status: _status, ...none } = copy()
+  assert.equal(run({ markets: [none] }).stderr, 'markets/knitting.json:\n  - the file: "status" is missing\n')
+  assert.equal(run({ markets: [{ ...copy(), status: 'alpha' }] }).stderr, 'markets/knitting.json:\n  - /status must be one of "live", "beta"\n')
+})
+
+test('every number names its unit, from the shared list, and no other field names one', () => {
+  const market = copy()
+  delete market.listing.days.unit
+  delete market.review.daysLate.unit
+  market.listing.footLength.unit = 'weeks'
+  market.listing.description.unit = 'minutes'
+  assert.equal(run({ markets: [market] }).stderr, [
+    'markets/knitting.json:',
+    '  - /listing/description: "unit" is only for a number field',
+    `  - /listing/footLength/unit must be one of ${UNITS.map((unit) => JSON.stringify(unit)).join(', ')}`,
+    '  - /listing/days: "unit" is missing',
+    '  - /review/daysLate: "unit" is missing',
+    '',
+  ].join('\n'))
+})
+
+test("the schema's units are the package's", () => {
+  const schema = json('build/market.schema.json')
+  schema.$defs.field.properties.unit.enum = UNITS.filter((unit) => unit !== 'people')
+  const units = UNITS.join(', ')
+  assert.equal(run({ markets: [copy()], schema }).stderr, `build/market.schema.json:\n  - its units (${units.replace(', people', '')}) differ from the ones in src/markets.ts (${units})\n`)
+})
+
+test('the check refuses labels on a field that is not a choice', () => {
+  const market = copy()
+  market.listing.yarns.labels = { merino: 'Merino' }
+  const ran = run({ markets: [market] })
+  assert.equal(ran.stderr, 'markets/knitting.json:\n  - /listing/yarns: "labels" is only for a choice field\n')
+  assert.equal(ran.status, 1)
+})
+
+test('the check refuses a label for a value its field does not list', () => {
+  const market = copy()
+  market.listing.size.labels = { ...market.listing.size.labels, xxl: 'XXL' }
+  const ran = run({ markets: [market] })
+  assert.equal(ran.stderr, `markets/knitting.json:\n  - /listing/size/labels: "xxl" is not one of size's values\n`)
+  assert.equal(ran.status, 1)
+})
+
+// Each case is a market of its own, named for the case, live on main unless it says otherwise, and
+// changed here as the case says.
+
+test('a market live on main may grow: each of these changes passes', () => {
+  const grown: { [name: string]: (market: any) => void } = {
+    'new-field': (m) => {
+      m.listing.colour = { type: 'choice', description: 'The colour of the yarn.', values: ['red', 'blue'] }
+      m.review.warm = { type: 'choice', description: 'Whether it is warm.', values: ['yes', 'no'], when: { again: ['yes'] } }
+    },
+    'new-value': (m) => m.listing.kind.values.push('shawl'),
+    'new-per': (m) => {
+      m.listing.price.per.push('pair')
+      m.listing.deposit.per = ['item']
+    },
+    'new-label': (m) => (m.listing.kind.labels = { socks: 'A pair of socks' }),
+    'reworded': (m) => {
+      m.description = 'Knitters knit to order.'
+      m.listing.days.description = 'How long the knitting takes.'
+      m.listing.size.labels.xl = 'Extra large'
+    },
+    'labels-gone': (m) => delete m.listing.size.labels,
+    'new-role': (m) => m.roles.push({ role: 'shop', listings: 'offers' }),
+    'wider-roles': (m) => {
+      delete m.listing.photos.roles
+      m.review.onTime.roles.push('client')
+    },
+    'wider-when': (m) => {
+      m.listing.size.when.kind.push('hat')
+      delete m.listing.size.when.wearer
+      delete m.listing.studio.when
+    },
+    'radius': (m) => (m.listing.studio.radiusKm = 20),
+    'preview': (m) => (m.preview = ['description', 'kind']),
+    'order': (m) => {
+      m.roles.reverse()
+      m.listing = Object.fromEntries(Object.entries(m.listing).reverse())
+      m.listing.kind.values.reverse()
+    },
+  }
+  const main = Object.keys(grown).map((name) => copy(name))
+  const here = Object.entries(grown).map(([name, change]) => {
+    const market = copy(name)
+    change(market)
+    return market
+  })
+  // Beta on main: it may become live, change in any way, or go; and a new market may start as beta.
+  const plain = (name: string, status: string) => ({ name, description: 'Knitters knit to order.', status, roles: [{ role: 'knitter', listings: 'offers' }], listing: {} })
+  main.push({ ...copy('beta-to-live'), status: 'beta' }, { ...copy('beta-breaks'), status: 'beta' }, { ...copy('beta-gone'), status: 'beta' })
+  here.push(copy('beta-to-live'), plain('beta-breaks', 'beta'), plain('new-beta', 'beta'))
+  assert.equal(run({ markets: here }, { markets: main }).stderr, stale)
+})
+
+test('a market live on main only grows: each of these changes fails, saying what broke and why', () => {
+  const posted = (kind: string, rest: string) => `${kind}s already posted ${rest} would stop fitting`
+  // A role is taken away from a market with no field kept for it, so only the role is said.
+  const plain = (name: string) => ({ ...copy(name), listing: { description: knitting.listing.description }, preview: undefined, review: undefined })
+  const broken: [name: string, change: ((market: any) => void) | 'gone', messages: string[], from?: (name: string) => any][] = [
+    ['gone', 'gone', ['is gone: its profiles, and all they posted, would be left with no market']],
+    ['renamed', 'gone', ['is gone: its profiles, and all they posted, would be left with no market']],
+    ['back-to-beta', (m) => (m.status = 'beta'), ['/status is beta: a live market never goes back']],
+    ['role-gone', (m) => m.roles.pop(), ['/roles: "client" is gone: every client profile would be left with no role'], plain],
+    ['role-renamed', (m) => (m.roles[1].role = 'customer'), ['/roles: "client" is gone: every client profile would be left with no role'], plain],
+    ['listings-swapped', (m) => (m.roles[1].listings = 'offers'), ["/roles: client's listings are offers, and requests on main: every client profile would change what it is"]],
+    ['field-gone', (m) => {
+      m.listing.yarn = m.listing.yarns
+      delete m.listing.yarns
+      delete m.review.again
+    }, [
+      `/listing/yarns is gone: ${posted('listing', 'that hold yarns')}`,
+      `/review/again is gone: ${posted('review', 'that hold again')}`,
+    ]],
+    ['retyped', (m) => (m.listing.days = { type: 'text', description: 'How many days the knitting takes.' }), [
+      `/listing/days/type is text, and number on main: ${posted('listing', 'that hold days')}`,
+    ]],
+    ['many-added', (m) => (m.listing.kind.many = true), [`/listing/kind holds a list, and one value on main: ${posted('listing', 'that hold kind')}`]],
+    ['many-dropped', (m) => delete m.listing.wearer.many, [`/listing/wearer holds one value, and a list on main: ${posted('listing', 'that hold wearer')}`]],
+    ['value-gone', (m) => {
+      m.listing.kind.values = m.listing.kind.values.filter((v: string) => v !== 'hat')
+      m.listing.wearer.values[2] = 'kids'
+    }, [
+      `/listing/wearer/values: "children" is gone: ${posted('listing', 'whose wearer holds children')}`,
+      `/listing/kind/values: "hat" is gone: ${posted('listing', 'whose kind is hat')}`,
+    ]],
+    ['per-gone', (m) => (m.listing.price.per = ['hour']), [`/listing/price/per: "item" is gone: ${posted('listing', 'whose price is per item')}`]],
+    ['unit-changed', (m) => (m.listing.days.unit = 'hours'), [
+      '/listing/days/unit is hours, and days on main: listings already posted that hold days would keep their number and change its meaning',
+    ]],
+    ['roles-narrowed', (m) => {
+      m.listing.yarns.roles = ['knitter']
+      m.review.again.roles = ['client']
+    }, [
+      '/listing/yarns/roles: client is left out: listings by client already posted that hold yarns would stop fitting',
+      '/review/again/roles: knitter is left out: reviews of knitter already posted that hold again would stop fitting',
+    ]],
+    ['new-when', (m) => (m.listing.yarns.when = { kind: ['jumper'] }), [
+      `/listing/yarns/when names kind, which it did not on main: ${posted('listing', 'that hold yarns, and whose kind is not jumper,')}`,
+    ]],
+    ['when-names-more', (m) => (m.listing.size.when.handover = ['in-person']), [
+      `/listing/size/when names handover, which it did not on main: ${posted('listing', 'that hold size, and whose handover is not in-person,')}`,
+    ]],
+    ['when-value-gone', (m) => (m.listing.size.when.kind = ['jumper']), [
+      `/listing/size/when/kind: "cardigan" is gone: ${posted('listing', 'that hold size, and whose kind is cardigan,')}`,
+    ]],
+  ]
+  const main = broken.map(([name, , , from = copy]) => from(name))
+  const here = broken.flatMap(([name, change, , from = copy]) => {
+    if (change === 'gone') return []
+    const market = from(name)
+    change(market)
+    return [market]
+  })
+  // Renamed, it is a new market, which starts as beta: as live, it fails too.
+  here.push({ ...copy('renamed-again'), status: 'beta' }, copy('new-live'))
+  const ran = run({ markets: here }, { markets: main })
+  const expected = [
+    'markets/new-live.json:\n  - is new and live: a market starts as beta; live is a promise made after it has been tried\n',
+    ...broken
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([name, , messages]) => `markets/${name}.json, live on main:\n${messages.map((message) => `  - ${message}\n`).join('')}`),
+    closing,
+  ]
+  assert.equal(ran.stderr, expected.join(''))
+  assert.equal(ran.status, 1)
+})
+
+test('a type a live market uses stays as it is on main, but for its descriptions', () => {
+  const types = json('build/types.json')
+  const narrowed = structuredClone(types)
+  narrowed.$defs.number.pattern = '^(0|[1-9][0-9]*)(\\.[0-9]+)?$'
+  narrowed.$defs.place.required.push('area')
+  const ran = run({ markets: [copy()], types: narrowed }, { markets: [copy()] })
+  assert.equal(ran.stderr, [
+    'build/types.json, used by markets live on main:',
+    "  - /$defs/number differs from main's beyond its descriptions, and knitting uses it: entries already posted could stop fitting; add a new type instead",
+    "  - /$defs/place differs from main's beyond its descriptions, and knitting uses it: entries already posted could stop fitting; add a new type instead",
+    '',
+  ].join('\n'))
+
+  // Reworded, it passes; and so does a change to a type no live market uses, here hours.
+  const reworded = structuredClone(types)
+  reworded.$defs.number.description = 'A number as decimal text.'
+  reworded.$defs.place.properties.area.description = 'The name of the area.'
+  reworded.$defs.hours.properties.zone.pattern = '^[A-Za-z]+(/[A-Za-z_]+)*$'
+  const { hours: _hours, ...listing } = copy().listing
+  const noHours = { ...copy(), listing }
+  assert.equal(run({ markets: [noHours], types: reworded }, { markets: [noHours] }).stderr, stale)
+  // A beta market on main holds no type to what it was.
+  const beta = { ...noHours, status: 'beta' }
+  narrowed.$defs.hours.properties.zone.pattern = '^[A-Za-z]+$'
+  assert.equal(run({ markets: [beta], types: narrowed }, { markets: [beta] }).stderr, stale)
+})
+
+test('a type a live market uses through another is held too', () => {
+  const types = json('build/types.json')
+  types.$defs.text = { description: 'Text, as a time of day.', $ref: '#/$defs/hours/$defs/time' }
+  const changed = structuredClone(types)
+  changed.$defs.hours.$defs.time.pattern = '^[0-9]{2}:[0-9]{2}$'
+  const plain = { name: 'plain', description: 'A market of text alone.', status: 'live', roles: [{ role: 'writer', listings: 'offers' }], listing: { description: { type: 'text', description: 'The text.' } } }
+  assert.equal(run({ markets: [plain], types: changed }, { markets: [plain], types }).stderr, [
+    'build/types.json, used by markets live on main:',
+    "  - /$defs/hours differs from main's beyond its descriptions, and plain uses it: entries already posted could stop fitting; add a new type instead",
+    '',
+  ].join('\n'))
+})
+
+test('with no copy of main, nothing is compared, and with one the check says how many markets are live there', () => {
+  const ran = run({ markets: [{ ...copy(), status: 'beta' }] })
+  assert.equal(ran.stderr, stale)
+  // Run again on a checkout whose directory is current, to see the line said when everything passes.
+  const dir = mkdtempSync(join(tmpdir(), 'markets-'))
+  const main = mkdtempSync(join(tmpdir(), 'markets-'))
+  try {
+    for (const at of [dir, main]) {
+      for (const path of ['build', 'markets']) mkdirSync(join(at, path))
+      writeFileSync(join(at, 'build/types.json'), JSON.stringify(json('build/types.json')))
+      writeFileSync(join(at, 'markets/knitting.json'), JSON.stringify(knitting))
+    }
+    writeFileSync(join(dir, 'build/market.schema.json'), JSON.stringify(json('build/market.schema.json')))
+    writeFileSync(join(dir, 'directory.json'), ran.directory!.replace('"beta"', '"live"'))
+    writeFileSync(join(dir, 'directory.md'), ran.md!.replace('(beta)', '(live)'))
+    const script = fileURLToPath(new URL('../scripts/check.ts', import.meta.url))
+    const check = (...args: string[]) => spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', script, dir, ...args], { encoding: 'utf8' })
+    assert.equal(check().stdout, '1 market files: each passes, and directory.json and directory.md are current\n')
+    assert.equal(check(main).stdout, '1 market files: each passes, and directory.json and directory.md are current; 1 live on main, and each only grows\n')
+  } finally {
+    for (const at of [dir, main]) rmSync(at, { recursive: true, force: true })
+  }
+})
