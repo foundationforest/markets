@@ -1,26 +1,32 @@
 {
   "name": "home-repair",
-  "description": "People fix things in other people's homes, such as plumbing, electrical work and small repairs, paid per hour or per job.",
+  "description": "Repairers do plumbing, electrical and handyman jobs in people's homes, each job paid once it is done; not renovations paid in stages.",
   "status": "beta",
   "roles": [
     { "role": "repairer", "listings": "offers" },
     { "role": "client", "listings": "requests" }
   ],
   "listing": {
-    "description": { "type": "text", "description": "The work: what is fixed, and how." },
+    "description": { "type": "text", "description": "The job, in the writer's words: what needs fixing, or what the repairer fixes, and how." },
     "price": { "type": "money", "description": "The price per hour, or for the whole job.", "per": ["hour"] },
-    "repairs": { "type": "choice", "description": "The kinds of work.", "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "plastering", "tiling", "flooring", "roofing", "locks", "mounting", "furniture-assembly"], "many": true },
-    "base": { "type": "place", "description": "The area the repairer works in.", "radiusKm": 10, "roles": ["repairer"] },
-    "home": { "type": "place", "description": "Where the home is.", "radiusKm": 1, "roles": ["client"] },
-    "hours": { "type": "hours", "description": "When the work can be done, each week." },
+    "jobs": {
+      "type": "choice",
+      "description": "The kinds of job; mounting is fixing things to walls, such as shelves or a TV.",
+      "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "locks", "mounting", "furniture-assembly"],
+      "many": true
+    },
+    "base": { "type": "place", "description": "The area the repairer works in: anywhere in the circle.", "radiusKm": 10, "roles": ["repairer"] },
+    "home": { "type": "place", "description": "Roughly where the home is.", "radiusKm": 1, "roles": ["client"] },
+    "hours": { "type": "hours", "description": "When the repairer works, each week.", "roles": ["repairer"] },
     "time": { "type": "moment", "description": "When the job is wanted: a time, or a span to fit it in.", "roles": ["client"] },
-    "licences": { "type": "text", "description": "Licences or certificates the repairer holds, such as for gas or electrical work.", "roles": ["repairer"] },
+    "licences": { "type": "text", "description": "Licences or certificates the repairer holds, each by name, such as for gas or electrical work; a word such as qualified alone goes in the description.", "roles": ["repairer"] },
     "photos": { "type": "file", "description": "Photos of what needs fixing.", "many": true, "roles": ["client"] },
-    "pastWork": { "type": "file", "description": "Photos of past jobs.", "many": true, "roles": ["repairer"] }
+    "pastWork": { "type": "file", "description": "Photos of jobs the repairer has done.", "many": true, "roles": ["repairer"] }
   },
-  "preview": ["repairs", "description", "price", "base", "home"],
+  "preview": ["jobs", "description", "price", "photos", "pastWork", "base", "home"],
   "review": {
-    "onTime": { "type": "choice", "description": "Whether the repairer came at the agreed time.", "values": ["yes", "no"], "roles": ["repairer"] },
-    "fixed": { "type": "choice", "description": "Whether the job was done as agreed.", "values": ["yes", "no"], "roles": ["repairer"] }
+    "onTime": { "type": "choice", "description": "Whether the repairer came at the time agreed.", "values": ["yes", "no"], "roles": ["repairer"] },
+    "fixed": { "type": "choice", "description": "Whether the job was done as agreed.", "values": ["yes", "no"], "roles": ["repairer"] },
+    "paid": { "type": "choice", "description": "Whether the client paid as agreed, once the job was done.", "values": ["yes", "no"], "roles": ["client"] }
   }
 }

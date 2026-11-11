@@ -1,0 +1,62 @@
+{
+  "name": "stays-work",
+  "description": "Hosts give guests a bed, and often meals, for their help, such as on a farm or in a hostel, building, or sitting a house or pets, with no money between them. For adults.",
+  "status": "beta",
+  "roles": [
+    { "role": "host", "listings": "offers" },
+    { "role": "guest", "listings": "requests" }
+  ],
+  "listing": {
+    "description": { "type": "text", "description": "The stay and the help, in the writer's words: the place, the tasks and the days, and what living there is like." },
+    "help": {
+      "type": "choice",
+      "description": "What the guest gives for the stay: the help the host asks for, or the guest offers, each kind it holds. Farm work is crops and land; hostel work is reception and helping run a hostel; teaching is lessons for adults, such as in a language; digital work is photos, social media and websites.",
+      "values": ["farm-work", "farm-animals", "gardening", "building", "hostel-work", "house-sitting", "pet-sitting", "cooking", "cleaning", "teaching", "digital-work"],
+      "many": true
+    },
+    "pets": {
+      "type": "choice",
+      "description": "The pets to look after, or that the guest can look after; small pets are such as rabbits or hamsters.",
+      "values": ["dogs", "cats", "birds", "fish", "reptiles", "small-pets"],
+      "many": true,
+      "when": { "help": ["pet-sitting"] }
+    },
+    "weeklyHours": { "type": "number", "description": "How many hours of help a week: what the host asks, or what the guest gives.", "unit": "hours" },
+    "bed": {
+      "type": "choice",
+      "description": "Where the guest sleeps: the whole home, as when sitting it, a room of their own, a room shared with others, a caravan or a tent.",
+      "values": ["whole-home", "private-room", "shared-room", "caravan", "tent"],
+      "roles": ["host"]
+    },
+    "hostAway": { "type": "choice", "description": "Whether the host is away during the stay, as when the guest sits the house.", "values": ["yes", "no"], "roles": ["host"] },
+    "meals": { "type": "choice", "description": "The meals the host gives the guest each day.", "values": ["breakfast", "lunch", "dinner"], "many": true, "roles": ["host"] },
+    "internet": { "type": "choice", "description": "Whether the guest has internet at the stay.", "values": ["yes", "no"], "roles": ["host"] },
+    "welcomes": { "type": "choice", "description": "Who the host takes in, for a host who takes only women or only men; left out, anyone.", "values": ["women", "men"], "many": true, "roles": ["host"] },
+    "guests": { "type": "number", "description": "The most guests the host takes at once.", "unit": "people", "roles": ["host"] },
+    "travellers": { "type": "number", "description": "How many people travel together, the guest included.", "unit": "people", "roles": ["guest"] },
+    "minNights": { "type": "number", "description": "The fewest nights a guest can stay.", "unit": "nights", "roles": ["host"] },
+    "dates": { "type": "moment", "description": "When: in a host's listing, the span the host takes guests in; in a guest's, when they arrive and leave, or the span they could come in." },
+    "languages": {
+      "type": "choice",
+      "description": "The languages the writer can talk in, even a little, by ISO 639-1 code, such as en for English.",
+      "values": ["aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az", "ba", "be", "bg", "bi", "bm", "bn", "bo", "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy", "da", "de", "dv", "dz", "ee", "el", "en", "eo", "es", "et", "eu", "fa", "ff", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl", "gn", "gu", "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz", "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu", "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my", "na", "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny", "oc", "oj", "om", "or", "os", "pa", "pi", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"],
+      "labels": { "aa": "Afar", "ab": "Abkhazian", "ae": "Avestan", "af": "Afrikaans", "ak": "Akan", "am": "Amharic", "an": "Aragonese", "ar": "Arabic", "as": "Assamese", "av": "Avaric", "ay": "Aymara", "az": "Azerbaijani", "ba": "Bashkir", "be": "Belarusian", "bg": "Bulgarian", "bi": "Bislama", "bm": "Bambara", "bn": "Bangla", "bo": "Tibetan", "br": "Breton", "bs": "Bosnian", "ca": "Catalan", "ce": "Chechen", "ch": "Chamorro", "co": "Corsican", "cr": "Cree", "cs": "Czech", "cu": "Church Slavic", "cv": "Chuvash", "cy": "Welsh", "da": "Danish", "de": "German", "dv": "Divehi", "dz": "Dzongkha", "ee": "Ewe", "el": "Greek", "en": "English", "eo": "Esperanto", "es": "Spanish", "et": "Estonian", "eu": "Basque", "fa": "Persian", "ff": "Fula", "fi": "Finnish", "fj": "Fijian", "fo": "Faroese", "fr": "French", "fy": "Western Frisian", "ga": "Irish", "gd": "Scottish Gaelic", "gl": "Galician", "gn": "Guarani", "gu": "Gujarati", "gv": "Manx", "ha": "Hausa", "he": "Hebrew", "hi": "Hindi", "ho": "Hiri Motu", "hr": "Croatian", "ht": "Haitian Creole", "hu": "Hungarian", "hy": "Armenian", "hz": "Herero", "ia": "Interlingua", "id": "Indonesian", "ie": "Interlingue", "ig": "Igbo", "ii": "Sichuan Yi", "ik": "Inupiaq", "io": "Ido", "is": "Icelandic", "it": "Italian", "iu": "Inuktitut", "ja": "Japanese", "jv": "Javanese", "ka": "Georgian", "kg": "Kongo", "ki": "Kikuyu", "kj": "Kuanyama", "kk": "Kazakh", "kl": "Kalaallisut", "km": "Khmer", "kn": "Kannada", "ko": "Korean", "kr": "Kanuri", "ks": "Kashmiri", "ku": "Kurdish", "kv": "Komi", "kw": "Cornish", "ky": "Kyrgyz", "la": "Latin", "lb": "Luxembourgish", "lg": "Ganda", "li": "Limburgish", "ln": "Lingala", "lo": "Lao", "lt": "Lithuanian", "lu": "Luba-Katanga", "lv": "Latvian", "mg": "Malagasy", "mh": "Marshallese", "mi": "Māori", "mk": "Macedonian", "ml": "Malayalam", "mn": "Mongolian", "mr": "Marathi", "ms": "Malay", "mt": "Maltese", "my": "Burmese", "na": "Nauru", "nb": "Norwegian Bokmål", "nd": "North Ndebele", "ne": "Nepali", "ng": "Ndonga", "nl": "Dutch", "nn": "Norwegian Nynorsk", "no": "Norwegian", "nr": "South Ndebele", "nv": "Navajo", "ny": "Nyanja", "oc": "Occitan", "oj": "Ojibwa", "om": "Oromo", "or": "Odia", "os": "Ossetic", "pa": "Punjabi", "pi": "Pali", "pl": "Polish", "ps": "Pashto", "pt": "Portuguese", "qu": "Quechua", "rm": "Romansh", "rn": "Rundi", "ro": "Romanian", "ru": "Russian", "rw": "Kinyarwanda", "sa": "Sanskrit", "sc": "Sardinian", "sd": "Sindhi", "se": "Northern Sami", "sg": "Sango", "si": "Sinhala", "sk": "Slovak", "sl": "Slovenian", "sm": "Samoan", "sn": "Shona", "so": "Somali", "sq": "Albanian", "sr": "Serbian", "ss": "Swati", "st": "Southern Sotho", "su": "Sundanese", "sv": "Swedish", "sw": "Swahili", "ta": "Tamil", "te": "Telugu", "tg": "Tajik", "th": "Thai", "ti": "Tigrinya", "tk": "Turkmen", "tl": "Tagalog", "tn": "Tswana", "to": "Tongan", "tr": "Turkish", "ts": "Tsonga", "tt": "Tatar", "tw": "Twi", "ty": "Tahitian", "ug": "Uyghur", "uk": "Ukrainian", "ur": "Urdu", "uz": "Uzbek", "ve": "Venda", "vi": "Vietnamese", "vo": "Volapük", "wa": "Walloon", "wo": "Wolof", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "za": "Zhuang", "zh": "Chinese", "zu": "Zulu" },
+      "many": true
+    },
+    "place": { "type": "place", "description": "Roughly where the stay is.", "radiusKm": 5, "roles": ["host"] },
+    "destination": {
+      "type": "place",
+      "description": "Where the guest wants to stay: a circle for each area, such as a town, a region or a country, one for each country of a wider region; a circle may reach past a border.",
+      "radiusKm": 50,
+      "many": true,
+      "roles": ["guest"]
+    },
+    "photos": { "type": "file", "description": "Photos of the place and the help.", "many": true, "roles": ["host"] }
+  },
+  "preview": ["help", "photos", "description", "place", "destination", "dates"],
+  "review": {
+    "asDescribed": { "type": "choice", "description": "Whether the stay was as the host's listing said, the bed, the meals and the help asked: no if any of them was not.", "values": ["yes", "no"], "roles": ["host"] },
+    "helped": { "type": "choice", "description": "Whether the guest gave the help agreed.", "values": ["yes", "no"], "roles": ["guest"] },
+    "feltSafe": { "type": "choice", "description": "Whether the writer felt safe with them; left out when they never met.", "values": ["yes", "no"] }
+  }
+}

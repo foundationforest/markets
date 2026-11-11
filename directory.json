@@ -1,23 +1,53 @@
 {
   "markets": [
     {
-      "name": "clothing",
-      "description": "People sell clothes and shoes they own, picked up in person or shipped.",
+      "name": "freelance-design",
+      "description": "Freelancers design logos, brands, websites, apps and illustrations, delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
       "status": "beta",
       "roles": [
         {
-          "role": "seller",
+          "role": "freelancer",
           "listings": "offers"
         },
         {
-          "role": "buyer",
+          "role": "client",
           "listings": "requests"
         }
       ]
     },
     {
-      "name": "electronics",
-      "description": "People sell phones, laptops, consoles and other electronics they own, picked up in person or shipped.",
+      "name": "freelance-software",
+      "description": "Freelancers build and fix software, delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
+      "status": "beta",
+      "roles": [
+        {
+          "role": "freelancer",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "freelance-video",
+      "description": "Freelancers edit videos and make animations and motion graphics, delivered remotely, not filming at events; pay piece by piece, each piece once delivered, so neither side risks much.",
+      "status": "beta",
+      "roles": [
+        {
+          "role": "freelancer",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "goods",
+      "description": "People sell everyday things, new or used, handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
       "status": "beta",
       "roles": [
         {
@@ -32,7 +62,7 @@
     },
     {
       "name": "home-cleaning",
-      "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
+      "description": "Cleaners clean people's homes, paid by the visit, often every week.",
       "status": "beta",
       "roles": [
         {
@@ -47,7 +77,7 @@
     },
     {
       "name": "home-repair",
-      "description": "People fix things in other people's homes, such as plumbing, electrical work and small repairs, paid per hour or per job.",
+      "description": "Repairers do plumbing, electrical and handyman jobs in people's homes, each job paid once it is done; not renovations paid in stages.",
       "status": "beta",
       "roles": [
         {
@@ -61,23 +91,19 @@
       ]
     },
     {
-      "name": "software-development",
-      "description": "People write software for others, remotely, paid per job or per hour.",
+      "name": "language-exchange",
+      "description": "Two people practise each other's language, taking turns, online or in person, with no money between them. For adults.",
       "status": "beta",
       "roles": [
         {
-          "role": "developer",
-          "listings": "offers"
-        },
-        {
-          "role": "client",
+          "role": "partner",
           "listings": "requests"
         }
       ]
     },
     {
       "name": "sports-coaching",
-      "description": "Coaches teach a sport one on one or in small groups, paid per session or per hour, in person or online.",
+      "description": "Coaches teach a sport or fitness, one on one or in groups, in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
       "status": "beta",
       "roles": [
         {
@@ -91,19 +117,53 @@
       ]
     },
     {
-      "name": "tennis-matches",
-      "description": "Tennis players find someone to play a match with, for no money.",
+      "name": "stays-free",
+      "description": "Hosts give guests a couch or a room for free, asking only for good company: no tasks and no money between them. For adults.",
       "status": "beta",
       "roles": [
         {
-          "role": "player",
+          "role": "host",
+          "listings": "offers"
+        },
+        {
+          "role": "guest",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "stays-work",
+      "description": "Hosts give guests a bed, and often meals, for their help, such as on a farm or in a hostel, building, or sitting a house or pets, with no money between them. For adults.",
+      "status": "beta",
+      "roles": [
+        {
+          "role": "host",
+          "listings": "offers"
+        },
+        {
+          "role": "guest",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "tours",
+      "description": "Local guides show a group around, such as on a food, walking, history or nature tour, paid on the day. For adults.",
+      "status": "beta",
+      "roles": [
+        {
+          "role": "guide",
+          "listings": "offers"
+        },
+        {
+          "role": "guest",
           "listings": "requests"
         }
       ]
     },
     {
       "name": "tutoring",
-      "description": "Tutors help students with school subjects one on one, paid per hour or per session, in person or online.",
+      "description": "Tutors teach school subjects, languages, chess and other desk subjects, online or in person, paid by the lesson or the hour; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
       "status": "beta",
       "roles": [
         {
