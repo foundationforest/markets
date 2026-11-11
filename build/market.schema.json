@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, what the dealing is, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, what the dealing is, whether it is live or beta, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
   "type": "object",
-  "required": ["name", "description", "roles", "listing"],
+  "required": ["name", "description", "status", "roles", "listing"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -14,6 +14,10 @@
     "description": {
       "description": "What the dealing is, in one line.",
       "$ref": "#/$defs/line"
+    },
+    "status": {
+      "description": "live or beta. Live: needs no payment between people yet, is polished, and from now on only grows, which build/check.sh holds it to against main. Beta: works, at your own risk, and may still change in any way. A new market starts as beta; a market goes from beta to live, never back.",
+      "enum": ["live", "beta"]
     },
     "roles": {
       "description": "The roles a profile here can hold, one profile each. Labels use these words.",
@@ -115,6 +119,10 @@
           "type": "integer",
           "minimum": 0
         },
+        "unit": {
+          "description": "For a number field, and always on one: what the number counts or measures, from one shared list, so an app or an AI can show and convert it without reading the description. build/README.md says what each one measures.",
+          "enum": ["minutes", "hours", "days", "nights", "centimetres", "metres", "kilometres", "square-metres", "grams", "kilograms", "people"]
+        },
         "many": {
           "description": "The field holds a list of its type. Never for words, which is a list already. Left out otherwise.",
           "const": true
@@ -160,6 +168,11 @@
           "if": { "properties": { "type": { "const": "place" } } },
           "then": { "required": ["radiusKm"] },
           "else": { "not": { "required": ["radiusKm"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "number" } } },
+          "then": { "required": ["unit"] },
+          "else": { "not": { "required": ["unit"] } }
         }
       ]
     }

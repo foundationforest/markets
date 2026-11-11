@@ -31,9 +31,26 @@ another dealing. A topic is never in a name; it is a field. A name is lowercase 
 single hyphens, at most 64 characters, and no other market's.
 
 Once a market is merged, its name and its roles' words never change, since they are part of every
-profile's key. Anything else may change. A pull request that makes existing listings or reviews
-stop fitting, by removing, retyping or narrowing anything, says so at its top, plainly: which ones
-stop fitting until they are written again.
+profile's key. What else may change follows from its [status](#status).
+
+## Status
+
+Every market says whether it is `live` or `beta`, and the directory shows which, so a person knows
+what they can rely on before they make a profile there.
+
+- `beta`: it works, at your own risk, and may still change in any way. A pull request that makes
+  listings or reviews already posted stop fitting says so at its top, plainly: which ones stop
+  fitting until they are posted again.
+- `live`: it needs no payment between people yet, it is polished, and from now on it only grows, so
+  whatever people posted in it keeps fitting and every profile in it stays what it is.
+
+A new market starts as beta, and goes live once it has been tried; it never goes back. A pull request
+to a live market may add roles, fields, values, `per` values and labels, widen a field's `roles` or
+`when`, and reword descriptions and labels. It may not remove or rename the market, a role, a field
+or a value, change a role's `listings`, change a field's type, `many` or `unit`, narrow its `roles`
+or `when`, or change a type in [`types.json`](types.json) a live market uses, beyond its
+descriptions. [`check.sh`](check.sh) compares each market live on main with yours and fails on any
+of these, with no exception: a live market that must break becomes a new market, with a new name.
 
 ## Roles
 
@@ -76,6 +93,7 @@ index can turn into filters for the other side, as each index chooses. So:
 |---|---|
 | `name` | The name, the same as the file's ([Naming](#naming)). |
 | `description` | What the dealing is, in one line. |
+| `status` | `live` or `beta` ([Status](#status)). |
 | `roles` | One role or several ([Roles](#roles)). |
 | `listing` | The fields of a listing, by name. |
 | `preview` | Optional: the `listing` fields that matter first ([below](#preview)). |
@@ -100,6 +118,8 @@ It may add:
 - `"radiusKm"`, on every `place` field and only on one: the radius, in whole kilometres, a new
   place starts at before the person changes it ([Types](#types)), such as 2 for an item to pick up,
   1 for a home, 5 for where people meet and 10 for where a pro works.
+- `"unit"`, on every `number` field and only on one: what it counts or measures, one of the
+  [units](#units), such as `"minutes"`.
 - `"many": true`: a list of its type, such as several photos. Never on `words`, a list already.
 - `"roles"`: the roles the field is for. In `listing`, only their listings hold it; in `review`,
   only reviews of a profile in them. Left out: every role.
@@ -116,6 +136,7 @@ It may add:
   "description": { "type": "text", "description": "What the session covers." },
   "price": { "type": "money", "description": "The price per hour or per session.", "per": ["hour", "session"] },
   "levels": { "type": "choice", "description": "The levels taught.", "values": ["beginner", "advanced"], "many": true },
+  "minutes": { "type": "number", "description": "How long one session lasts.", "unit": "minutes" },
   "mode": { "type": "choice", "description": "In person, online, or both.", "values": ["in-person", "online"], "many": true },
   "place": { "type": "place", "description": "Where sessions can be held.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
   "degrees": { "type": "text", "description": "Degrees or certificates the tutor holds.", "roles": ["tutor"] }
@@ -165,7 +186,7 @@ type, never its name, except for the [shared names](#shared-names).
 | Type | A value | A program |
 |---|---|---|
 | `text` | text | searches it and shows it |
-| `number` | decimal text, such as `"2.5"` | filters by range |
+| `number` | decimal text, such as `"2.5"`, in its field's [unit](#units) | filters by range |
 | `words` | a list of short words | filters by them |
 | `choice` | one of the field's `values` | filters by it |
 | `place` | `{ "lat", "lon", "radiusKm" }`, and `"area"` if wanted | matches circles that touch |
@@ -192,6 +213,21 @@ type, never its name, except for the [shared names](#shared-names).
   each slot's `days` are `monday` to `sunday`, and `from` and `to` are `HH:MM` in that zone.
 
 Use `choice` for a topic people filter by, and `words` only for open tags.
+
+## Units
+
+Every `number` field names its `unit` from one short shared list, so an app or an AI can show the
+number and convert it without reading the description. The list grows when a market needs a unit it
+lacks, and no unit leaves it while a live market uses it.
+
+| Measures | Units |
+|---|---|
+| time | `minutes`, `hours`, `days` |
+| nights of a stay | `nights`, which convert to no other unit |
+| length | `centimetres`, `metres`, `kilometres` |
+| area | `square-metres` |
+| weight | `grams`, `kilograms` |
+| a count | `people` |
 
 ## Photos
 
@@ -237,9 +273,10 @@ every review, vouch and report holds, and three in `listing`, none ever `many`:
 ## Propose
 
 1. Write `markets/<name>.json`, or edit one as [Naming](#naming) allows.
-2. Run `build/check.sh` (Node 22.18 or later, and npm), and fix what it prints. Once every market
-   passes, it rewrites a stale `directory.json` or `directory.md` and fails, so run it again.
-   Never edit either by hand.
+2. Run `build/check.sh` (Node 22.18 or later, npm and git), and fix what it prints. It compares
+   each market live on `origin/main` with yours, or on the commit you name, as in
+   `build/check.sh HEAD~1`. Once every market passes, it rewrites a stale `directory.json` or
+   `directory.md` and fails, so run it again. Never edit either by hand.
 3. Commit the market file and both directory files.
 4. Open a pull request. The check runs again and must pass; then the Forest Foundation reviews and
    merges it.
@@ -296,7 +333,7 @@ and the body's `files`, are
 
 The package also exports `SHARED`, the fields each kind holds in every market beyond its market's,
 as a market's fields are written: a listing's `contact`, and what every review, vouch and report
-holds. `previewOf(market)` gives the names of a market's listing fields that matter first, most
-needed first, as [Preview](#preview) says: its `preview`, or else `description`, `price`, then its
-`place` fields, of those it has. `npm test` runs its tests; `npm run check` type-checks it, and the
-browser entry again without Node's types.
+holds; and `UNITS`, the units a number field may name. `previewOf(market)` gives the names of a
+market's listing fields that matter first, most needed first, as [Preview](#preview) says: its
+`preview`, or else `description`, `price`, then its `place` fields, of those it has. `npm test` runs
+its tests; `npm run check` type-checks it, and the browser entry again without Node's types.

@@ -3,6 +3,7 @@
     {
       "name": "clothing",
       "description": "People sell clothes and shoes they own, picked up in person or shipped.",
+      "status": "beta",
       "roles": [
         {
           "role": "seller",
@@ -17,6 +18,7 @@
     {
       "name": "electronics",
       "description": "People sell phones, laptops, consoles and other electronics they own, picked up in person or shipped.",
+      "status": "beta",
       "roles": [
         {
           "role": "seller",
@@ -31,6 +33,7 @@
     {
       "name": "home-cleaning",
       "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
+      "status": "beta",
       "roles": [
         {
           "role": "cleaner",
@@ -45,6 +48,7 @@
     {
       "name": "home-repair",
       "description": "People fix things in other people's homes, such as plumbing, electrical work and small repairs, paid per hour or per job.",
+      "status": "beta",
       "roles": [
         {
           "role": "repairer",
@@ -59,6 +63,7 @@
     {
       "name": "software-development",
       "description": "People write software for others, remotely, paid per job or per hour.",
+      "status": "beta",
       "roles": [
         {
           "role": "developer",
@@ -73,6 +78,7 @@
     {
       "name": "sports-coaching",
       "description": "Coaches teach a sport one on one or in small groups, paid per session or per hour, in person or online.",
+      "status": "beta",
       "roles": [
         {
           "role": "coach",
@@ -87,6 +93,7 @@
     {
       "name": "tennis-matches",
       "description": "Tennis players find someone to play a match with, for no money.",
+      "status": "beta",
       "roles": [
         {
           "role": "player",
@@ -97,6 +104,7 @@
     {
       "name": "tutoring",
       "description": "Tutors help students with school subjects one on one, paid per hour or per session, in person or online.",
+      "status": "beta",
       "roles": [
         {
           "role": "tutor",

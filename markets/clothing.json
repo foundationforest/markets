@@ -1,6 +1,7 @@
 {
   "name": "clothing",
   "description": "People sell clothes and shoes they own, picked up in person or shipped.",
+  "status": "beta",
   "roles": [
     { "role": "seller", "listings": "offers" },
     { "role": "buyer", "listings": "requests" }

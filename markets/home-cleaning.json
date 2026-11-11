@@ -1,6 +1,7 @@
 {
   "name": "home-cleaning",
   "description": "Cleaners clean people's homes, by the hour or per visit, often every week.",
+  "status": "beta",
   "roles": [
     { "role": "cleaner", "listings": "offers" },
     { "role": "client", "listings": "requests" }

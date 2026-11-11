@@ -1,6 +1,7 @@
 {
   "name": "tutoring",
   "description": "Tutors help students with school subjects one on one, paid per hour or per session, in person or online.",
+  "status": "beta",
   "roles": [
     { "role": "tutor", "listings": "offers" },
     { "role": "student", "listings": "requests" }
@@ -10,7 +11,7 @@
     "price": { "type": "money", "description": "The price per hour, per session, or for a whole course.", "per": ["hour", "session"] },
     "subjects": { "type": "choice", "description": "The school subjects the tutoring is for.", "values": ["maths", "physics", "chemistry", "biology", "english", "french", "spanish", "german", "italian", "portuguese", "chinese", "japanese", "arabic", "russian", "latin", "history", "geography", "economics", "computer-science", "philosophy", "music", "art"], "many": true },
     "levels": { "type": "choice", "description": "The levels the tutoring is for; adult is for adults outside school.", "values": ["primary", "secondary", "university", "adult"], "many": true },
-    "minutes": { "type": "number", "description": "How long one session lasts, in minutes." },
+    "minutes": { "type": "number", "description": "How long one session lasts, in minutes.", "unit": "minutes" },
     "mode": { "type": "choice", "description": "How sessions are held: in person, online, or both.", "values": ["in-person", "online"], "many": true },
     "place": { "type": "place", "description": "Where sessions can be held: anywhere in the circle the person will go.", "radiusKm": 5, "when": { "mode": ["in-person"] } },
     "hours": { "type": "hours", "description": "When sessions can be held, each week." }

@@ -7,13 +7,18 @@ import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { Ajv2020, type ErrorObject } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { SHARED } from '../src/markets.ts'
+import { SHARED, UNITS } from '../src/markets.ts'
 
-// The checkout to check: this one, or the one its first argument names, as the tests do.
+// The checkout to check: this one, or the one its first argument names, as the tests do. The second
+// names a copy of main's markets/ and build/types.json to compare the markets live there with, as
+// check.sh makes one; without it, nothing is compared.
 const ROOT = process.argv[2] ?? fileURLToPath(new URL('../../', import.meta.url))
+const MAIN = process.argv[3]
 const root = (path: string) => join(ROOT, path)
 const problems = new Map<string, string[]>()
 const report = (where: string, error: string) => problems.set(where, [...(problems.get(where) ?? []), error])
+/** Lines said once, after every problem. */
+const notes = new Set<string>()
 const readJson = (where: string): any => {
   try {
     return JSON.parse(readFileSync(root(where), 'utf8'))
@@ -27,6 +32,7 @@ const finish = (): never => {
     console.error(`${where}:`)
     for (const error of errors) console.error(`  - ${error}`)
   }
+  for (const note of notes) console.error(note)
   process.exit(problems.size ? 1 : 0)
 }
 
@@ -40,13 +46,17 @@ if (types === undefined || schema === undefined) finish()
 ajv.compile(types)
 const validateMarket = ajv.compile(schema)
 
-// The types are the names types.json defines, and the names every listing and every review holds
-// are the package's (src/markets.ts). The schema lists them too, for anyone who reads it alone; each
-// list must agree, so each is checked once, against its source.
+// The types are the names types.json defines, and the units and the names every listing and every
+// review holds are the package's (src/markets.ts). The schema lists them too, for anyone who reads it
+// alone; each list must agree, so each is checked once, against its source.
 const typeNames = Object.keys(types.$defs)
 const schemaTypes: string[] = schema.$defs.field.properties.type.enum
 if (!isDeepStrictEqual([...schemaTypes].sort(), [...typeNames].sort())) {
   report('build/market.schema.json', `its field types (${schemaTypes.join(', ')}) differ from build/types.json's (${typeNames.join(', ')})`)
+}
+const schemaUnits: string[] | undefined = schema.$defs.field.properties.unit?.enum
+if (!isDeepStrictEqual(schemaUnits, [...UNITS])) {
+  report('build/market.schema.json', `its units (${schemaUnits?.join(', ')}) differ from the ones in src/markets.ts (${UNITS.join(', ')})`)
 }
 for (const kind of ['listing', 'review'] as const) {
   const sharedNames = Object.keys(SHARED[kind])
@@ -100,15 +110,21 @@ const repeats = (e: ErrorObject) =>
   e.keyword === 'if' || e.keyword === 'propertyNames' || (e.keyword === 'enum' && /^\/(listing|review)\/[^/]+\/type$/.test(e.instancePath))
 
 const isObject = (v: unknown): v is { [key: string]: any } => typeof v === 'object' && v !== null && !Array.isArray(v)
+const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
+/** A list as words do it: "a", "a or b", "a, b or c". */
+const or = (items: unknown[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items.join(''))
 
 // 1 and 2: each market file.
 const files = existsSync(root('markets')) ? readdirSync(root('markets')).filter((f) => f.endsWith('.json')).sort() : []
 const markets: any[] = []
+/** Each market file read, by its name: the file's, without .json. */
+const byName = new Map<string, any>()
 for (const file of files) {
   const where = `markets/${file}`
   const market = readJson(where)
   if (market === undefined) continue
   markets.push(market)
+  byName.set(file.slice(0, -'.json'.length), market)
   const errors = validateMarket(market) ? [] : validateMarket.errors!
   for (const e of errors) if (!repeats(e)) report(where, say(e))
 
@@ -176,10 +192,146 @@ for (const file of files) {
   }
 }
 
-// 3: directory.json and directory.md, written from the market files once they all pass.
+// 3: each market live on main only grows, and a market new here starts as beta. Main's files passed
+// this check when they were merged, in the format of their day, so they are read as any too, and
+// every step guards what it reads.
+let live = 0
+if (MAIN !== undefined) {
+  const readMain = (path: string): any => {
+    try {
+      return JSON.parse(readFileSync(join(MAIN, path), 'utf8'))
+    } catch {
+      return undefined
+    }
+  }
+  const mainFiles = existsSync(join(MAIN, 'markets')) ? readdirSync(join(MAIN, 'markets')).filter((f) => f.endsWith('.json')).sort() : []
+  const onMain = new Map(mainFiles.map((file) => [file.slice(0, -'.json'.length), readMain(`markets/${file}`)]))
+
+  for (const [name, market] of byName) {
+    if (market?.status === 'live' && !onMain.has(name)) {
+      report(`markets/${name}.json`, 'is new and live: a market starts as beta; live is a promise made after it has been tried')
+    }
+  }
+
+  const words = (market: any): unknown[] => list(market?.roles).map((r: any) => r?.role)
+  /** The types each live market uses, with the markets that use them, for build/types.json below. */
+  const users = new Map<string, Set<string>>()
+  const uses = (type: unknown, name: string) => {
+    if (typeof type === 'string') users.set(type, (users.get(type) ?? new Set()).add(name))
+  }
+  for (const [name, was] of onMain) {
+    if (was?.status !== 'live') continue
+    live++
+    const where = `markets/${name}.json, live on main`
+    const broke = (error: string) => {
+      report(where, error)
+      notes.add('A market live on main only grows: one that must break becomes a new market, with a new name.')
+    }
+    for (const fields of Object.values(SHARED)) for (const field of Object.values(fields)) uses(field.type, name)
+    const now = byName.get(name)
+    if (now === undefined) {
+      broke('is gone: its profiles, and all they posted, would be left with no market')
+      continue
+    }
+    if (now?.status === 'beta') broke('/status is beta: a live market never goes back')
+
+    // Roles: each one still here, its listings what they were, or each profile in it changes what it is.
+    const nowRoles = list(now?.roles)
+    for (const role of list(was.roles) as any[]) {
+      const is: any = nowRoles.find((r: any) => r?.role === role?.role)
+      if (is === undefined) broke(`/roles: "${role?.role}" is gone: every ${role?.role} profile would be left with no role`)
+      else if (is?.listings !== role?.listings) {
+        broke(`/roles: ${role.role}'s listings are ${is?.listings}, and ${role.listings} on main: every ${role.role} profile would change what it is`)
+      }
+    }
+
+    // Fields: each one still here, taking at least every value it took, wherever it applied.
+    for (const kind of ['listing', 'review'] as const) {
+      const before = isObject(was[kind]) ? was[kind] : {}
+      const after = isObject(now?.[kind]) ? now[kind] : {}
+      for (const [key, field] of Object.entries<any>(before)) {
+        if (!isObject(field)) continue
+        uses(field.type, name)
+        const at = `/${kind}/${key}`
+        const posted = `${kind}s already posted`
+        const is = Object.hasOwn(after, key) ? after[key] : undefined
+        if (!isObject(is)) {
+          broke(`${at} is gone: ${posted} that hold ${key} would stop fitting`)
+          continue
+        }
+        if (is.type !== field.type) {
+          broke(`${at}/type is ${is.type}, and ${field.type} on main: ${posted} that hold ${key} would stop fitting`)
+          continue
+        }
+        const holds = (many: unknown) => (many ? 'a list' : 'one value')
+        if (Boolean(is.many) !== Boolean(field.many)) broke(`${at} holds ${holds(is.many)}, and ${holds(field.many)} on main: ${posted} that hold ${key} would stop fitting`)
+        for (const value of list(field.values)) {
+          if (!list(is.values).includes(value)) broke(`${at}/values: ${JSON.stringify(value)} is gone: ${posted} whose ${key} ${field.many ? 'holds' : 'is'} ${value} would stop fitting`)
+        }
+        for (const per of list(field.per)) {
+          if (!list(is.per).includes(per)) broke(`${at}/per: ${JSON.stringify(per)} is gone: ${posted} whose ${key} is per ${per} would stop fitting`)
+        }
+        if (field.unit !== undefined && typeof is.unit === 'string' && is.unit !== field.unit) {
+          broke(`${at}/unit is ${is.unit}, and ${field.unit} on main: ${posted} that hold ${key} would keep their number and change its meaning`)
+        }
+        // roles: the roles it applied to, which a role gone from the market, said above, leaves.
+        const wasFor = list(field.roles ?? words(was))
+        const nowFor = list(is.roles ?? words(now))
+        for (const role of wasFor) {
+          if (!nowFor.includes(role) && words(now).includes(role)) {
+            broke(`${at}/roles: ${role} is left out: ${kind === 'listing' ? `listings by ${role}` : `reviews of ${role}`} already posted that hold ${key} would stop fitting`)
+          }
+        }
+        // when: no field named that was not, and each value still listed.
+        const whenWas = isObject(field.when) ? field.when : {}
+        for (const [dep, values] of Object.entries<any>(isObject(is.when) ? is.when : {})) {
+          if (!Object.hasOwn(whenWas, dep)) {
+            broke(`${at}/when names ${dep}, which it did not on main: ${posted} that hold ${key}, and whose ${dep} is not ${or(list(values))}, would stop fitting`)
+            continue
+          }
+          for (const value of list(whenWas[dep])) {
+            if (!list(values).includes(value)) broke(`${at}/when/${dep}: ${JSON.stringify(value)} is gone: ${posted} that hold ${key}, and whose ${dep} is ${value}, would stop fitting`)
+          }
+        }
+      }
+    }
+  }
+
+  // build/types.json: each type a live market uses, and each it refers to, as it is on main but for
+  // its descriptions. Whether a change only widens a type is more than this check can tell, so a type
+  // that must change becomes a new one.
+  const typesMain = readMain('build/types.json')
+  const defsMain = isObject(typesMain?.$defs) ? typesMain.$defs : {}
+  const refs = (schema: unknown): string[] =>
+    Array.isArray(schema) ? schema.flatMap(refs) : isObject(schema) ? Object.entries(schema).flatMap(([k, v]) => (k === '$ref' && typeof v === 'string' ? [v] : refs(v))) : []
+  for (const [type, by] of users) {
+    for (const ref of refs(defsMain[type])) {
+      const to = /^#\/\$defs\/([^/]+)/.exec(ref)?.[1]
+      if (to !== undefined && to !== type) for (const name of by) uses(to, name)
+    }
+  }
+  const bare = (schema: unknown): unknown => {
+    if (!isObject(schema)) return schema
+    const { description: _description, title: _title, ...rest } = schema
+    for (const key of ['$defs', 'properties']) {
+      if (isObject(rest[key])) rest[key] = Object.fromEntries(Object.entries(rest[key]).map(([name, sub]) => [name, bare(sub)]))
+    }
+    if (rest.items !== undefined) rest.items = bare(rest.items)
+    if (Array.isArray(rest.oneOf)) rest.oneOf = rest.oneOf.map(bare)
+    return rest
+  }
+  for (const [type, by] of [...users].sort(([a], [b]) => (a < b ? -1 : 1))) {
+    if (Object.hasOwn(defsMain, type) && !isDeepStrictEqual(bare(defsMain[type]), bare(types.$defs[type]))) {
+      const names = [...by].sort()
+      report('build/types.json, used by markets live on main', `/$defs/${type} differs from main's beyond its descriptions, and ${or(names)} ${names.length > 1 ? 'use' : 'uses'} it: entries already posted could stop fitting; add a new type instead`)
+    }
+  }
+}
+
+// 4: directory.json and directory.md, written from the market files once they all pass.
 if (problems.size === 0) {
   const listed = markets
-    .map(({ name, description, roles }) => ({ name, description, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
+    .map(({ name, description, status, roles }) => ({ name, description, status, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
   const lines = [
     '# Directory',
@@ -188,11 +340,14 @@ if (problems.size === 0) {
     'this file and [`directory.json`](directory.json) from the market files; nobody edits either by',
     'hand. What a market is: [`README.md`](README.md).',
     '',
+    'A live market needs no payment between people yet, is polished, and from now on only grows. A',
+    'beta market works, at your own risk, and may still change in any way.',
+    '',
   ]
   if (listed.length === 0) lines.push('No markets yet.')
-  for (const { name, description, roles } of listed) {
+  for (const { name, description, status, roles } of listed) {
     const end = /[.!?]$/.test(description) ? '' : '.'
-    lines.push(`- [\`${name}\`](markets/${name}.json): ${description}${end} Roles: ${roles.map((r: any) => `${r.role} (${r.listings})`).join(', ')}.`)
+    lines.push(`- [\`${name}\`](markets/${name}.json) (${status}): ${description}${end} Roles: ${roles.map((r: any) => `${r.role} (${r.listings})`).join(', ')}.`)
   }
   const written = {
     'directory.json': `${JSON.stringify({ markets: listed }, null, 2)}\n`,
@@ -208,6 +363,7 @@ if (problems.size === 0) {
 }
 
 if (problems.size === 0) {
-  console.log(`${files.length} market files: each passes, and directory.json and directory.md are current`)
+  const compared = MAIN === undefined ? '' : live ? `; ${live} live on main, and each only grows` : '; none is live on main'
+  console.log(`${files.length} market files: each passes, and directory.json and directory.md are current${compared}`)
 }
 finish()

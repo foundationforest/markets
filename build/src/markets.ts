@@ -12,6 +12,15 @@
 // profile in a review's `listing`, is an address is the standard's check (folders), not this one.
 
 export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 'moment' | 'file' | 'hours'
+
+/**
+ * The units a number field names, one each, so an app or an AI can show and convert it without
+ * reading its description. The manual says what each one measures; nights count the nights of a
+ * stay, and convert to nothing.
+ */
+export const UNITS = ['minutes', 'hours', 'days', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people'] as const
+export type Unit = (typeof UNITS)[number]
+
 export type Field = {
   type: Type
   description: string
@@ -21,6 +30,8 @@ export type Field = {
   per?: string[]
   /** For a place field: the radius, in whole kilometres, a new place starts at. */
   radiusKm?: number
+  /** For a number field, and always on one: what it counts or measures. */
+  unit?: Unit
   many?: true
   roles?: string[]
   /** The choice fields of the same entry this one depends on, each with the values that make it apply. */
@@ -28,10 +39,15 @@ export type Field = {
 }
 export type Fields = { [name: string]: Field }
 export type Role = { role: string; listings: 'offers' | 'requests' }
+/**
+ * Live: needs no payment between people yet, is polished, and from now on only grows. Beta: works, at
+ * your own risk, and may still change in any way. A market goes from beta to live, never back.
+ */
+export type Status = 'live' | 'beta'
 /** A market file, markets/<name>.json, as build/market.schema.json defines it. */
-export type Market = { name: string; description: string; roles: Role[]; listing: Fields; preview?: string[]; review?: Fields }
-/** directory.json: every market, its description and its roles. */
-export type Directory = { markets: Array<Pick<Market, 'name' | 'description' | 'roles'>> }
+export type Market = { name: string; description: string; status: Status; roles: Role[]; listing: Fields; preview?: string[]; review?: Fields }
+/** directory.json: every market, its description, its status and its roles. */
+export type Directory = { markets: Array<Pick<Market, 'name' | 'description' | 'status' | 'roles'>> }
 /** The files the markets are read from: directory.json, build/types.json, and the market file of each market the directory lists. */
 export type Files = { directory: Directory; types: unknown; markets: Market[] }
 
