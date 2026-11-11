@@ -2,19 +2,20 @@
 
 How to build a market, from why it exists to the file and how to propose it. It is for people and
 AIs who will build markets nobody here thought of, so it gives the reasons and leaves the judgment
-to you. A **rule** is what the checks enforce: [`check.sh`](check.sh) on each market file,
-`checkEntry` on each entry ([From a program](#from-a-program)), and one test on every market's
-values. Each rule is said once, with its reason. Everything else is advice, with its reason, for you
-to weigh. [`market.schema.json`](market.schema.json) is the file's format, and
-[`types.json`](types.json) its types.
+to you. From [The file](#the-file) on, it is the format: what it says a file or an entry holds is a
+**rule**, enforced by [`check.sh`](check.sh) on each market file, `checkEntry` on each entry
+([From a program](#from-a-program)) or a test on every market's values, and said once, with its
+reason; [`market.schema.json`](market.schema.json) and [`types.json`](types.json) hold it as data.
+Which markets this repo takes is the Forest Foundation's call, by
+[the line below](#which-markets-this-repo-takes). Everything else is advice, with its reason, for
+you to weigh.
 
 ## What a market is
 
 A market is one reputation under one name. A person's profiles are made from their seed, the secret
 their app keeps: one profile per market and role, named by its label, `<market>/<role>`, and nothing
-public links one profile to another. A profile's listings, and the reviews of it, belong to that one
-profile in that one market. Apps, indexes and AIs read the market's file to know what its listings
-and reviews hold, so everyone in a market writes the same shape.
+public links one profile to another. Apps, indexes and AIs read the market's file to know what its
+listings and reviews hold, so everyone in a market writes the same shape.
 
 ## Privacy first
 
@@ -34,12 +35,16 @@ So splitting a market restarts only the ratings, and ratings should restart when
 
 ## Where to draw the line
 
-First read [`directory.md`](../directory.md): the market may be there. If not, take the nearest one
-and ask two questions, about both sides of the deal:
+First read [`directory.md`](../directory.md), and the file of each market near yours, by what people
+deal in or by how they deal: the market may be there. If not, ask two questions of the nearest,
+about both sides of the deal:
 
-1. **Good at the same things?** Leave out trust, which carries anyway. If being great at one tells
-   you little about the other, split. This also tells roles apart: a tennis partner and a tennis
-   student are judged on different things.
+1. **Good at the same things?** Leave out trust, which carries anyway, and compare what a good
+   review of each would praise. If it would praise different things, being great at one tells you
+   little about the other: split. A maths tutor and a physics tutor are praised alike, for
+   explaining well and for the student's progress; a tutor and a tennis coach are not. The same
+   question tells roles apart: a tennis partner and a tennis student are judged on different
+   things, so a person who plays and takes lessons holds two profiles.
 2. **Fine to show together?** If one profile holding both would tell the people you deal with
    something they would keep apart, split.
 
@@ -50,14 +55,14 @@ fits it, and a review names its listing, so an index can still tell one topic's 
 another's.
 
 Splitting costs a crowd: each market needs its own before anyone finds a deal in it. That is an
-argument for launching few markets, not for merging two that fail a question. A dealing that meets
-two needs goes where its people already are.
+argument for launching few markets, not for merging two that fail a question. A dealing that could
+go in either of two markets goes to the one where people already look for it.
 
 | Dealings | Good at the same things? | Fine to show together? | So |
 |---|---|---|---|
 | A guest who pays for the bed, and one who works for it | No: one is judged on paying and on caring for the place, the other on the work and on living together | Yes | Two markets |
 | Babysitting, and caring for an elderly person | No: keeping a child safe and busy says little about personal care and health | Yes | Two markets |
-| School tutoring, and sports coaching | No: a subject is not a sport | Yes | Two markets |
+| School tutoring, and sports coaching | No: a coach is praised for technique and fitness, a tutor for explaining and grades | Yes | Two markets |
 | Selling a jacket, and selling a car | No: a car is judged on more, its papers, history and mechanics | No: every jacket buyer would learn what you can afford | Two markets, and the car waits ([below](#which-markets-this-repo-takes)) |
 | Seeing a doctor, and seeing a therapist | No: treating the body is not helping the mind | No: each would learn what the other treats you for | Two markets, and both wait: harm to health is not fixable tomorrow |
 
@@ -69,22 +74,23 @@ directory shows which, so a person knows what they can rely on before they make 
 
 **Beta** needs two things:
 
-- **Small first:** nobody risks more than a small amount before they get something. Small, rather
-  than zero, works because a seed gives one profile per market and role, and a verifier that stamps
-  each person once lets each person show one verified profile there: someone who takes the money and
-  vanishes leaves a reported profile behind and can't start clean under a new verified one. That
-  deters small amounts, not big ones.
+- **Small first:** nobody, on either side, risks more money or work than they could lose to a
+  stranger without real harm before they get something. Small, rather than zero, works because a
+  seed gives one profile per market and role, and a verifier that stamps each person once lets each
+  person show one verified profile there: someone who takes the money and vanishes leaves a
+  reported profile behind and can't start clean under a new verified one. That deters small
+  amounts, not big ones.
 - **Fixable tomorrow:** if it goes wrong, you try someone else.
 
 **Live** needs all of that, and:
 
-- **No money between people yet:** a paid dealing stays beta until escrow exists.
+- **No money between people:** a paid dealing stays beta until escrow exists.
 - **Polished, which here means tried:** listings and reviews posted in it end to end, through the
   app and through an AI.
 - **It only grows** from then on ([Status](#status)).
 
-A market that fails this line waits for the service that would make it accountable, such as escrow
-for a big price.
+A market that can't be beta waits for the service that would make it accountable, such as escrow
+for a big price, and can be proposed once that exists.
 
 ## Naming
 
@@ -92,26 +98,23 @@ A name is plain words everyone knows. Read it as family, then kind: a family wor
 where people already start looking from it, as they look for help at home and then for repair or
 cleaning (`home-repair`, `home-cleaning`), or for a stay and then for one they work for or one that
 is free (`stays-work`, `stays-free`). A market that stands alone gets one or two plain words
-(`tutoring`, `goods`), and leaves a family's first word to the family: `home` alone would read as
-all of them. Pick a name that is still right when the market grows: `goods` outlasts the first kind
-sold there.
+(`tutoring`, `goods`), which claim no family. A family's first word alone is left to the family:
+`home` would read as all of them. Pick a name that is still right when the market grows: `goods`
+outlasts the first kind sold there.
 
-A name is lowercase letters, digits and single hyphens, at most 64 characters, and the same as its
-file's, so no two markets share one; a role's word is spelled the same way. Together they make every
-profile's label, and a label makes the profile's key, so a new name is a new market: each profile
-there is new, its ratings start again, and its trust carries over by proof. A live market is never
-removed, so a renamed one stays beside the new. That makes a rename costly, not impossible, and the
-same goes for a role's word.
+A name and its roles' words make every profile's label, and a label makes the profile's key, so a
+new name is a new market, at the cost of a split: ratings start again, while trust carries. A live
+market is never removed, so a renamed one stays beside the new. That makes a rename costly, not
+impossible, and the same goes for a role's word. The spelling is under [The file](#the-file).
 
 ## Roles
 
 A role is `{ "role", "listings" }`, as in [knitting](#a-worked-example-knitting). `listings` says
-what its listings are: `offers`, what it gives, or `requests`, what it looks for. Where people of
-one role look for each other, as tennis players do, they are requests. Every listing is at
-`listing/<id>` in its profile's
+what its listings are, so each side can find the other's: `offers`, what it gives, or `requests`,
+what it looks for. Where people of one role look for each other, as tennis players do, they are
+requests. Every listing is at `listing/<id>` in its profile's
 [folder](https://github.com/foundationforest/standard/blob/main/folders/README.md#folders). Two
-sides judged on different things are two roles ([question 1](#where-to-draw-the-line)); a word is
-listed once, since a label names one role.
+sides judged on different things are two roles ([question 1](#where-to-draw-the-line)).
 
 ## Writing fields
 
@@ -127,8 +130,8 @@ asked the foot's length, and one who asks for a jumper the chest:
 ```
 
 An app asks `chest` right after `kind`, and only for a jumper or a cardigan; a scarf asks neither.
-A chain works too, such as who it is for, then the kind, then a size. This is why different fields
-are no reason to split a market. Its rules are under [The file](#the-file).
+A chain works too, such as who it is for, then the kind, then a size. The rules are under
+[The file](#the-file).
 
 ### What a field holds
 
@@ -138,15 +141,20 @@ offer the other side, and what an AI reads to post for someone. So:
 - **Write each description for an AI that has never seen the market**, so that from one sentence a
   person says it can post a listing that fits: what the field holds, in what unit or standard, and
   for whom.
-- **Every number names its unit**, so an app or an AI can show and convert it without reading the
-  description; since a unit can't change once a market is live, a number posted keeps its meaning.
+- **Every number names its unit** ([a rule](#the-file)), so an app or an AI can show and convert it
+  without reading the description; since a unit can't change once a market is live, a number
+  posted keeps its meaning.
 - **Store values that hold in every country**, and let apps and AIs translate: a foot's length in
   centimetres, not a shoe size that differs by country; a point for a place; a price in the person's
   own currency, which it keeps, since rates move.
-- **Copy the fields of apps people already use for that dealing**, across countries, then cut what
-  Forest doesn't need: they have learned what people ask.
-- **A picker (a `choice`) where people filter, text where they describe.** Yes or no is a picker of
-  two values, `yes` and `no`.
+- **Write values as lowercase English words joined by hyphens**, such as `in-person`, so their words
+  read right and apps translate them. A list may be as long as people need, and grows by pull
+  request when someone needs a value it lacks.
+- **Copy the fields of apps people already use for that dealing**, across countries: they have
+  learned what people ask. Then cut what Forest doesn't need, and what would tell strangers more
+  about a person than the deal needs.
+- **A picker (a `choice`) where people filter, text where they describe**, and `words` only for
+  open tags. Yes or no is a picker of two values, `yes` and `no`.
 - **Every field is one someone would miss.** More fields behind a form are fine when they make it
   simpler, as each kind above asks one measure.
 
@@ -154,8 +162,8 @@ offer the other side, and what an AI reads to post for someone. So:
 
 Reviews, vouches and reports have [one shape in every market](#reviews-vouches-and-reports), and a
 market may add fields to its reviews only. A field there is worth adding only for what a good one is
-judged on, by role, the same thing [question 1](#where-to-draw-the-line) asks: a knitter on keeping
-to the date and on fit, a client on paying as agreed. The score and the text say the rest.
+judged on, by role, the same thing [question 1](#where-to-draw-the-line) asks; the score and the
+text say the rest.
 
 ## A worked example: knitting
 
@@ -166,20 +174,21 @@ to the date and on fit, a client on paying as agreed. The score and the text say
    at one tells you little about the other, so knitting is its own market. Jumpers and socks pass
    both questions, so they share it, and the kind is a field. The knitter and the client are judged
    on different things, so they are two roles.
-3. **The launch line.** The client pays a small deposit, for the yarn, and the rest on handover:
-   small first. A bad scarf means trying another knitter: fixable tomorrow. So it can be beta, and
-   since money passes between people, it stays beta until escrow exists.
+3. **The launch line.** The client risks a deposit that covers the yarn, and pays the rest on
+   handover; the knitter risks the work, and keeps what was knitted if the client never pays: small
+   first, on both sides. A bad scarf means trying another knitter: fixable tomorrow. So it can be
+   beta, and since money passes between people, it stays beta until escrow exists.
 4. **The name.** People look for a knitter, not for crafts and then knitting, so it stands alone:
    `knitting`.
 5. **The fields.** Take one sentence a client might say: "a merino jumper for my husband, chest 104,
    by December; I'm in Madrid and can pick it up." It holds a kind, a measure, a yarn, a date and a
    handover with a place, which shops that knit to order ask too, beside photos of past work. A
-   measure in centimetres holds in every country and, unlike a letter size, needs no wearer.
-6. **The reviews.** `onTime` and `fits` for the knitter, `daysLate` only when it came late, and
-   `paid` for the client.
+   measure in centimetres, unlike a letter size, also needs no wearer.
+6. **The reviews.** A knitter is judged on the date and the fit, a client on paying: `onTime`,
+   `daysLate` only when it came late, and `fits` for the knitter, `paid` for the client.
 7. **The preview.** A client looks at what is knitted and at past work before the price.
-8. **The trial.** Fill in a listing as a knitter and as a client, search as each, review each, then
-   run the check.
+8. **The trial.** Before you propose, fill in a listing as a knitter and as a client, search as
+   each, review each, and run the check.
 
 ```json
 {
@@ -222,16 +231,17 @@ to the date and on fit, a client on paying as agreed. The score and the text say
 
 | Key | What it holds |
 |---|---|
-| `name` | The name, the same as the file's ([Naming](#naming)). |
+| `name` | Lowercase letters, digits and single hyphens, at most 64 characters, since it is half of every label, and the same as the file's, so no two markets share one ([Naming](#naming)). |
 | `description` | What the dealing is, in one line. |
 | `status` | `beta` or `live` ([Status](#status)). |
-| `roles` | One role or several ([Roles](#roles)). |
+| `roles` | One role or several ([Roles](#roles)), each word spelled as a name is and listed once, since a label names one role. |
 | `listing` | The fields of a listing, by name. |
-| `preview` | Optional: the `listing` fields that matter first ([below](#preview)). |
+| `preview` | Optional: names of `listing` fields, those that matter first ([below](#preview)). |
 | `review` | Optional: fields a review here holds besides [the shared ones](#reviews-vouches-and-reports), by name. |
 
-An entry may leave out any field, except that a review, a vouch and a report name their `subject`,
-since only it says who one is about.
+An entry holds only its market's fields and [the shared ones](#shared-names), and may leave out any
+of them, so a person posts what they know and a field added later never makes an older entry stop
+fitting. A review, a vouch and a report name their `subject`, since only it says who one is about.
 
 A field is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line.
 It may add:
@@ -250,17 +260,18 @@ It may add:
   starts at before the person changes it ([Types](#types)), such as 2 for an item to pick up, 1 for
   a home, 5 for where people meet and 10 for where a pro works.
 - `"unit"`, on every `number` field and only on one: one of the [units](#units), such as
-  `"minutes"`.
+  `"minutes"` ([why](#what-a-field-holds)).
 - `"many": true`: a list of its type, such as several photos. Never on `words`, a list already.
-- `"roles"`: the roles the field is for. In `listing`, only their listings hold it; in `review`,
-  only reviews of a profile in them. Left out: every role.
+- `"roles"`: the market's roles the field is for. In `listing`, only their listings hold it; in
+  `review`, only reviews of a profile in them. Left out: every role.
 - `"when"`: the field applies only when other `choice` fields of the same entry hold one of the
   values listed, such as `"when": { "kind": ["socks"] }`. With several fields named, all must
   match; a `many` field matches when any of its values does. It names only `choice` fields and
   their values, so an app knows ahead what each answer opens, and never in a loop, so a form can ask
   each field after those it depends on. A field that does not apply is never held: `checkEntry`
-  refuses it, and an app drops it when an answer changes. With `roles` too, both must match; where a
-  field it names is kept to some roles, its own are among them, or it could never apply for others.
+  refuses it, and an app drops it when an answer changes. With `roles` too, both must match, and if
+  a field it names is kept to some roles, this one is kept to those or fewer, since for any other
+  role it could never apply.
 
 A field's name is a key in an entry's body: a lowercase letter, then letters and digits, at most 64
 characters (`startTime`, not `start-time`). It is never `files`, which the standard keeps for an
@@ -288,8 +299,9 @@ a live market may add roles, fields, values, `per` values and labels, widen a fi
 `when`, and reword descriptions and labels. It may not remove or rename the market, a role, a field
 or a value, change a role's `listings`, change a field's type, `many` or `unit`, narrow its `roles`
 or `when`, or change a type in [`types.json`](types.json) a live market uses, beyond its
-descriptions. [`check.sh`](check.sh) compares each market live on main with yours and fails on any
-of these, with no exception: a live market that must break becomes a new market, with a new name.
+descriptions. [`check.sh`](check.sh) compares main with yours and fails on a new market that is
+live, a live one gone back to beta, and any of these, with no exception: a live market that must
+break becomes a new market, with a new name.
 
 ## Reviews, vouches and reports
 
@@ -342,13 +354,11 @@ type, never its name, except for the [shared names](#shared-names).
 - `hours`: when a person is free each week. `zone` is a time zone name, such as `Europe/Madrid`;
   each slot's `days` are `monday` to `sunday`, and `from` and `to` are `HH:MM` in that zone.
 
-Use `choice` for a topic people filter by, and `words` only for open tags.
-
 ## Units
 
-Every `number` field names its `unit` from one short shared list. The list grows when a market needs
-a unit it lacks: add it to `UNITS` in [`src/markets.ts`](src/markets.ts), to the schema's list, which
-the check holds equal, and to this table, in the market's pull request. No unit leaves while a live market uses it.
+The units a `number` field may name. The list grows when a market needs a unit it lacks: add it to
+`UNITS` in [`src/markets.ts`](src/markets.ts), to the schema's list, which the check holds equal,
+and to this table, in the market's pull request. No unit leaves while a live market uses it.
 
 | Measures | Units |
 |---|---|
@@ -384,7 +394,8 @@ current entry names them: a newer version that leaves a photo out lets it go, an
 These keep their meaning and type in every market, so a program finds them by name: the fields
 every review, vouch and report holds, and three in `listing`, none ever `many`:
 
-- `description` (text): the listing's main text, among any other text it holds. A market lists it.
+- `description` (text): the listing's main text, among any other text it holds. A market lists it,
+  since every listing says something.
 - `price` (money): what the listing costs, however it is paid, and the money a program sorts by.
   A market lists it where listings have a price.
 - `contact` (text): how to reach the writer outside Forest, such as a phone, a handle or an
@@ -398,9 +409,11 @@ every review, vouch and report holds, and three in `listing`, none ever `many`:
    each market live on `origin/main` with yours, or on the commit you name, as in
    `build/check.sh HEAD~1`. Once every market passes, it rewrites a stale `directory.json` or
    `directory.md` and fails, so run it again. Never edit either by hand.
-3. Commit the market file and both directory files.
-4. Open a pull request. The check runs again and must pass; then the Forest Foundation reviews it,
-   as [the README](../README.md#who-decides-what) says, and merges it.
+3. Run `npm test` in `build/`. [`test/content.test.ts`](test/content.test.ts) pins what the markets
+   hold, so a pull request that changes a market changes it too.
+4. Commit the market file, both directory files and the test.
+5. Open a pull request. The check and the tests run again and must pass; then the Forest Foundation
+   reviews it, as [the README](../README.md#who-decides-what) says, and merges it.
 
 ## From a program
 
@@ -428,8 +441,7 @@ markets.checkEntry('knitting', 'client', 'review', { subject, onTime: 'no', days
 // null
 ```
 
-A program reads the markets at the commit its checkout holds, and may read another directory's
-checkout.
+A program reads the markets at the commit its checkout holds.
 
 A page reads no files, and its content security policy may forbid `eval`. It imports
 `@foundationforest/markets/browser` and gives it the same files as data: `directory.json`,
@@ -448,16 +460,14 @@ Both entries run the same code. It imports nothing, makes no code from strings, 
 `checkEntry(market, role, kind, body, aboutRole?)` checks a listing, a review, a vouch or a report
 by a `role` profile as this manual says, and answers `null` when it fits, else the first field that
 does not, in plain words. For a review, `aboutRole` is the role of the profile it is about: a field
-kept for some roles is checked against it, and goes unchecked without it. It demands no field but
-`subject` ([The file](#the-file)). Whether `subject`, or the profile in `listing`, is an address,
-and the body's `files`, are
+kept for some roles is checked against it, and goes unchecked without it. Whether `subject`, or the
+profile in `listing`, is an address, and the body's `files`, are
 [the standard's](https://github.com/foundationforest/standard/blob/main/folders/README.md) checks.
 
 The package also exports `SHARED`, the fields each kind holds in every market beyond its market's,
 as a market's fields are written: a listing's `contact`, and what every review, vouch and report
 holds; and `UNITS`, the units a number field may name. `previewOf(market)` gives the names of a
-market's listing fields that matter first, most needed first, as [Preview](#preview) says: its
-`preview`, or else `description`, `price`, then its `place` fields, of those it has. `npm test` runs
+market's listing fields that matter first, as [Preview](#preview) says. `npm test` runs
 its tests, on a test market of their own, [`test/knitting.json`](test/knitting.json), shaped to hold
 every key a field may hold rather than as a model; `npm run check` type-checks the package, and the
 browser entry again without Node's types.
