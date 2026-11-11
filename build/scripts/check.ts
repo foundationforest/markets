@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { Ajv2020, type ErrorObject } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
-import { COLORS, SHARED, UNITS } from '../src/markets.ts'
+import { SHARED, UNITS } from '../src/markets.ts'
 
 // The checkout to check: this one, or the one its first argument names, as the tests do. The second
 // names a copy of main's markets/ and build/types.json to compare the markets live there with, as
@@ -16,7 +16,11 @@ const ROOT = process.argv[2] ?? fileURLToPath(new URL('../../', import.meta.url)
 const MAIN = process.argv[3]
 const root = (path: string) => join(ROOT, path)
 const problems = new Map<string, string[]>()
-const report = (where: string, error: string) => problems.set(where, [...(problems.get(where) ?? []), error])
+/** Says an error about a file, once. */
+const report = (where: string, error: string) => {
+  const said = problems.get(where) ?? []
+  if (!said.includes(error)) problems.set(where, [...said, error])
+}
 /** Lines said once, after every problem. */
 const notes = new Set<string>()
 const readJson = (where: string): any => {
@@ -51,8 +55,8 @@ const validateMarket = ajv.compile(schema)
 const iconNames = new Set<unknown>(Array.isArray(icons.icons) ? icons.icons : [])
 if (iconNames.size === 0) report('build/icons.json', 'holds no list of icons')
 
-// The types are the names types.json defines, and the units, the colors and the names every listing
-// and every review holds are the package's (src/markets.ts). The schema lists them too, for anyone who reads it
+// The types are the names types.json defines, and the units and the names every listing and every
+// review holds are the package's (src/markets.ts). The schema lists them too, for anyone who reads it
 // alone; each list must agree, so each is checked once, against its source.
 const typeNames = Object.keys(types.$defs)
 const schemaTypes: string[] = schema.$defs.field.properties.type.enum
@@ -62,10 +66,6 @@ if (!isDeepStrictEqual([...schemaTypes].sort(), [...typeNames].sort())) {
 const schemaUnits: string[] | undefined = schema.$defs.field.properties.unit?.enum
 if (!isDeepStrictEqual(schemaUnits, [...UNITS])) {
   report('build/market.schema.json', `its units (${schemaUnits?.join(', ')}) differ from the ones in src/markets.ts (${UNITS.join(', ')})`)
-}
-const schemaColors: string[] | undefined = schema.properties?.color?.enum
-if (!isDeepStrictEqual(schemaColors, [...COLORS])) {
-  report('build/market.schema.json', `its colors (${schemaColors?.join(', ')}) differ from the ones in src/markets.ts (${COLORS.join(', ')})`)
 }
 for (const kind of ['listing', 'review'] as const) {
   const sharedNames = Object.keys(SHARED[kind])
@@ -79,6 +79,8 @@ for (const kind of ['listing', 'review'] as const) {
 const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/word/pattern': 'must be lowercase letters, digits and single hyphens',
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
+  '#/properties/number/type': 'must be a whole number from 1',
+  '#/properties/number/minimum': 'must be a whole number from 1',
   '#/properties/summary/maxLength': 'must be at most 80 characters: an app shows it where someone picks a market, and the description says the rest',
   '#/properties/listing/properties/description/not': 'must not hold "many": description is a shared name, and a listing holds one',
   '#/properties/listing/properties/price/not': 'must not hold "many": price is a shared name, always a list of one or more, as the format sets it',
@@ -217,6 +219,14 @@ for (const [icon, names] of byIcon) {
     report(`markets/${name}.json`, `/icon: "${icon}" is also the icon of ${or(names.filter((other) => other !== name), 'and')}: no two markets share one, so a list of them tells each apart`)
   }
 }
+// number: no two markets the same either, since apps tell markets apart by it.
+const byNumber = new Map<number, string[]>()
+for (const [name, market] of byName) if (Number.isInteger(market?.number)) byNumber.set(market.number, [...(byNumber.get(market.number) ?? []), name])
+for (const [number, names] of byNumber) {
+  for (const name of names.length > 1 ? names : []) {
+    report(`markets/${name}.json`, `/number: ${number} is also the number of ${or(names.filter((other) => other !== name), 'and')}: no two markets share one, since apps tell markets apart by it`)
+  }
+}
 
 // 3: each market live on main only grows, and a market new here starts as beta. Main's files passed
 // this check when they were merged, in the format of their day, so they are read as any too, and
@@ -236,6 +246,16 @@ if (MAIN !== undefined) {
   for (const [name, market] of byName) {
     if (market?.status === 'live' && !onMain.has(name)) {
       report(`markets/${name}.json`, 'is new and live: a market starts as beta; live is a promise made after it has been tried')
+    }
+  }
+  // A market new here takes the next number after the highest on main, so the markets new here
+  // together take the numbers right after it, one each.
+  const top = Math.max(0, ...[...onMain.values()].map((market) => (Number.isInteger(market?.number) ? market.number : 0)))
+  const added = [...byName].filter(([name, market]) => !onMain.has(name) && Number.isInteger(market?.number))
+  const next = added.map((_, i) => top + 1 + i)
+  for (const [name, market] of added) {
+    if (!next.includes(market.number)) {
+      report(`markets/${name}.json`, `/number is ${market.number}, but a market new here takes the next number after the highest on main, ${top}: here ${or(next, 'and')}`)
     }
   }
 
@@ -260,6 +280,9 @@ if (MAIN !== undefined) {
       continue
     }
     if (now?.status === 'beta') broke('/status is beta: a live market never goes back')
+    if (Number.isInteger(was.number) && now?.number !== was.number) {
+      broke(`/number is ${now?.number}, and ${was.number} on main: apps tell markets apart by it, so a live market keeps its own`)
+    }
 
     // Roles: each one still here, its listings what they were, or each profile in it changes what it is.
     const nowRoles = list(now?.roles)
@@ -359,7 +382,7 @@ if (MAIN !== undefined) {
 // 4: directory.json and directory.md, written from the market files once they all pass.
 if (problems.size === 0) {
   const listed = markets
-    .map(({ name, summary, description, status, icon, color, roles }) => ({ name, summary, description, status, icon, color, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
+    .map(({ name, summary, description, status, icon, number, roles }) => ({ name, summary, description, status, icon, number, roles: roles.map(({ role, listings }: any) => ({ role, listings })) }))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
   const lines = [
     '# Directory',

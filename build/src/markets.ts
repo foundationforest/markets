@@ -23,13 +23,6 @@ export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 
 export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'years', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people', 'rooms'] as const
 export type Unit = (typeof UNITS)[number]
 
-/**
- * The hues a market's color may name. Each app and index picks its own shade of each, for light and
- * dark, so a market file names a hue, never a shade; markets of a family may share one.
- */
-export const COLORS = ['red', 'orange', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'indigo', 'purple', 'pink', 'brown'] as const
-export type Color = (typeof COLORS)[number]
-
 export type Field = {
   type: Type
   description: string
@@ -59,6 +52,8 @@ export type Status = 'live' | 'beta'
  * A market file, markets/<name>.json, as build/market.schema.json defines it. Its summary is the line
  * an app shows where someone picks a market, its description what an AI needs. Its icon is the name
  * of a Phosphor icon, which no other market names; without one, an app shows the name's first letter.
+ * Its number, a whole number from 1 that no other market holds, is how an app tells markets apart,
+ * such as by cycling it through its own palette; the name stays the market's only id.
  */
 export type Market = {
   name: string
@@ -66,14 +61,14 @@ export type Market = {
   description: string
   status: Status
   icon?: string
-  color?: Color
+  number: number
   roles: Role[]
   listing: Fields
   preview?: string[]
   review?: Fields
 }
-/** directory.json: every market, with its summary, description, status, icon and color, and its roles. */
-export type Directory = { markets: Array<Pick<Market, 'name' | 'summary' | 'description' | 'status' | 'icon' | 'color' | 'roles'>> }
+/** directory.json: every market, with its summary, description, status, icon and number, and its roles. */
+export type Directory = { markets: Array<Pick<Market, 'name' | 'summary' | 'description' | 'status' | 'icon' | 'number' | 'roles'>> }
 /** The files the markets are read from: directory.json, build/types.json, and the market file of each market the directory lists. */
 export type Files = { directory: Directory; types: unknown; markets: Market[] }
 

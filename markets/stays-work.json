@@ -3,6 +3,7 @@
   "summary": "Hosts give guests a bed, and often meals, for their help.",
   "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
   "status": "beta",
+  "number": 10,
   "roles": [
     { "role": "host", "listings": "offers" },
     { "role": "guest", "listings": "requests" }

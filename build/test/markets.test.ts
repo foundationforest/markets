@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
 import formats from 'ajv-formats'
 import { loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
-import { COLORS, SHARED, UNITS, loadMarkets, previewOf, type Directory, type Market, type Markets } from '../src/index.ts'
+import { SHARED, UNITS, loadMarkets, previewOf, type Directory, type Market, type Markets } from '../src/index.ts'
 import { fromFiles } from '../src/markets.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
@@ -24,7 +24,7 @@ const knitting: Market = JSON.parse(readFileSync(new URL('knitting.json', import
 
 /** The test market's files, and a checkout of them alone, for the Node entry to read. */
 const directory: Directory = {
-  markets: [{ name: knitting.name, summary: knitting.summary, description: knitting.description, status: knitting.status, icon: knitting.icon, color: knitting.color, roles: knitting.roles }],
+  markets: [{ name: knitting.name, summary: knitting.summary, description: knitting.description, status: knitting.status, icon: knitting.icon, number: knitting.number, roles: knitting.roles }],
 }
 const files: Files = { directory, types: json('build/types.json'), markets: [knitting] }
 const checkout = mkdtempSync(join(tmpdir(), 'markets-'))
@@ -325,13 +325,12 @@ test('a vouch and a report hold subject and text, the same in every market', () 
   assert.equal(check(K, 'client', 'report', { subject, onTime: 'no' }), 'a report in knitting has no field onTime')
 })
 
-test("the shared fields are of types.json's types, and the schema keeps a listing's and a review's names for them and lists the package's units and colors", () => {
+test("the shared fields are of types.json's types, and the schema keeps a listing's and a review's names for them and lists the package's units", () => {
   const types = Object.keys(json('build/types.json').$defs)
   for (const fields of Object.values(SHARED)) for (const field of Object.values(fields)) assert.ok(types.includes(field.type))
   const schema = json('build/market.schema.json')
   for (const kind of ['listing', 'review'] as const) assert.deepEqual(schema.properties[kind].propertyNames.not.enum, Object.keys(SHARED[kind]))
   assert.deepEqual(schema.$defs.field.properties.unit.enum, [...UNITS])
-  assert.deepEqual(schema.properties.color.enum, [...COLORS])
 })
 
 test('values at the edges of each type answer as ajv answers them', () => {

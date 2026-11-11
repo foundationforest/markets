@@ -5,6 +5,7 @@
       "summary": "Freelancers design logos, brands, websites, apps and illustrations.",
       "description": "Work is delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
       "status": "beta",
+      "number": 1,
       "roles": [
         {
           "role": "freelancer",
@@ -21,6 +22,7 @@
       "summary": "Freelancers build and fix software, delivered remotely.",
       "description": "Pay piece by piece, each piece once delivered, so neither side risks much.",
       "status": "beta",
+      "number": 2,
       "roles": [
         {
           "role": "freelancer",
@@ -37,6 +39,7 @@
       "summary": "Freelancers edit videos and make animations and motion graphics.",
       "description": "Work is delivered remotely, with no filming at events; pay piece by piece, each piece once delivered, so neither side risks much.",
       "status": "beta",
+      "number": 3,
       "roles": [
         {
           "role": "freelancer",
@@ -53,6 +56,7 @@
       "summary": "People sell everyday things, new or used.",
       "description": "Things are handed over and paid in person, or shipped when the price is one either side could lose; not motor vehicles or homes.",
       "status": "beta",
+      "number": 4,
       "roles": [
         {
           "role": "seller",
@@ -69,6 +73,7 @@
       "summary": "Cleaners clean people's homes.",
       "description": "Cleaners are paid by the visit, and often come every week.",
       "status": "beta",
+      "number": 5,
       "roles": [
         {
           "role": "cleaner",
@@ -85,6 +90,7 @@
       "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
       "description": "Each job is paid once it is done; not renovations paid in stages.",
       "status": "beta",
+      "number": 6,
       "roles": [
         {
           "role": "repairer",
@@ -101,6 +107,7 @@
       "summary": "Two people practise each other's language, taking turns.",
       "description": "Partners meet online or in person, with no money between them. For adults.",
       "status": "beta",
+      "number": 7,
       "roles": [
         {
           "role": "partner",
@@ -113,6 +120,7 @@
       "summary": "Coaches teach a sport or fitness, one on one or in groups.",
       "description": "Coaching is in person or online, paid by the session or the hour; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
       "status": "beta",
+      "number": 8,
       "roles": [
         {
           "role": "coach",
@@ -129,6 +137,7 @@
       "summary": "Hosts give guests a couch or a room for free.",
       "description": "Hosts ask only for good company: no tasks and no money between them. For adults.",
       "status": "beta",
+      "number": 9,
       "roles": [
         {
           "role": "host",
@@ -145,6 +154,7 @@
       "summary": "Hosts give guests a bed, and often meals, for their help.",
       "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them. For adults.",
       "status": "beta",
+      "number": 10,
       "roles": [
         {
           "role": "host",
@@ -161,6 +171,7 @@
       "summary": "Local guides show a group around, paid on the day.",
       "description": "The tour may be a food, walking, history or nature tour, or any other kind. For adults.",
       "status": "beta",
+      "number": 11,
       "roles": [
         {
           "role": "guide",
@@ -177,6 +188,7 @@
       "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
       "description": "Lessons are online or in person, paid by the lesson or the hour; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
       "status": "beta",
+      "number": 12,
       "roles": [
         {
           "role": "tutor",

@@ -108,16 +108,16 @@ new name is a new market, at the cost of a split: ratings start again, while tru
 market is never removed, so a renamed one stays beside the new. That makes a rename costly, not
 impossible, and the same goes for a role's word. The spelling is under [The file](#the-file).
 
-Where someone picks a market, an app shows its name, its summary, and its icon in its color. The
-summary says what the dealing is in one short plain line, such as "Knitters knit clothes to order.",
-because it stands alone there. The description is for an AI, which reads both, so it says what the
-summary leaves out: what is in and what is out, how people pay, and who it is for. The icon is a
-[Phosphor](https://phosphoricons.com) icon that reads as the dealing at a glance, as `yarn` reads as
-knitting; no two markets share one, so each market of a family needs its own. The color is a hue,
-which the markets of a family may share, so they read as kin; each app and index picks its own
-shade of it, for light and dark, so a market file names no shade and sets no contrast. Unlike the
-name, the icon and the color may change once live, since no entry holds them. The rules are under
-[The file](#the-file).
+Where someone picks a market, an app shows its name, its summary and its icon, and tells it from
+the others by its number. The summary says what the dealing is in one short plain line, such as
+"Knitters knit clothes to order.", because it stands alone there. The description is for an AI,
+which reads both, so it says what the summary leaves out: what is in and what is out, how people
+pay, and who it is for. The icon is a [Phosphor](https://phosphoricons.com) icon that reads as the
+dealing at a glance, as `yarn` reads as knitting; no two markets share one, so each market of a
+family needs its own, and unlike the name it may change once live, since no entry holds it. The
+number comes with the market, in the order markets are added, and an app tells markets apart by
+it, such as by cycling it through its own palette, so each app chooses how many colors it has. It
+is not an id: the name stays the market's only id. The rules are under [The file](#the-file).
 
 ## Roles
 
@@ -217,7 +217,7 @@ text say the rest.
    beta, and since money passes between people, it stays beta until escrow exists.
 4. **The name.** People look for a knitter, not for crafts and then knitting, so it stands alone:
    `knitting`. Its summary is the line a picker shows, "Knitters knit clothes to order."; its icon
-   is `yarn`, and its color `purple`.
+   is `yarn`, and its number the next after the highest so far.
 5. **The fields.** Take one sentence a client might say: "a merino jumper for my husband, chest 104,
    by December; I'm in Madrid and can pick it up." It holds a kind, a measure, a yarn, a date and a
    handover with a place, which shops that knit to order ask too, beside photos of past work. A
@@ -238,7 +238,7 @@ text say the rest.
   "description": "Knitters knit jumpers, cardigans, scarves, hats and socks to the wearer's measure, handed over in person or shipped.",
   "status": "beta",
   "icon": "yarn",
-  "color": "purple",
+  "number": 20,
   "roles": [
     { "role": "knitter", "listings": "offers" },
     { "role": "client", "listings": "requests" }
@@ -280,7 +280,7 @@ text say the rest.
 | `description` | What an AI needs to know of the dealing beyond the summary, in one line ([Naming](#naming)). |
 | `status` | `beta` or `live` ([Status](#status)). |
 | `icon` | Optional: the name of a [Phosphor](https://phosphoricons.com) icon, such as `yarn` ([Naming](#naming)), one of those in [`icons.json`](icons.json), which pins a Phosphor release so the check reads nothing over the network, and no other market's, so a list of markets tells each apart. The directory holds it too. Without one, an app shows the name's first letter. |
-| `color` | Optional: one hue of `red`, `orange`, `yellow`, `lime`, `green`, `teal`, `cyan`, `blue`, `indigo`, `purple`, `pink` and `brown`, a fixed list so that every app gives each its own shades ahead of time, for light and dark ([Naming](#naming)). Markets may share one. The directory holds it too. Without one, an app shows its own neutral color. |
+| `number` | A whole number from 1 that no other market holds, since apps tell markets apart by it, such as by cycling it through their own palette ([Naming](#naming)). A market new on main takes the highest number there plus one, so numbers follow the order markets are added, and a live market never changes its own, so each app keeps showing it as it did. It is not an id: the name stays the market's only id. The directory holds it too. |
 | `roles` | One role or several ([Roles](#roles)), each word spelled as a name is and listed once, since a label names one role. |
 | `listing` | The fields of a listing, by name. |
 | `preview` | Optional: names of `listing` fields, those that matter first ([below](#preview)). |
@@ -346,15 +346,15 @@ stop fitting says so at its top, plainly, so their writers know which to post ag
 
 A live market is a promise that whatever was posted in it keeps fitting and every profile in it
 stays what it is. So a new market starts as beta, and a live one never goes back. A pull request to
-a live market may add roles, fields, values, `per` values and labels, let a number take a range,
-widen a field's `roles` or `when`, reword the summary, descriptions and labels, and change or drop
-the icon or the color. It
-may not remove or rename the market, a role, a field or a value, change a role's `listings`, change
-a field's type, `many` or `unit`, take a number's range away, narrow its `roles` or `when`, or
-change a type in [`types.json`](types.json) a live market uses, beyond its
-descriptions. [`check.sh`](check.sh) compares main with yours and fails on a new market that is
-live, a live one gone back to beta, and any of these, with no exception: a live market that must
-break becomes a new market, with a new name.
+a live market may add roles, fields, values, `per` values and labels, let a number field take a
+range, widen a field's `roles` or `when`, reword the summary, descriptions and labels, and change or
+drop the icon. It may not remove or rename the market, a role, a field or a value, change the
+market's number or a role's `listings`, change a field's type, `many` or `unit`, take a number
+field's range away, narrow its `roles` or `when`, or change a type in [`types.json`](types.json) a
+live market uses, beyond its descriptions. [`check.sh`](check.sh) compares main with yours and fails
+on a new market that is live or does not take the next number, a live one gone back to beta, and
+any of these, with no exception: a live market that must break becomes a new market, with a new
+name.
 
 ## Reviews, vouches and reports
 
@@ -471,7 +471,8 @@ every review, vouch and report holds, and three in `listing`:
 
 ## Propose
 
-1. Write `markets/<name>.json`, or edit one as [Status](#status) allows.
+1. Write `markets/<name>.json`, with the next number, the highest in `directory.json` plus one, or
+   edit one as [Status](#status) allows.
 2. Run `build/check.sh` (Node 22.18 or later, npm and git), and fix what it prints. It compares
    each market live on `origin/main` with yours, or on the commit you name, as in
    `build/check.sh HEAD~1`. Once every market passes, it rewrites a stale `directory.json` or
@@ -509,7 +510,7 @@ markets.checkEntry('knitting', 'client', 'review', { subject, onTime: 'no', days
 ```
 
 `directory.json` holds what a list of markets shows, each market's name, summary, status, icon and
-color, beside its description and roles, so a page draws the list from it alone. A program reads
+number, beside its description and roles, so a page draws the list from it alone. A program reads
 the markets at the commit its checkout holds. One that hands a market to an AI, to
 post for someone, hands it [`market.schema.json`](market.schema.json)'s descriptions and
 [`types.json`](types.json) too: a market file alone does not say that `many` makes a list, that a
@@ -540,8 +541,8 @@ profile in `listing`, is an address, and the body's `files`, are
 
 The package also exports `SHARED`, the fields each kind holds in every market beyond its market's,
 as a market's fields are written: a listing's `contact`, and what every review, vouch and report
-holds; `UNITS`, the units a number field may name; and `COLORS`, the hues a market's color may
-name. `previewOf(market)` gives the names of a market's listing fields that matter first, as
-[Preview](#preview) says. `npm test` runs its tests, on a test market of their own,
-[`test/knitting.json`](test/knitting.json), shaped to hold every key a field may hold rather than as
-a model; `npm run check` type-checks the package, and the browser entry again without Node's types.
+holds; and `UNITS`, the units a number field may name. `previewOf(market)` gives the names of a
+market's listing fields that matter first, as [Preview](#preview) says. `npm test` runs its tests,
+on a test market of their own, [`test/knitting.json`](test/knitting.json), shaped to hold every key
+a field may hold rather than as a model; `npm run check` type-checks the package, and the browser
+entry again without Node's types.

@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, the line an app shows for it, what the dealing is, whether it is live or beta, its icon and color, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, the line an app shows for it, what the dealing is, whether it is live or beta, its icon, its number, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
   "type": "object",
-  "required": ["name", "summary", "description", "status", "roles", "listing"],
+  "required": ["name", "summary", "description", "status", "number", "roles", "listing"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -29,9 +29,10 @@
       "description": "The name of an icon from Phosphor (phosphoricons.com), such as yarn, that an app shows for the market, as where someone picks one. One of the names in build/icons.json, and no other market's; build/check.sh checks both. It may change even when the market is live: no entry holds it. Left out: an app shows the name's first letter.",
       "$ref": "#/$defs/word"
     },
-    "color": {
-      "description": "One of a fixed list of hues, for an app to show the market in. Each app and index picks its own shade of it, for light and dark; markets of a family may share one. It may change even when the market is live: no entry holds it. Left out: an app shows its own neutral color.",
-      "enum": ["red", "orange", "yellow", "lime", "green", "teal", "cyan", "blue", "indigo", "purple", "pink", "brown"]
+    "number": {
+      "description": "A whole number from 1 that no other market holds, which an app tells markets apart by, such as by cycling it through its own palette, so each app chooses how many colors it has. A new market takes the highest number on main plus one, and a live market never changes it; build/check.sh checks all three. It is not an id: the name stays the market's only id.",
+      "type": "integer",
+      "minimum": 1
     },
     "roles": {
       "description": "The roles a profile here can hold, one profile each. Labels use these words.",

@@ -3,6 +3,7 @@
   "summary": "Freelancers design logos, brands, websites, apps and illustrations.",
   "description": "Work is delivered remotely; pay piece by piece, each piece once delivered, so neither side risks much.",
   "status": "beta",
+  "number": 1,
   "roles": [
     { "role": "freelancer", "listings": "offers" },
     { "role": "client", "listings": "requests" }

@@ -4,7 +4,7 @@
   "description": "Knitters knit jumpers, scarves, hats and socks to the wearer's measure, handed over in person or shipped.",
   "status": "live",
   "icon": "yarn",
-  "color": "purple",
+  "number": 1,
   "roles": [
     { "role": "knitter", "listings": "offers" },
     { "role": "client", "listings": "requests" }

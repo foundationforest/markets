@@ -3,6 +3,7 @@
   "summary": "Freelancers edit videos and make animations and motion graphics.",
   "description": "Work is delivered remotely, with no filming at events; pay piece by piece, each piece once delivered, so neither side risks much.",
   "status": "beta",
+  "number": 3,
   "roles": [
     { "role": "freelancer", "listings": "offers" },
     { "role": "client", "listings": "requests" }
