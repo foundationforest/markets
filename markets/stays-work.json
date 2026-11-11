@@ -13,7 +13,7 @@
     "description": { "type": "text", "description": "The stay and the help, in the writer's words: the place, the tasks and the days, and what living there is like." },
     "help": {
       "type": "choice",
-      "description": "What the guest gives for the stay: the help the host asks for, or the guest offers, every kind that applies. Farm work is crops and land; hostel work is reception and helping run a hostel; house-sitting is living in and minding a home while the host is away, with pets or without; teaching is lessons for adults, such as in a language; digital work is photos, social media and websites. A guest's wish for a kind of place, such as a farm, goes in the description.",
+      "description": "What the guest gives for the stay: the help the host asks for, or the guest offers, every kind that applies. Farm work is crops and land; hostel work is reception and helping run a hostel; house-sitting is living in and minding a home while the host is away, and pet-sitting too when it has pets; teaching is lessons for adults, such as in a language; digital work is photos, social media and websites. A guest's wish for a kind of place, such as a farm, goes in the description.",
       "values": ["farm-work", "farm-animals", "gardening", "building", "hostel-work", "house-sitting", "pet-sitting", "cooking", "cleaning", "teaching", "digital-work"],
       "many": true
     },
@@ -24,7 +24,7 @@
       "many": true,
       "when": { "help": ["pet-sitting"] }
     },
-    "weeklyHours": { "type": "number", "description": "How many hours of help a week, or the fewest and the most, such as 20 to 25, with 4 hours a day for 5 days as 20: what the host asks, or what the guest gives.", "unit": "hours", "range": true },
+    "weeklyHours": { "type": "number", "description": "How many hours of help each guest gives a week, or the fewest and the most, such as 20 to 25, with 4 hours a day for 5 days as 20: what the host asks, or what the guest offers.", "unit": "hours", "range": true },
     "bed": {
       "type": "choice",
       "description": "Where the guest sleeps: the whole home, as when sitting it, a room of their own, a room shared with others, a caravan or a tent.",
@@ -35,7 +35,7 @@
     "meals": { "type": "choice", "description": "The meals the host gives the guest each day.", "values": ["breakfast", "lunch", "dinner"], "many": true, "roles": ["host"] },
     "internet": { "type": "choice", "description": "Whether the guest has internet at the stay.", "values": ["yes", "no"], "roles": ["host"] },
     "welcomes": { "type": "choice", "description": "Who the host takes in, for a host who takes only women or only men; left out, anyone.", "values": ["women", "men"], "many": true, "roles": ["host"] },
-    "guests": { "type": "number", "description": "How many guests the host takes at once, from every party together: up to a most, such as up to 4, or the fewest and the most, such as 2 to 4.", "unit": "people", "range": true, "roles": ["host"] },
+    "guests": { "type": "number", "description": "How many guests the host takes at once, every party together: up to a most, such as up to 4, or the fewest and the most, such as 2 to 4, where a party smaller than the fewest may still come beside others.", "unit": "people", "range": true, "roles": ["host"] },
     "travellers": { "type": "number", "description": "How many people travel together, the guest included.", "unit": "people", "roles": ["guest"] },
     "nights": { "type": "number", "description": "How many nights one stay lasts, a week as 7 and a month as 30: in a host's listing, the stays the host takes, such as at least 14, or 14 to 90; in a guest's, how long they want to stay with one host, within dates, such as 7 to 14, left out when dates are the day they arrive and the day they leave.", "unit": "nights", "range": true },
     "dates": { "type": "moment", "description": "When: in a host's listing, the span the host takes guests in; in a guest's, from the earliest day they could arrive to the latest day they would leave." },

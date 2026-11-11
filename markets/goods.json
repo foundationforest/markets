@@ -15,7 +15,7 @@
     "photos": { "type": "file", "description": "Photos of the item.", "many": true, "roles": ["seller"] },
     "category": {
       "type": "choice",
-      "description": "What kind of thing it is. Accessories are bags, jewellery and the like; home is things for the home, such as kitchenware, but not furniture or appliances; music is instruments and records; games are board games and video games; baby is prams, cots and the like, not clothes or shoes; sports is gear for a sport; bikes include children's bikes.",
+      "description": "What kind of thing it is. Electronics are phones, computers, cameras, TVs and audio; accessories are bags, jewellery and the like; home is things for the home, such as kitchenware, but not furniture or appliances; music is instruments and records; games are board games, video games and game consoles; baby is prams, cots and the like, not clothes or shoes; sports is gear for a sport; bikes include children's bikes.",
       "values": ["clothes", "shoes", "accessories", "electronics", "appliances", "furniture", "home", "garden", "tools", "books", "music", "games", "toys", "baby", "sports", "bikes"]
     },
     "condition": {

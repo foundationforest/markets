@@ -11,7 +11,7 @@
   ],
   "listing": {
     "description": { "type": "text", "description": "The garden work, in the writer's words: what needs doing, or what the gardener does, and how." },
-    "price": { "type": "money", "description": "Each price the gardener charges: per hour or per visit, with a count for a pack, such as 4 visits, or with no per for a whole job; in a request, the most the client would pay.", "per": ["hour", "visit"] },
+    "price": { "type": "money", "description": "Each price the gardener charges: per hour or per visit, with a count for a pack, such as 4 visits, or with no per for a whole job, or the lowest one starts from; in a request, the most the client would pay.", "per": ["hour", "visit"] },
     "jobs": {
       "type": "choice",
       "description": "The kinds of job: mowing is cutting and edging lawns; pruning is cutting back hedges, shrubs and small trees; planting is planting and sowing, and readying the soil for it; leaves is raking and clearing fallen leaves; watering is watering plants, as while the client is away; clearing is cutting back a garden left to grow over; waste removal is taking cuttings and green waste away.",
@@ -25,7 +25,7 @@
     "base": { "type": "place", "description": "The area the gardener works in: anywhere in the circle.", "radiusKm": 10, "roles": ["gardener"] },
     "home": { "type": "place", "description": "Roughly where the garden is.", "radiusKm": 1, "roles": ["client"] },
     "hours": { "type": "hours", "description": "When the gardener works, each week.", "roles": ["gardener"] },
-    "time": { "type": "moment", "description": "When the job, or the first visit, is wanted: a time, or a span to fit it in.", "roles": ["client"] },
+    "time": { "type": "moment", "description": "When the job, or the first visit, is wanted: a time, or a span to fit it in, or the span the work lasts, as watering while the client is away.", "roles": ["client"] },
     "photos": { "type": "file", "description": "Photos of the garden and what it needs.", "many": true, "roles": ["client"] },
     "pastWork": { "type": "file", "description": "Photos of gardens the gardener has worked on.", "many": true, "roles": ["gardener"] }
   },

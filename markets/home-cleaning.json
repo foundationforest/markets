@@ -11,7 +11,7 @@
   ],
   "listing": {
     "description": { "type": "text", "description": "The cleaning, in the writer's words: what is cleaned, and how." },
-    "price": { "type": "money", "description": "Each price the cleaner charges: per visit or per hour, with a count for a pack, such as 4 visits, or for the fewest hours a visit takes, such as 3; in a request, the most the client would pay.", "per": ["visit", "hour"] },
+    "price": { "type": "money", "description": "Each price the cleaner charges: per visit or per hour, with a count for a pack, such as 160 for 4 visits, and for a cleaner who takes no fewer than 3 hours, the pack alone, such as 45 for 3 hours; in a request, the most the client would pay.", "per": ["visit", "hour"] },
     "frequency": { "type": "choice", "description": "How often the home is cleaned.", "values": ["once", "weekly", "every-two-weeks", "monthly"], "many": true },
     "visitHours": { "type": "number", "description": "How long one visit lasts, or the shortest and the longest, such as 3 to 4.", "unit": "hours", "range": true },
     "bedrooms": { "type": "number", "description": "How many bedrooms the home has.", "unit": "rooms", "roles": ["client"] },

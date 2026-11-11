@@ -14,7 +14,7 @@
     "price": { "type": "money", "description": "Each price the developer charges: per hour or per day of work, with a count for a block, such as 40 hours, or with no per for a whole job, or the lowest one starts from; in a request, the most the client would pay.", "per": ["hour", "day"] },
     "kind": {
       "type": "choice",
-      "description": "What kind of software: a website is a site people read or shop on, a store on a hosted platform included; a web app is software people use in a browser; security is testing and hardening software and systems, such as a penetration test or a code audit.",
+      "description": "What kind of software: a website is a site people read or shop on, a store on a hosted platform included; a web app is software people use in a browser; backend is servers, APIs and databases behind an app; data is collecting, cleaning and analysing data, such as pipelines and dashboards; ai is software built on AI models, such as a chatbot; automation is linking tools and scripts so work runs by itself, such as invoices copied from one app into another; security is testing and hardening software and systems, such as a penetration test or a code audit.",
       "values": ["website", "web-app", "mobile-app", "desktop-app", "backend", "data", "ai", "automation", "security", "game"],
       "labels": { "ai": "AI" },
       "many": true

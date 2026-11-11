@@ -107,7 +107,7 @@
     {
       "name": "sports-coaching",
       "summary": "Coaches teach a sport or fitness, one on one or in groups.",
-      "description": "Coaching is in person or online, paid by the session, the hour or a pack of sessions; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person. Desk subjects and chess are tutoring.",
+      "description": "Coaching is in person or online, paid by the session, the hour, the week of a training plan, or a pack; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person. Desk subjects and chess are tutoring.",
       "status": "beta",
       "icon": "soccer-ball",
       "number": 8,
