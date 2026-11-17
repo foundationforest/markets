@@ -1,7 +1,7 @@
 {
   "name": "home-repair",
   "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
-  "description": "Each job is paid once it is done; not renovations paid in stages. Garden work is home-gardening, and cleaning is home-cleaning.",
+  "description": "Repairs and small jobs in a home, not renovations or building work. Garden work is home-gardening, and cleaning is home-cleaning.",
   "status": "beta",
   "icon": "wrench",
   "number": 6,
@@ -38,11 +38,11 @@
     },
     "price": {
       "piece": "price",
-      "per": ["hour", "day"],
+      "per": ["hour", "visit", "day"],
       "ask": {
         "label": "Price",
         "as": {
-          "repairer": { "question": "What do you charge?", "hint": "A charge just to come out, on top, goes in About." },
+          "repairer": { "question": "What do you charge?" },
           "client": { "label": "Budget", "question": "What would you pay at most?" }
         }
       }

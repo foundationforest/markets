@@ -1,7 +1,7 @@
 {
   "name": "software",
   "summary": "Developers build and fix software, AI, data and automation, remotely.",
-  "description": "Building and fixing software of every kind, AI, data, automation and security work included, delivered remotely; not design alone, video or hardware. Pay piece by piece, each piece once delivered, so neither side risks much.",
+  "description": "Security work included; not design alone, video or hardware.",
   "status": "beta",
   "icon": "code",
   "number": 13,
@@ -41,6 +41,15 @@
       "ask": { "label": "Days to deliver", "question": "How many days does a job take you?", "start": { "range": true } }
     },
     "due": { "piece": "date", "roles": ["client"], "ask": { "label": "Needed by", "question": "When do you need it by?", "start": { "way": "until" } } },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Days and times",
+        "start": { "way": "weekly", "hours": true },
+        "as": { "developer": { "question": "When do you work?" }, "client": { "question": "When should they be available?" } }
+      }
+    },
     "portfolio": { "piece": "link", "roles": ["developer"], "ask": { "label": "Portfolio", "question": "Where can clients see your work?" } },
     "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "description": {

@@ -1,7 +1,7 @@
 {
   "name": "tutoring",
   "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
-  "description": "Lessons are online or in person, paid by the lesson, the hour, a pack of lessons or the month; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person. Sport and fitness are sports-coaching; practising a language for free is language-exchange.",
+  "description": "School subjects, languages and chess; sport and fitness are sports-coaching, and practising a language for free is language-exchange. The student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
   "status": "beta",
   "icon": "graduation-cap",
   "number": 12,

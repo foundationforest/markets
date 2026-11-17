@@ -1,7 +1,7 @@
 {
   "name": "sports-coaching",
   "summary": "Coaches teach a sport or fitness, one on one or in groups.",
-  "description": "Coaching is in person or online, paid by the session, the hour, the week of a training plan, the month or a pack; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person. Desk subjects and chess are tutoring.",
+  "description": "Sport and fitness; desk subjects and chess are tutoring. The student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
   "status": "beta",
   "icon": "soccer-ball",
   "number": 8,
@@ -30,7 +30,7 @@
       "piece": "number",
       "unit": "years",
       "several": true,
-      "ask": { "label": "Ages", "as": { "coach": { "question": "Which ages do you coach?", "start": { "range": true } }, "student": { "question": "How old is each learner?" } } }
+      "ask": { "label": "Ages", "hint": "Adults are 18 and over.", "as": { "coach": { "question": "Which ages do you coach?", "start": { "range": true } }, "student": { "question": "How old is each learner?" } } }
     },
     "mode": {
       "piece": "choice",
@@ -55,7 +55,7 @@
       "per": ["hour", "session", "week", "month"],
       "ask": {
         "label": "Price per learner",
-        "as": { "coach": { "question": "What do you charge?", "hint": "Private and group sessions at different prices are one listing each." }, "student": { "label": "Budget per learner", "question": "What would you pay at most?" } }
+        "as": { "coach": { "question": "What do you charge?" }, "student": { "label": "Budget per learner", "question": "What would you pay at most?" } }
       }
     },
     "days": {
@@ -69,6 +69,7 @@
     },
     "groupSize": {
       "piece": "number",
+      "several": true,
       "ask": {
         "label": "Group size",
         "start": { "range": true },

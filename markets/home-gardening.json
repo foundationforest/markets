@@ -1,7 +1,7 @@
 {
   "name": "home-gardening",
   "summary": "Gardeners mow, prune, plant and care for people's gardens.",
-  "description": "Each visit or job is paid once it is done, and gardeners often come every week or two; not landscaping or building, which are paid in stages, nor felling trees.",
+  "description": "Caring for a garden, not landscaping, building or felling trees. Repairs are home-repair, and cleaning is home-cleaning.",
   "status": "beta",
   "icon": "plant",
   "number": 15,
