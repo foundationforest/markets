@@ -2,7 +2,7 @@
 // hold: the four answers, checkEntry, match, read and ask, and the rest the package exports. The test
 // market is read from a checkout of its own, with this checkout's build/lists.json, so these tests hold
 // whatever markets/ holds. Every call runs on both entries, which must answer the same, and the last
-// test asks each again with code from strings disallowed. content.test.ts tests the markets in markets/.
+// test asks each again with code from strings disallowed.
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -383,10 +383,15 @@ test('the other pieces read in plain words', () => {
   const prices = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '1300', currency: 'MXN', per: 'lesson', count: 5 }, { amount: '300', currency: 'EUR' }, { amount: '50', currency: 'EUR', per: 'person', count: 2 }]
   assert.equal(read({ piece: 'price', per: ['item', 'lesson', 'person'] }, prices), '35 EUR per item; 1,300 MXN for 5 lessons; 300 EUR; 50 EUR for 2 people')
   const places = [{ ...madrid, name: 'Chamberí, Madrid', radiusKm: 1 }, { ...madrid, name: 'Retiro park, Madrid', radiusKm: 0 }, { country: 'PT' }]
-  assert.equal(read({ piece: 'place', several: true }, places), 'Chamberí, Madrid, within 1 km; Retiro park, Madrid; Anywhere in Portugal')
+  assert.equal(read({ piece: 'place', several: true }, places), 'Around Chamberí, Madrid, 1 km; Retiro park, Madrid; Anywhere in Portugal')
+  assert.equal(read({ piece: 'place' }, { lat: '25.6522', lon: '-100.4036', radiusKm: 10, name: 'Del Valle, San Pedro Garza García', country: 'MX' }), 'Around Del Valle, San Pedro Garza García, 10 km')
   assert.equal(read(knitting.listing.languages!, ['es', 'en', 'pt']), 'Spanish, English and Portuguese')
   assert.equal(read(knitting.listing.size!, ['xl']), 'XL')
   assert.equal(read(knitting.listing.handover!, ['in-person']), 'In person')
+  // A value's own words are lower case after the first; a label keeps its case, as it may be a name.
+  assert.equal(read({ piece: 'choice', values: ['weekly', 'every-two-weeks'], several: true }, ['weekly', 'every-two-weeks']), 'Weekly and every two weeks')
+  assert.equal(read(knitting.listing.handover!, ['shipped', 'in-person']), 'Shipped and in person')
+  assert.equal(read(knitting.listing.size!, ['m', 'xl']), 'M and XL')
   assert.equal(read({ piece: 'text', several: true }, ['merino', 'alpaca']), 'merino and alpaca')
   assert.equal(read({ piece: 'photo', several: true }, [photo.sha256]), '1 photo')
   assert.equal(read({ piece: 'link' }, 'https://example.com'), 'https://example.com')

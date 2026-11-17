@@ -54,8 +54,9 @@ alone, `{ "country": "PT" }`, for anywhere in it. `lat` and `lon` are degrees, `
 kilometres round the centre of the named place, `name` stands alone, such as a neighbourhood with
 its town, and `country` is from the countries list. Radius 0 is an exact spot; any other means "in
 or around here", not "inside this line". Two places match when their circles touch, and a country
-matches the places in it. Online is never a place, as [a test on every market](test/content.test.ts)
-holds: where a choice offers `online`, a place field applies only `when` it holds something else.
+matches the places in it. Where people also deal online, ask that as a choice before the place, and
+ask the place only `when` it is in person: an online deal has no place, and one made up to fill a
+form would hide it from people elsewhere.
 
 ```json
 { "lat": "40.4342", "lon": "-3.7031", "radiusKm": 1, "name": "Chamberí, Madrid", "country": "ES" }

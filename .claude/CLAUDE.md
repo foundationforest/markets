@@ -33,7 +33,8 @@ for legal text only. Plain words, no em-dashes.
 - A live market only grows, on its rules: `build/check.sh` fails on any change that would stop a
   listing or review already posted from fitting, or change what a profile is, and a live market that
   must break becomes a new market, with a new name. Its suggestions may change at any time. A shared
-  list in `build/lists.json` only grows too. A beta market may change in any way, and a pull request
+  list in `build/lists.json` only grows too. Nothing yet holds the pieces themselves to only growing,
+  since `build/types.json` went: a check for that is needed before the first market goes live. A beta market may change in any way, and a pull request
   that breaks one still says so at its top, plainly: which entries stop fitting until they are
   posted again, and who must follow, in order: services first, then the app.
 - A session never opens a pull request or acts in another repo, even to protect something live: it
@@ -50,9 +51,9 @@ for legal text only. Plain words, no em-dashes.
   only what another repo owns.
 - The pieces page is for people and AIs who will build markets nobody here thought of: it gives the
   standard and the reasons, and leaves the judgment to them. It states as a rule only what the checks
-  enforce (`build/check.sh`, `checkEntry`, and the test on every market's values), each once with its
-  reason; everything else is advice, with its reason, never a must. Its examples are its own, never
-  a file in `markets/`, so it holds whatever `markets/` holds.
+  enforce (`build/check.sh` and `checkEntry`), each once with its reason; everything else is advice,
+  with its reason, never a must. Its examples are its own, never a file in `markets/`, so it holds
+  whatever `markets/` holds.
 - The standard holds no content fields: what an entry holds, pieces included, is defined here, never
   in `foundationforest/standard`.
 - Never say which network something runs on; network ids may appear as examples of a format. Never

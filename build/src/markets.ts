@@ -364,12 +364,16 @@ const isDate = (v: unknown): boolean => {
 /** A choice's values: its own list, or the shared list it names. */
 const valuesOf = (field: Field, lists: Lists): string[] =>
   typeof field.values === 'string' ? Object.keys(Object.hasOwn(lists, field.values) ? lists[field.values]! : {}) : (field.values ?? [])
-/** How a choice's value reads: the field's label for it, or else its list's, or else its words. */
-const labelOf = (field: Field, value: string, lists: Lists): string => {
+/**
+ * How a choice's value reads: the field's label for it, or else its list's, as written, since either
+ * may be a name such as Spanish or XL; or else its words, in lower case when not `first` in a list.
+ */
+const labelOf = (field: Field, value: string, lists: Lists, first = true): string => {
   const labels = field.ask?.labels
   if (labels && Object.hasOwn(labels, value)) return labels[value]!
   const list = typeof field.values === 'string' && Object.hasOwn(lists, field.values) ? lists[field.values]! : undefined
-  return list && Object.hasOwn(list, value) ? list[value]! : wordsOf(value)
+  if (list && Object.hasOwn(list, value)) return list[value]!
+  return first ? wordsOf(value) : value.replaceAll('-', ' ')
 }
 
 /** How a field's answer is written, in words. */
@@ -507,7 +511,8 @@ const readPrice = (p: PriceValue): string => {
 }
 const readPlace = (p: PlaceValue, lists: Lists): string => {
   if (!('lat' in p)) return `Anywhere in ${lists.countries?.[p.country] ?? p.country}`
-  return p.radiusKm === 0 ? p.name : `${p.name}, within ${p.radiusKm} km`
+  // A circle is "in or around here", never "inside this line", so it reads as around, not within.
+  return p.radiusKm === 0 ? p.name : `Around ${p.name}, ${p.radiusKm} km`
 }
 const readTime = (time: string) => time.replace(/^0(?=[0-9]:)/, '')
 const readDate = (v: DateValue, today: number): string => {
@@ -676,10 +681,10 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
       const answers = isSeveral(field) ? (value as unknown[]) : [value]
       if (field.piece === 'photo') return answers.length === 1 ? '1 photo' : `${answers.length} photos`
       const today = field.piece === 'date' ? todayOf(options) : 0
-      const parts = answers.map((v) => {
+      const parts = answers.map((v, i) => {
         switch (field.piece) {
           case 'choice':
-            return labelOf(field, v as string, lists)
+            return labelOf(field, v as string, lists, i === 0)
           case 'number':
             return readNumber(v as NumberValue, field.unit)
           case 'price':
