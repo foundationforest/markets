@@ -17,10 +17,11 @@
     },
     "area": {
       "piece": "place",
+      "several": true,
       "ask": {
         "label": "Area",
         "as": {
-          "cleaner": { "question": "Where do you work?" },
+          "cleaner": { "question": "Where do you work?", "start": { "radiusKm": 10 } },
           "client": { "question": "Where is your home?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 1 } }
         }
       }
@@ -31,13 +32,13 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "cleaner": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": true } } }
+        "as": { "cleaner": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": "part" } } }
       }
     },
     "price": {
       "piece": "price",
-      "per": ["hour", "visit"],
-      "ask": { "label": "Price", "as": { "cleaner": { "question": "What do you charge?" }, "client": { "question": "What would you pay at most?" } } }
+      "per": ["hour", "visit", "day"],
+      "ask": { "label": "Price", "as": { "cleaner": { "question": "What do you charge?" }, "client": { "label": "Budget", "question": "What would you pay at most?" } } }
     },
     "frequency": {
       "piece": "choice",
@@ -52,12 +53,14 @@
     },
     "bedrooms": { "piece": "number", "roles": ["client"], "ask": { "label": "Bedrooms", "question": "How many bedrooms?" } },
     "bathrooms": { "piece": "number", "roles": ["client"], "ask": { "label": "Bathrooms", "question": "How many bathrooms?" } },
-    "supplies": {
+    "bringsSupplies": { "piece": "choice", "values": ["yes", "no"], "roles": ["cleaner"], "ask": { "label": "Brings supplies", "question": "Do you bring your own supplies?" } },
+    "hasSupplies": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Has supplies", "question": "Do you have cleaning supplies?" } },
+    "pets": {
       "piece": "choice",
-      "values": ["cleaner", "client"],
-      "ask": { "label": "Supplies", "question": "Who brings the cleaning supplies?", "labels": { "cleaner": "The cleaner", "client": "The client" } }
+      "values": ["dogs", "cats", "others"],
+      "several": true,
+      "ask": { "label": "Pets", "as": { "cleaner": { "question": "Which pets are you fine with?" }, "client": { "question": "Which pets are at home?" } } }
     },
-    "pets": { "piece": "choice", "values": ["none", "dogs", "cats", "others"], "several": true, "roles": ["client"], "ask": { "label": "Pets", "question": "Any pets at home?" } },
     "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "description": {
       "piece": "text",

@@ -97,7 +97,7 @@
         "question": { "description": "What a form asks. Left out: the label.", "$ref": "#/$defs/line" },
         "hint": { "$ref": "#/$defs/line" },
         "start": { "$ref": "#/$defs/start" },
-        "as": { "description": "Words for one role, by role, over the ones above.", "type": "object", "additionalProperties": { "$ref": "#/$defs/words" } },
+        "as": { "description": "Words for one role, by role, over the ones above; a start merges over the field's, key by key.", "type": "object", "additionalProperties": { "$ref": "#/$defs/words" } },
         "usual": { "description": "For a number: its usual span.", "type": "object", "minProperties": 1, "additionalProperties": false, "properties": { "from": { "$ref": "#/$defs/decimal" }, "to": { "$ref": "#/$defs/decimal" } } },
         "long": { "description": "For a text: several lines, not one.", "const": true },
         "labels": { "description": "For a choice: how a value reads, by value. Left out: its list's words, or the value's.", "type": "object", "additionalProperties": { "$ref": "#/$defs/line" } }
@@ -108,20 +108,21 @@
       "minProperties": 1,
       "additionalProperties": false,
       "properties": {
+        "label": { "description": "The role's own label. Left out: the field's.", "$ref": "#/$defs/line" },
         "question": { "$ref": "#/$defs/line" },
         "hint": { "$ref": "#/$defs/line" },
         "start": { "$ref": "#/$defs/start" }
       }
     },
     "start": {
-      "description": "Where the input opens: a place's radiusKm, a date's way and whether it asks hours, a number as a range. Left out: the piece's own.",
+      "description": "Where the input opens: a place's radiusKm, a date's way and whether it asks hours, as clock times (true) or a part of the day (\"part\"), a number as a range. Each key left out: the field's, else the piece's own.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": false,
       "properties": {
         "radiusKm": { "type": "integer", "minimum": 0 },
         "way": { "enum": ["day", "from-to", "until", "weekly"] },
-        "hours": { "const": true },
+        "hours": { "enum": [true, "part"] },
         "range": { "const": true }
       }
     }

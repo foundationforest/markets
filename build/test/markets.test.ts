@@ -156,22 +156,26 @@ test('place: a circle with its name and country, or a country alone', () => {
   assert.equal(listing('knitter', { handover: ['shipped'], shipsTo: [{ country: 'PT' }, { country: 'ES' }] }), null)
 })
 
-test('date: days, and hours with their zone if wanted', () => {
+test('date: days, and hours or a part of the day with their zone if wanted', () => {
   const due = (value: unknown) => listing('client', { due: value })
   const fine = [
     { on: '2026-11-24' }, { from: '2027-06-01', to: '2027-08-31' }, { from: '2027-06-01' }, { to: '2027-01-15' }, { on: '2028-02-29' },
     { every: ['saturday'] }, { every: ['saturday'], from: '2027-05-01', to: '2027-09-30', start: '10:00', zone: 'Europe/Lisbon' },
     { on: '2026-12-06', start: '15:00', end: '18:00', zone: 'Europe/Madrid' }, { every: ['friday'], start: '22:00', end: '02:00', zone: 'Europe/Madrid' },
     { on: '2026-11-24', start: '09:00', zone: 'America/Argentina/Buenos_Aires' }, { on: '2026-11-24', start: '09:00', zone: 'UTC' },
+    { every: ['thursday'], part: 'morning', zone: 'Europe/London' }, { on: '2026-11-28', part: 'evening', zone: 'Europe/Madrid' },
+    { from: '2026-12-05', to: '2026-12-07', part: 'afternoon', zone: 'Europe/Madrid' },
   ]
   for (const value of fine) assert.equal(due(value), null, JSON.stringify(value))
-  const takes = 'due takes { on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, with zone, a time zone by name such as Europe/Madrid'
+  const takes = 'due takes { on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
   const wrong = [
     {}, { on: '2026-02-29' }, { on: '2026-11-31' }, { on: '2026-11-24T10:00:00Z' }, { on: '24/11/2026' }, { on: '2026-11-24', to: '2026-11-25' },
     { from: '2026-12-02', to: '2026-12-01' }, { every: [] }, { every: ['Saturday'] }, { every: ['saturday', 'saturday'] }, { every: 'saturday' },
     { on: '2026-11-24', start: '10:00' }, { on: '2026-11-24', zone: 'Europe/Madrid' }, { on: '2026-11-24', start: '10:00', end: '10:00', zone: 'Europe/Madrid' },
     { on: '2026-11-24', end: '10:00', zone: 'Europe/Madrid' }, { on: '2026-11-24', start: '24:00', zone: 'Europe/Madrid' }, { on: '2026-11-24', start: '9:00', zone: 'Europe/Madrid' },
     { on: '2026-11-24', start: '10:00', zone: '+01:00' }, { on: '2026-11-24', start: '10:00', zone: 'Europe/Atlantis' }, { on: '2026-11-24', at: '10:00' }, '2026-11-24',
+    { on: '2026-11-24', part: 'morning' }, { on: '2026-11-24', part: 'night', zone: 'Europe/Madrid' }, { on: '2026-11-24', part: 'Morning', zone: 'Europe/Madrid' },
+    { on: '2026-11-24', part: 'morning', start: '09:00', zone: 'Europe/Madrid' }, { on: '2026-11-24', part: 'morning', end: '12:00', zone: 'Europe/Madrid' },
   ]
   for (const value of wrong) assert.equal(due(value), takes, JSON.stringify(value))
   // Weekly hours are several date answers.
@@ -310,6 +314,30 @@ test('two weekly answers are compared in the week of a given day', () => {
   assert.throws(() => markets.match(date, madrid15, ny9, { today: '17/11/2026' }), { message: 'today is "17/11/2026", and takes a day as YYYY-MM-DD' })
 })
 
+test('a part of the day matches as 6:00 to 12:00, 12:00 to 18:00 and 18:00 to 24:00 in its zone', () => {
+  const thursdayMornings = { every: ['thursday'], part: 'morning', zone: Z }
+  assert.equal(match(date, { every: weekdays, start: '09:00', end: '17:00', zone: Z }, thursdayMornings), true)
+  assert.equal(match(date, { every: weekdays, start: '18:00', end: '22:00', zone: Z }, thursdayMornings), false)
+  assert.equal(match(date, thursdayMornings, { every: ['thursday'], part: 'morning', zone: Z }), true)
+  // Each part ends where the next begins, and they share no moment.
+  assert.equal(match(date, thursdayMornings, { every: ['thursday'], part: 'afternoon', zone: Z }), false)
+  const saturdayMorning = { on: '2026-11-28', part: 'morning', zone: Z }
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '06:00', zone: Z }), true)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '11:59', zone: Z }), true)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '12:00', zone: Z }), false)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '05:00', end: '06:30', zone: Z }), true)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28' }), true, 'the whole of that day')
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-29' }), false)
+  // The evening runs to midnight, and no further.
+  const fridayEvening = { on: '2026-11-27', part: 'evening', zone: Z }
+  assert.equal(match(date, fridayEvening, { on: '2026-11-27', start: '23:30', zone: Z }), true)
+  assert.equal(match(date, fridayEvening, { on: '2026-11-28', start: '00:00', zone: Z }), false)
+  // A morning in London is 7:00 to 13:00 in Madrid in November.
+  const londonMorning = { on: '2026-11-26', part: 'morning', zone: 'Europe/London' }
+  assert.equal(match(date, londonMorning, { on: '2026-11-26', start: '12:30', end: '13:30', zone: Z }), true)
+  assert.equal(match(date, londonMorning, { on: '2026-11-26', start: '13:00', zone: Z }), false)
+})
+
 test('places match when their circles touch, and a country matches the places in it', () => {
   const place: Field = { piece: 'place' }
   const getafe = { lat: '40.3083', lon: '-3.7327', radiusKm: 10, name: 'Getafe', country: 'ES' }
@@ -369,6 +397,14 @@ test('a date reads as people say it, the year left out when it is this one', () 
   assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'] }), 'Every day')
   assert.equal(read(date, { every: ['friday'], start: '22:00', end: '02:00', to: '2027-05-01', zone: Z }), 'Fridays, 22:00 to 2:00, until 1 May 2027')
   assert.equal(read(dates, [{ every: weekdays, start: '09:00', end: '17:00', zone: Z }, { every: ['saturday'], start: '10:00', end: '14:00', zone: Z }]), 'Monday to Friday, 9:00 to 17:00; Saturdays, 10:00 to 14:00')
+  // A part of the day keeps the person's word.
+  assert.equal(read(date, { every: ['thursday'], part: 'morning', zone: Z }), 'Thursday mornings')
+  assert.equal(read(date, { every: ['friday', 'tuesday'], part: 'afternoon', zone: Z }), 'Tuesday and Friday afternoons')
+  assert.equal(read(date, { every: weekdays, part: 'evening', zone: Z }), 'Monday to Friday evenings')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }), 'Every evening')
+  assert.equal(read(date, { every: ['thursday'], part: 'morning', from: '2026-12-01', zone: Z }), 'Thursday mornings, from 1 December')
+  assert.equal(read(date, { on: '2026-11-28', part: 'morning', zone: Z }), 'Saturday 28 November, in the morning')
+  assert.equal(read(date, { from: '2026-12-05', to: '2026-12-07', part: 'afternoon', zone: Z }), '5 to 7 December, afternoons')
 })
 
 test('the other pieces read in plain words', () => {
@@ -426,7 +462,12 @@ test("each field comes with its words: the role's, or else the field's, or else 
   assert.deepEqual(client.age!.start, { range: false })
   assert.equal(client.chest!.hint, 'Round its widest part, in centimetres.')
   assert.deepEqual(client.due!.start, { way: 'until', hours: false })
-  assert.deepEqual(client.meet!.start, { way: 'weekly', hours: true })
+  // A start merges, key by key: the role's over the field's, the field's over the piece's own.
+  assert.deepEqual(knitter.meet!.start, { way: 'weekly', hours: true })
+  assert.deepEqual(client.meet!.start, { way: 'weekly', hours: 'part' })
+  // A role may have its own label; the field's is the fallback.
+  assert.equal(client.price!.label, 'Budget')
+  assert.equal(knitter.price!.label, 'Price')
   assert.equal(client.yarns!.question, 'Yarns')
   assert.equal(knitter.description!.question, 'What do you knit, and how?')
   assert.equal(knitter.description!.ask!.long, true)

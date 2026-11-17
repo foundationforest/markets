@@ -23,13 +23,21 @@ export type Weekday = (typeof WEEKDAYS)[number]
 export const WAYS = ['day', 'from-to', 'until', 'weekly'] as const
 export type Way = (typeof WAYS)[number]
 
-/** Where an input opens: a place's size, a date's way and whether it asks hours, a number as a range. */
-export type Start = { radiusKm?: number; way?: Way; hours?: boolean; range?: boolean }
+/** The parts of a day a date's hours may be, kept as the person's word. */
+export const PARTS = ['morning', 'afternoon', 'evening'] as const
+export type Part = (typeof PARTS)[number]
+/** The hours each part counts as, for matching only: from, to. */
+const PART_HOURS: { [part in Part]: [number, number] } = { morning: [6, 12], afternoon: [12, 18], evening: [18, 24] }
+
+/**
+ * Where an input opens: a place's size, a date's way and whether it asks hours, as clock times (true)
+ * or a part of the day, and a number as a range.
+ */
+export type Start = { radiusKm?: number; way?: Way; hours?: boolean | 'part'; range?: boolean }
 /** The words a field asks with, for every role or for one. */
-export type Words = { question?: string; hint?: string; start?: Start }
+export type Words = { label?: string; question?: string; hint?: string; start?: Start }
 /** A field's suggestions: how to ask for it. Never checked against an entry; any program may ignore them. */
 export type Ask = Words & {
-  label?: string
   as?: { [role: string]: Words }
   usual?: { from?: string; to?: string }
   long?: true
@@ -87,6 +95,7 @@ export type PlaceValue = { lat: string; lon: string; radiusKm: number; name: str
 export type DateValue = ({ on: string } | { from?: string; to?: string } | { every: Weekday[]; from?: string; to?: string }) & {
   start?: string
   end?: string
+  part?: Part
   zone?: string
 }
 
@@ -135,12 +144,12 @@ export function previewOf(market: Market): string[] {
 /** A field as the market asks it of one role, every fallback applied: question 4's answer. */
 export type Asked = Field & {
   name: string
-  /** Two or three words for showing a value and for a filter: its label, or else its name in words. */
+  /** Two or three words for showing a value and for a filter: the role's label, or else the field's, or else its name in words. */
   label: string
   /** The role's question, or else the field's, or else its label. */
   question: string
   hint?: string
-  /** Where the input opens, for a place, a date and a number: the role's, or else the field's, over the piece's own. */
+  /** Where the input opens, for a place, a date and a number: the role's over the field's, over the piece's own, key by key. */
   start?: Start
   /** For a choice: each value, with how it reads. */
   choices?: Array<{ value: string; label: string }>
@@ -345,7 +354,7 @@ const isPlace = (v: unknown, lists: Lists): boolean => {
   )
 }
 const isDate = (v: unknown): boolean => {
-  if (!isObject(v) || !only(v, ['on', 'from', 'to', 'every', 'start', 'end', 'zone'])) return false
+  if (!isObject(v) || !only(v, ['on', 'from', 'to', 'every', 'start', 'end', 'part', 'zone'])) return false
   // The days: one day, from one day to another with either end left out, or weekdays every week.
   if (has(v, 'on')) {
     if (has(v, 'from') || has(v, 'to') || has(v, 'every') || Number.isNaN(dayNumber(v.on))) return false
@@ -355,7 +364,8 @@ const isDate = (v: unknown): boolean => {
     const [from, to] = [has(v, 'from') ? dayNumber(v.from) : -Infinity, has(v, 'to') ? dayNumber(v.to) : Infinity]
     if (Number.isNaN(from) || Number.isNaN(to) || from > to) return false
   }
-  // The hours: a start, or a start and an end, with the zone they are in; or none of the three.
+  // The hours: a start, or a start and an end, or a part of the day, with the zone they are in; or none.
+  if (has(v, 'part')) return !has(v, 'start') && !has(v, 'end') && (PARTS as readonly unknown[]).includes(v.part) && isZone(v.zone)
   if (!has(v, 'start')) return !has(v, 'end') && !has(v, 'zone')
   if (typeof v.start !== 'string' || !TIME.test(v.start) || !isZone(v.zone)) return false
   return !has(v, 'end') || (typeof v.end === 'string' && TIME.test(v.end) && v.end !== v.start)
@@ -393,7 +403,7 @@ const takes = (field: Field): string => {
       case 'place':
         return '{ lat, lon, radiusKm, name, country }: lat and lon as decimal text, radiusKm in whole kilometres, the place\'s name, and country a two-letter code from the countries list, such as PT; or { country } alone, for anywhere in it'
       case 'date':
-        return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, with zone, a time zone by name such as Europe/Madrid'
+        return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
       case 'photo':
         return 'the SHA-256 of one of the files the body lists in files, in lowercase hex'
       case 'link':
@@ -429,7 +439,7 @@ type Span = [number, number]
 /**
  * An answer's spans of real time on each of its days from day `first` to day `last`. With hours, each
  * day from its start, to its end, the next day when the end is before the start, or that moment alone;
- * with none, the whole day, in `zone` when given, else as plain days.
+ * with a part, the hours it counts as; with none, the whole day, in `zone` when given, else as plain days.
  */
 const spansOf = (v: DateValue, first: number, last: number, zone: string | undefined): Span[] => {
   const [lo, hi] = daysOf(v)
@@ -440,6 +450,9 @@ const spansOf = (v: DateValue, first: number, last: number, zone: string | undef
       const start = moment(v.zone!, n, minutesOf(v.start))
       const end = v.end === undefined ? start : moment(v.zone!, v.end < v.start ? n + 1 : n, minutesOf(v.end))
       spans.push([start, end])
+    } else if (v.part !== undefined) {
+      const [from, to] = PART_HOURS[v.part]
+      spans.push([moment(v.zone!, n, from * 60), moment(v.zone!, n, to * 60)])
     } else {
       spans.push(zone === undefined ? [n * DAY_MS, (n + 1) * DAY_MS] : [moment(zone, n, 0), moment(zone, n + 1, 0)])
     }
@@ -531,6 +544,8 @@ const readDate = (v: DateValue, today: number): string => {
     return f.month === t.month ? `${f.day} to ${t.day} ${end}` : `${f.day} ${MONTHS[f.month - 1]} to ${t.day} ${end}`
   }
   const parts: string[] = []
+  // A part of the day reads as the person said it: Thursday mornings, every evening, in the afternoon.
+  const part = v.part
   if ('on' in v) parts.push(day(v.on, true))
   else if ('every' in v) {
     // Weekdays in week order, three or more in a row as a run: Monday to Friday, then Saturdays.
@@ -542,9 +557,14 @@ const readDate = (v: DateValue, today: number): string => {
       else groups.push([d])
     }
     const name = (d: number) => capital(WEEKDAYS[d]!)
-    parts.push(days.length === 7 ? 'Every day' : or(groups.flatMap((g) => (g.length >= 3 ? [`${name(g[0]!)} to ${name(g.at(-1)!)}`] : g.map((d) => `${name(d)}s`))), 'and'))
+    // With a part, each weekday is singular and the part plural: Tuesday and Friday afternoons.
+    const each = (d: number) => (part === undefined ? `${name(d)}s` : name(d))
+    const named = or(groups.flatMap((g) => (g.length >= 3 ? [`${name(g[0]!)} to ${name(g.at(-1)!)}`] : g.map(each))), 'and')
+    if (part === undefined) parts.push(days.length === 7 ? 'Every day' : named)
+    else parts.push(days.length === 7 ? `every ${part}` : `${named} ${part}s`)
   } else parts.push(span(v.from, v.to))
   if (v.start !== undefined) parts.push(v.end === undefined ? readTime(v.start) : `${readTime(v.start)} to ${readTime(v.end)}`)
+  else if (part !== undefined && !('every' in v)) parts.push('on' in v ? `in the ${part}` : `${part}s`)
   if ('every' in v && (v.from !== undefined || v.to !== undefined)) parts.push(span(v.from, v.to))
   return capital(parts.join(', '))
 }
@@ -634,7 +654,7 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
       return ordered.map((key) => {
         const field = fields[key]!
         const words = who !== undefined && field.ask?.as && Object.hasOwn(field.ask.as, who) ? field.ask.as[who] : undefined
-        const label = field.ask?.label ?? nameWords(key)
+        const label = words?.label ?? field.ask?.label ?? nameWords(key)
         const hint = words?.hint ?? field.ask?.hint
         const own = OWN_START[field.piece]
         return {
@@ -643,7 +663,8 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
           label,
           question: words?.question ?? field.ask?.question ?? label,
           ...(hint === undefined ? {} : { hint }),
-          ...(own ? { start: { ...own, ...(words?.start ?? field.ask?.start) } } : {}),
+          // Each key merges: the role's over the field's, the field's over the piece's own.
+          ...(own ? { start: { ...own, ...field.ask?.start, ...words?.start } } : {}),
           ...(field.piece === 'choice' ? { choices: valuesOf(field, lists).map((value) => ({ value, label: labelOf(field, value, lists) })) } : {}),
           takes: takes(field),
         }

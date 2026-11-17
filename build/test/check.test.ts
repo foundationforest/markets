@@ -174,6 +174,8 @@ test('suggestions are checked only to be well formed: each key for the piece it 
   assert.equal(said((m) => (m.listing.kind.ask.lable = 'Kind')), of('/listing/kind/ask: unknown key "lable"'))
   assert.equal(said((m) => (m.listing.area.ask.start = {})), of('/listing/area/ask/start must not be empty'))
   assert.equal(said((m) => (m.listing.meet.ask.start.way = 'monthly')), of('/listing/meet/ask/start/way must be one of "day", "from-to", "until", "weekly"'))
+  assert.equal(said((m) => (m.listing.meet.ask.start.hours = 'morning')), of('/listing/meet/ask/start/hours must be one of true, "part"'))
+  assert.equal(said((m) => (m.listing.price.ask.as.client.label = '')), of('/listing/price/ask/as/client/label must be one line of text, not only spaces'))
   assert.equal(said((m) => (m.listing.age.ask.usual = { from: 0 })), of('/listing/age/ask/usual/from must be a number as decimal text, such as "2.5"'))
   // A label for a value of a shared list is one of its values.
   assert.equal(said((m) => (m.listing.languages.ask.labels = { es: 'Castilian' })), stale)
