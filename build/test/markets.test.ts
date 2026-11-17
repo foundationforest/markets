@@ -154,6 +154,8 @@ test('place: a circle with its name and country, or a country alone', () => {
     assert.equal(listing('client', { ...inPerson, area }), takes)
   }
   assert.equal(listing('knitter', { handover: ['shipped'], shipsTo: [{ country: 'PT' }, { country: 'ES' }] }), null)
+  // Kosovo has no ISO 3166-1 code; XK is the one in common use.
+  assert.equal(listing('knitter', { handover: ['shipped'], shipsTo: [{ country: 'XK' }] }), null)
 })
 
 test('date: days, and hours or a part of the day with their zone if wanted', () => {

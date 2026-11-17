@@ -31,8 +31,8 @@ and only `radiusKm` and a price's `count` are plain whole numbers.
 
 **choice**: one value from the field's `values`, its own list or a shared list in
 [`lists.json`](lists.json) by name: `languages`, as ISO 639-1 codes such as `es`, or `countries`,
-as ISO 3166-1 codes such as `PT`. A shared list only grows. Two choices match when they are the
-same.
+as ISO 3166-1 codes such as `PT`, plus `XK` for Kosovo, which ISO has given no code, so a place
+there fits. A shared list only grows. Two choices match when they are the same.
 
 **number**: `"10"`, or from one to another, both included, `{ "from": "9", "to": "11" }`, either end
 left out for no limit, as `{ "from": "18" }` is 18 and over. A field names a `unit` only for a measure a program
@@ -191,6 +191,9 @@ a new name.
 - Take the zone from the listing's place when it has one: the hours are where the deal is.
 - Store what the person said, and convert only when showing: a conversion is a guess, and stored, it
   replaces their words.
+- An index may rank a match higher the more answers two listings share, since one shared answer is
+  only the floor: socks and hats wanted match a knitter of socks alone, and one who knits both fits
+  better.
 
 ## From a program
 
