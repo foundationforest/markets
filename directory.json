@@ -1,3 +1,21 @@
 {
-  "markets": []
+  "markets": [
+    {
+      "name": "home-cleaning",
+      "summary": "Cleaners clean people's homes.",
+      "status": "beta",
+      "icon": "broom",
+      "number": 5,
+      "roles": [
+        {
+          "role": "cleaner",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    }
+  ]
 }
