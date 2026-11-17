@@ -1,0 +1,79 @@
+{
+  "name": "home-gardening",
+  "summary": "Gardeners mow, prune, plant and care for people's gardens.",
+  "description": "Each visit or job is paid once it is done, and gardeners often come every week or two; not landscaping or building, which are paid in stages, nor felling trees.",
+  "status": "beta",
+  "icon": "plant",
+  "number": 15,
+  "roles": [
+    { "role": "gardener", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
+  ],
+  "listing": {
+    "jobs": {
+      "piece": "choice",
+      "values": ["mowing", "hedges", "pruning", "weeding", "planting", "leaves", "watering", "clearing", "waste-removal"],
+      "several": true,
+      "ask": {
+        "label": "Jobs",
+        "labels": { "hedges": "Hedge trimming", "leaves": "Raking leaves", "clearing": "Clearing overgrowth" },
+        "as": { "gardener": { "question": "What do you do?" }, "client": { "question": "What needs doing?" } }
+      }
+    },
+    "area": {
+      "piece": "place",
+      "several": true,
+      "ask": {
+        "label": "Area",
+        "as": {
+          "gardener": { "question": "Where do you work?", "start": { "radiusKm": 10 } },
+          "client": { "question": "Where is your home?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 1 } }
+        }
+      }
+    },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Days and times",
+        "start": { "way": "weekly", "hours": true },
+        "as": { "gardener": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": "part" } } }
+      }
+    },
+    "price": {
+      "piece": "price",
+      "per": ["hour", "visit", "day"],
+      "ask": { "label": "Price", "as": { "gardener": { "question": "What do you charge?" }, "client": { "label": "Budget", "question": "What would you pay at most?" } } }
+    },
+    "photos": {
+      "piece": "photo",
+      "several": true,
+      "ask": { "label": "Photos", "as": { "gardener": { "question": "Any photos of your work?" }, "client": { "question": "Any photos of the garden?" } } }
+    },
+    "frequency": {
+      "piece": "choice",
+      "values": ["once", "weekly", "every-two-weeks", "monthly"],
+      "several": true,
+      "ask": { "label": "How often", "as": { "gardener": { "question": "How often can you come?" }, "client": { "question": "How often should they come?" } } }
+    },
+    "visitHours": {
+      "piece": "number",
+      "unit": "hours",
+      "ask": { "label": "Visit length", "as": { "gardener": { "question": "How long is a visit?", "start": { "range": true } }, "client": { "question": "How long should it take?" } } }
+    },
+    "gardenArea": { "piece": "number", "unit": "square-metres", "roles": ["client"], "ask": { "label": "Garden size", "question": "How big is the garden?" } },
+    "bringsTools": { "piece": "choice", "values": ["yes", "no"], "roles": ["gardener"], "ask": { "label": "Brings tools", "question": "Do you bring your own tools?", "hint": "Such as a mower." } },
+    "needsTools": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Bring tools", "question": "Should the gardener bring tools?", "hint": "Such as a mower." } },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "gardener": { "question": "What should clients know?" }, "client": { "question": "What should the gardener know?" } } }
+    }
+  },
+  "preview": ["jobs", "area", "days", "price", "photos"],
+  "review": {
+    "onTime": { "piece": "choice", "values": ["yes", "no"], "roles": ["gardener"], "ask": { "label": "On time", "question": "Did they come at the time agreed?" } },
+    "done": { "piece": "choice", "values": ["yes", "no"], "roles": ["gardener"], "ask": { "label": "Done as agreed", "question": "Was the work done as agreed?" } },
+    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
+  }
+}

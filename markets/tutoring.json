@@ -1,0 +1,84 @@
+{
+  "name": "tutoring",
+  "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
+  "description": "Lessons are online or in person, paid by the lesson, the hour, a pack of lessons or the month; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person. Sport and fitness are sports-coaching; practising a language for free is language-exchange.",
+  "status": "beta",
+  "icon": "graduation-cap",
+  "number": 12,
+  "roles": [
+    { "role": "tutor", "listings": "offers" },
+    { "role": "student", "listings": "requests" }
+  ],
+  "listing": {
+    "subjects": {
+      "piece": "choice",
+      "values": ["maths", "physics", "chemistry", "biology", "languages", "history", "geography", "economics", "accounting", "computer-science", "philosophy", "chess"],
+      "several": true,
+      "ask": { "label": "Subjects", "as": { "tutor": { "question": "What do you teach?" }, "student": { "question": "Which subjects?" } } }
+    },
+    "taughtLanguages": {
+      "piece": "choice",
+      "values": "languages",
+      "several": true,
+      "when": { "subjects": ["languages"] },
+      "ask": { "label": "Languages taught", "as": { "tutor": { "question": "Which languages do you teach?" }, "student": { "question": "Which languages?" } } }
+    },
+    "levels": {
+      "piece": "choice",
+      "values": ["primary", "secondary", "university", "adult"],
+      "several": true,
+      "ask": {
+        "label": "Level",
+        "labels": { "primary": "Primary school", "secondary": "Secondary school", "adult": "Adults" },
+        "as": { "tutor": { "question": "Which levels do you teach?" }, "student": { "question": "What level is it for?" } }
+      }
+    },
+    "mode": {
+      "piece": "choice",
+      "values": ["in-person", "online"],
+      "several": true,
+      "ask": { "label": "Online or in person", "as": { "tutor": { "question": "Do you teach online or in person?" }, "student": { "question": "Online or in person?" } } }
+    },
+    "area": {
+      "piece": "place",
+      "several": true,
+      "when": { "mode": ["in-person"] },
+      "ask": {
+        "label": "Area",
+        "as": {
+          "tutor": { "question": "Where do you teach in person?", "start": { "radiusKm": 5 } },
+          "student": { "question": "Where should the lessons be?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 2 } }
+        }
+      }
+    },
+    "price": {
+      "piece": "price",
+      "per": ["hour", "lesson", "month"],
+      "ask": { "label": "Price", "as": { "tutor": { "question": "What do you charge?" }, "student": { "label": "Budget", "question": "What would you pay at most?" } } }
+    },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Days and times",
+        "start": { "way": "weekly", "hours": true },
+        "as": { "tutor": { "question": "When do you teach?" }, "student": { "question": "When can the lessons be?", "start": { "hours": "part" } } }
+      }
+    },
+    "lessonMinutes": {
+      "piece": "number",
+      "unit": "minutes",
+      "several": true,
+      "ask": { "label": "Lesson length", "as": { "tutor": { "question": "How long is a lesson?" }, "student": { "question": "How long should a lesson be?" } } }
+    },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "tutor": { "question": "What should students know?" }, "student": { "question": "What should the tutor know?" } } }
+    }
+  },
+  "preview": ["subjects", "taughtLanguages", "levels", "mode", "area", "price"],
+  "review": {
+    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["student"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
+  }
+}

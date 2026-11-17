@@ -1,0 +1,94 @@
+{
+  "name": "sports-coaching",
+  "summary": "Coaches teach a sport or fitness, one on one or in groups.",
+  "description": "Coaching is in person or online, paid by the session, the hour, the week of a training plan, the month or a pack; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person. Desk subjects and chess are tutoring.",
+  "status": "beta",
+  "icon": "soccer-ball",
+  "number": 8,
+  "roles": [
+    { "role": "coach", "listings": "offers" },
+    { "role": "student", "listings": "requests" }
+  ],
+  "listing": {
+    "sports": {
+      "piece": "choice",
+      "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "american-football", "basketball", "volleyball", "rugby", "hockey", "ice-hockey", "baseball", "cricket", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics", "fitness", "yoga", "pilates"],
+      "several": true,
+      "ask": {
+        "label": "Sports",
+        "labels": { "football": "Football (soccer)", "hockey": "Field hockey", "fitness": "Fitness and strength" },
+        "as": { "coach": { "question": "Which sports do you coach?" }, "student": { "question": "Which sports?" } }
+      }
+    },
+    "levels": {
+      "piece": "choice",
+      "values": ["beginner", "intermediate", "advanced", "competitive"],
+      "several": true,
+      "ask": { "label": "Level", "as": { "coach": { "question": "Which levels do you coach?" }, "student": { "question": "What level is it for?" } } }
+    },
+    "ages": {
+      "piece": "number",
+      "unit": "years",
+      "several": true,
+      "ask": { "label": "Ages", "as": { "coach": { "question": "Which ages do you coach?", "start": { "range": true } }, "student": { "question": "How old is each learner?" } } }
+    },
+    "mode": {
+      "piece": "choice",
+      "values": ["in-person", "online"],
+      "several": true,
+      "ask": { "label": "Online or in person", "as": { "coach": { "question": "Do you coach online or in person?" }, "student": { "question": "Online or in person?" } } }
+    },
+    "area": {
+      "piece": "place",
+      "several": true,
+      "when": { "mode": ["in-person"] },
+      "ask": {
+        "label": "Area",
+        "as": {
+          "coach": { "question": "Where do you coach in person?", "hint": "A club or court, or the area you go to.", "start": { "radiusKm": 5 } },
+          "student": { "question": "Where should the sessions be?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 2 } }
+        }
+      }
+    },
+    "price": {
+      "piece": "price",
+      "per": ["hour", "session", "week", "month"],
+      "ask": {
+        "label": "Price per learner",
+        "as": { "coach": { "question": "What do you charge?", "hint": "Private and group sessions at different prices are one listing each." }, "student": { "label": "Budget per learner", "question": "What would you pay at most?" } }
+      }
+    },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Days and times",
+        "start": { "way": "weekly", "hours": true },
+        "as": { "coach": { "question": "When do you coach?" }, "student": { "question": "When can the sessions be?", "start": { "hours": "part" } } }
+      }
+    },
+    "groupSize": {
+      "piece": "number",
+      "ask": {
+        "label": "Group size",
+        "start": { "range": true },
+        "as": { "coach": { "question": "How many learners in a session?" }, "student": { "question": "How big a group would you join?" } }
+      }
+    },
+    "sessionMinutes": {
+      "piece": "number",
+      "unit": "minutes",
+      "several": true,
+      "ask": { "label": "Session length", "as": { "coach": { "question": "How long is a session?" }, "student": { "question": "How long should a session be?" } } }
+    },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "coach": { "question": "What should students know?" }, "student": { "question": "What should the coach know?" } } }
+    }
+  },
+  "preview": ["sports", "levels", "ages", "mode", "area", "price"],
+  "review": {
+    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["student"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
+  }
+}

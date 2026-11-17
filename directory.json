@@ -16,6 +16,110 @@
           "listings": "requests"
         }
       ]
+    },
+    {
+      "name": "home-gardening",
+      "summary": "Gardeners mow, prune, plant and care for people's gardens.",
+      "description": "Each visit or job is paid once it is done, and gardeners often come every week or two; not landscaping or building, which are paid in stages, nor felling trees.",
+      "status": "beta",
+      "icon": "plant",
+      "number": 15,
+      "roles": [
+        {
+          "role": "gardener",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "home-repair",
+      "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
+      "description": "Each job is paid once it is done; not renovations paid in stages. Garden work is home-gardening, and cleaning is home-cleaning.",
+      "status": "beta",
+      "icon": "wrench",
+      "number": 6,
+      "roles": [
+        {
+          "role": "repairer",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "language-exchange",
+      "summary": "Two people practise each other's language, taking turns.",
+      "description": "Partners meet online or in person, with no money between them; paid lessons are tutoring. For adults.",
+      "status": "beta",
+      "icon": "translate",
+      "number": 7,
+      "roles": [
+        {
+          "role": "partner",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "software",
+      "summary": "Developers build and fix software, AI, data and automation, remotely.",
+      "description": "Building and fixing software of every kind, AI, data, automation and security work included, delivered remotely; not design alone, video or hardware. Pay piece by piece, each piece once delivered, so neither side risks much.",
+      "status": "beta",
+      "icon": "code",
+      "number": 13,
+      "roles": [
+        {
+          "role": "developer",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "sports-coaching",
+      "summary": "Coaches teach a sport or fitness, one on one or in groups.",
+      "description": "Coaching is in person or online, paid by the session, the hour, the week of a training plan, the month or a pack; the student is whoever arranges the coaching, often a parent, who stays present for a child's session in person. Desk subjects and chess are tutoring.",
+      "status": "beta",
+      "icon": "soccer-ball",
+      "number": 8,
+      "roles": [
+        {
+          "role": "coach",
+          "listings": "offers"
+        },
+        {
+          "role": "student",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "tutoring",
+      "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
+      "description": "Lessons are online or in person, paid by the lesson, the hour, a pack of lessons or the month; the student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person. Sport and fitness are sports-coaching; practising a language for free is language-exchange.",
+      "status": "beta",
+      "icon": "graduation-cap",
+      "number": 12,
+      "roles": [
+        {
+          "role": "tutor",
+          "listings": "offers"
+        },
+        {
+          "role": "student",
+          "listings": "requests"
+        }
+      ]
     }
   ]
 }
