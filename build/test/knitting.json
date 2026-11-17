@@ -45,7 +45,7 @@
         "label": "Price",
         "as": {
           "knitter": { "question": "What do you charge?", "hint": "Every price you charge, packs included, such as 35 a pair of socks and 90 for three pairs." },
-          "client": { "question": "What would you pay at most?" }
+          "client": { "label": "Budget", "question": "What would you pay at most?" }
         }
       }
     },
@@ -68,7 +68,7 @@
       "piece": "date",
       "several": true,
       "when": { "handover": ["in-person"] },
-      "ask": { "label": "Free to meet", "question": "When are you free to meet?", "start": { "way": "weekly", "hours": true } }
+      "ask": { "label": "Free to meet", "question": "When are you free to meet?", "start": { "way": "weekly", "hours": true }, "as": { "client": { "start": { "hours": "part" } } } }
     },
     "shipsTo": { "piece": "place", "several": true, "roles": ["knitter"], "when": { "handover": ["shipped"] }, "ask": { "label": "Ships to", "question": "Where do you ship to?" } },
     "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },

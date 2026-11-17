@@ -31,8 +31,8 @@ and only `radiusKm` and a price's `count` are plain whole numbers.
 
 **choice**: one value from the field's `values`, its own list or a shared list in
 [`lists.json`](lists.json) by name: `languages`, as ISO 639-1 codes such as `es`, or `countries`,
-as ISO 3166-1 codes such as `PT`. A shared list only grows. Two choices match when they are the
-same.
+as ISO 3166-1 codes such as `PT`, plus `XK` for Kosovo, which ISO has given no code, so a place
+there fits. A shared list only grows. Two choices match when they are the same.
 
 **number**: `"10"`, or from one to another, both included, `{ "from": "9", "to": "11" }`, either end
 left out for no limit, as `{ "from": "18" }` is 18 and over. A field names a `unit` only for a measure a program
@@ -66,20 +66,24 @@ form would hide it from people elsewhere.
 another, both included, `{ "from": "2027-06-01", "to": "2027-08-31" }`, either end left out, so a
 deadline is `{ "to": "2027-01-15" }`; or weekdays every week, `{ "every": ["monday", "thursday"] }`,
 `monday` to `sunday`, with a `from` and a `to` if wanted. Hours are a `start`, or a `start` and an
-`end`, as `HH:MM`, on each of those days; an end before the start runs past midnight. An answer with
-hours names its `zone` as the IANA time zone database does, such as `Europe/Madrid`, never by
-offset; one without has none.
+`end`, as `HH:MM`, on each of those days, an end before the start running past midnight; or a `part`
+of the day, `morning`, `afternoon` or `evening`. A part keeps the person's word and reads as it,
+"Thursday mornings", since clock times made up for it would say hours they never gave; for matching
+only, it counts as 6:00 to 12:00, 12:00 to 18:00 or 18:00 to 24:00. An answer with hours or a part
+names its `zone` as the IANA time zone database does, such as `Europe/Madrid`, never by offset; one
+without has none.
 
 ```json
 { "every": ["saturday"], "from": "2027-05-01", "to": "2027-09-30", "start": "10:00", "zone": "Europe/Lisbon" }
+{ "every": ["thursday"], "part": "morning", "zone": "Europe/London" }
 ```
 
 Weekly hours are several answers: Monday to Friday 9 to 17 and Saturday 10 to 14 are two. Clock
 times at both ends of a span of days, taken slots, exceptions and "every two weeks" stay in words.
 Two answers match when their real moments overlap: each becomes spans of real time through its zone.
-A start alone is that moment; with no hours, the whole day, in the zone of the answer it meets. Two
-weekly answers are compared in the week of a given day, today by default, since summer time moves
-one zone against another.
+A start alone is that moment; a part, its hours; with no hours, the whole day, in the zone of the
+answer it meets. Two weekly answers are compared in the week of a given day, today by default, since
+summer time moves one zone against another.
 
 **photo**: one of the entry's files, by the SHA-256 of its bytes in lowercase hex, which the entry
 lists in `files` as [the standard names a file](https://github.com/foundationforest/standard/blob/main/folders/README.md#files).
@@ -120,15 +124,22 @@ A field's **rules**:
 - `values`, on a choice; `unit`, on a number that measures; and `per`, on a price, what its amount
   may be for, such as `["hour", "lesson"]`, else always the whole deal.
 
+Let two roles share a field only when they answer the same question, so that sharing an answer means
+a deal. Where one says what they can do and the other what they have, give each its own field: their
+answers differ even when the deal is good, and one field would read that as no match.
+
 Its **suggestions**, under `ask`, each with a fallback:
 
 - `label`: two or three words, for showing a value and for a filter. Left out: the name in words,
   as `footLength` reads "Foot length".
 - `question`, and a `hint` if needed. Left out: the label.
 - `start`, where the input opens, and so the answer when the person gives no other: a place's
-  `radiusKm`, a date's `way` (`day`, `from-to`, `until` or `weekly`) and `hours: true`, a number's
-  `range: true`. Left out: a 5 km circle, one day, one number.
-- `as`: by role, its own `question`, `hint` and `start`. In a review, a role names the one reviewed.
+  `radiusKm`, a date's `way` (`day`, `from-to`, `until` or `weekly`) and `hours`, `true` for clock
+  times or `"part"` for a part of the day, a number's `range: true`. Left out: a 5 km circle, one day
+  with no hours, one number.
+- `as`: by role, its own `label`, `question`, `hint` and `start`, each over the field's. A role's
+  `start` merges over the field's key by key, as the field's does over the piece's own, so
+  `{ "hours": "part" }` keeps the field's `way`. In a review, a role names the one reviewed.
 - `usual`, a number's usual span; `long: true`, text of several lines; `labels`, how a choice's
   values read, such as `{ "xl": "XL" }`. Left out, a value reads as its shared list says, or as
   itself with a capital and hyphens as spaces.
@@ -180,6 +191,9 @@ a new name.
 - Take the zone from the listing's place when it has one: the hours are where the deal is.
 - Store what the person said, and convert only when showing: a conversion is a guess, and stored, it
   replaces their words.
+- An index may rank a match higher the more answers two listings share, since one shared answer is
+  only the floor: socks and hats wanted match a knitter of socks alone, and one who knits both fits
+  better.
 
 ## From a program
 
