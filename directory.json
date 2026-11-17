@@ -1,6 +1,24 @@
 {
   "markets": [
     {
+      "name": "goods",
+      "summary": "People sell everyday things, new or used.",
+      "description": "Not motor vehicles or homes, and ship only what either side could lose without real harm.",
+      "status": "beta",
+      "icon": "tag",
+      "number": 4,
+      "roles": [
+        {
+          "role": "seller",
+          "listings": "offers"
+        },
+        {
+          "role": "buyer",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
       "name": "home-cleaning",
       "summary": "Cleaners clean people's homes.",
       "status": "beta",
@@ -104,6 +122,60 @@
       ]
     },
     {
+      "name": "stays-free",
+      "summary": "Hosts give guests a couch or a room for free.",
+      "description": "For adults only, staying for free; a bed for help is stays-work.",
+      "status": "beta",
+      "icon": "couch",
+      "number": 9,
+      "roles": [
+        {
+          "role": "host",
+          "listings": "offers"
+        },
+        {
+          "role": "guest",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "stays-work",
+      "summary": "Hosts give guests a bed, and often meals, for their help.",
+      "description": "For adults only, and never childcare. A free stay with no help is stays-free, and help for a cause with no bed is volunteering.",
+      "status": "beta",
+      "icon": "barn",
+      "number": 10,
+      "roles": [
+        {
+          "role": "host",
+          "listings": "offers"
+        },
+        {
+          "role": "guest",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "tours",
+      "summary": "Local guides show people around their town or its nature.",
+      "description": "For adults, who may bring their own children. Learning a sport, such as surfing, is sports-coaching.",
+      "status": "beta",
+      "icon": "map-trifold",
+      "number": 11,
+      "roles": [
+        {
+          "role": "guide",
+          "listings": "offers"
+        },
+        {
+          "role": "guest",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
       "name": "tutoring",
       "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
       "description": "School subjects, languages and chess; sport and fitness are sports-coaching, and practising a language for free is language-exchange. The student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
@@ -117,6 +189,24 @@
         },
         {
           "role": "student",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "volunteering",
+      "summary": "Volunteers give their time to cleanups, food banks, events and good causes.",
+      "description": "A bed for help is stays-work. Never caring for children or for people who need care, and in person for adults only.",
+      "status": "beta",
+      "icon": "hand-heart",
+      "number": 14,
+      "roles": [
+        {
+          "role": "organizer",
+          "listings": "offers"
+        },
+        {
+          "role": "volunteer",
           "listings": "requests"
         }
       ]
