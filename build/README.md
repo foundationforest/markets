@@ -40,11 +40,14 @@ could convert: `seconds`, `minutes`, `hours`, `days`, `years`, `centimetres`, `m
 `kilometres`, `square-metres`, `grams` or `kilograms`. A count names none, since its label says what
 is counted: people, rooms, nights. Two numbers match when they overlap: 9 to 11 matches 10.
 
-**price**: always a list of one or more, each `{ "amount", "currency", "per", "count" }`: `amount`
-as decimal text, `currency` a code such as `EUR`, `per` one of the field's `per` or left out for the
-whole deal, and `count`, only with a `per`, how many of it the amount buys, 1 when left out. So
+**price**: always a list of one or more, each `{ "amount", "currency", "per", "count", "note" }`:
+`amount` as decimal text, `currency` a code such as `EUR`, `per` one of the field's `per` or left out
+for the whole deal, and `count`, only with a `per`, how many of it the amount buys, 1 when left out. So
 `[{ "amount": "35", "currency": "EUR", "per": "item" }, { "amount": "90", "currency": "EUR", "per": "item", "count": 3 }]`
-is 35 an item or 90 for three. In a request, it is the most the writer would pay. Prices compare by
+is 35 an item or 90 for three. A `note`, if wanted, is a few of the person's own words on what that
+price is for when the amount and `per` do not say it, such as "private lesson", "call-out, on top" or
+"from, for a simple site": one line of at most 80 characters, read in brackets after the price and
+never matched. In a request, a price is the most the writer would pay. Prices compare by
 amount divided by count, in one currency and `per`, since a rate between currencies is a guess: they
 match when the offer's costs no more than the request's, and prices that cannot be compared never
 block a match.
@@ -69,13 +72,15 @@ deadline is `{ "to": "2027-01-15" }`; or weekdays every week, `{ "every": ["mond
 `end`, as `HH:MM`, on each of those days, an end before the start running past midnight; or a `part`
 of the day, `morning`, `afternoon` or `evening`. A part keeps the person's word and reads as it,
 "Thursday mornings", since clock times made up for it would say hours they never gave; for matching
-only, it counts as 6:00 to 12:00, 12:00 to 18:00 or 18:00 to 24:00. An answer with hours or a part
-names its `zone` as the IANA time zone database does, such as `Europe/Madrid`, never by offset; one
-without has none.
+only, it counts as 6:00 to 12:00, 12:00 to 18:00 or 18:00 to 24:00. Hours with no days named are
+written with `every` holding all seven days, `monday` to `sunday`, which means any of them, and read
+as the hours alone: "Evenings", not "Every evening". An answer with hours or a part names its `zone`
+as the IANA time zone database does, such as `Europe/Madrid`, never by offset; one without has none.
 
 ```json
 { "every": ["saturday"], "from": "2027-05-01", "to": "2027-09-30", "start": "10:00", "zone": "Europe/Lisbon" }
 { "every": ["thursday"], "part": "morning", "zone": "Europe/London" }
+{ "every": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"], "part": "evening", "zone": "America/Sao_Paulo" }
 ```
 
 Weekly hours are several answers: Monday to Friday 9 to 17 and Saturday 10 to 14 are two. Clock
@@ -211,7 +216,10 @@ markets.read(field, value) // 3. "Monday to Friday, 9:00 to 17:00"
 markets.ask('knitting', 'client') // 4. its fields in order: piece, rules and words
 ```
 
-For a review, `checkEntry` and `ask` take the role reviewed last. `match` and `read` take
+For a review, `checkEntry` and `ask` take the role reviewed last. `match` compares a field with the
+same field: where two fields answer each other, as what one partner speaks and the other learns, a
+program finds people by filtering each on the other, and nothing in a market file says which fields
+answer each other yet, which waits for the index. `match` and `read` take
 `{ today }`; `read` leaves the zone out, for a program to show when the reader is in another. A page
 imports `@foundationforest/markets/browser` and passes the files as data, `loadMarkets({ directory,
 lists, markets })`. `npm test` runs the tests, on [`test/knitting.json`](test/knitting.json), a

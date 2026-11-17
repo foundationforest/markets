@@ -1,0 +1,54 @@
+{
+  "name": "language-exchange",
+  "summary": "Two people practise each other's language, taking turns.",
+  "description": "For adults only, practising for free; paid lessons are tutoring.",
+  "status": "beta",
+  "icon": "translate",
+  "number": 7,
+  "roles": [
+    { "role": "partner", "listings": "requests" }
+  ],
+  "listing": {
+    "learns": {
+      "piece": "choice",
+      "values": "languages",
+      "ask": { "label": "Learning", "question": "Which language do you want to practise?", "hint": "One per listing: another language is another listing." }
+    },
+    "level": {
+      "piece": "choice",
+      "values": ["a1", "a2", "b1", "b2", "c1", "c2"],
+      "ask": {
+        "label": "Level",
+        "question": "How well do you speak it now?",
+        "labels": { "a1": "A1, beginner", "a2": "A2, elementary", "b1": "B1, intermediate", "b2": "B2, upper intermediate", "c1": "C1, advanced", "c2": "C2, proficient" }
+      }
+    },
+    "languages": {
+      "piece": "choice",
+      "values": "languages",
+      "several": true,
+      "ask": { "label": "Languages", "question": "Which languages do you speak?", "hint": "Well enough to help someone practise; not the one you are learning." }
+    },
+    "mode": { "piece": "choice", "values": ["in-person", "online"], "several": true, "ask": { "label": "Online or in person", "question": "Online or in person?" } },
+    "area": {
+      "piece": "place",
+      "several": true,
+      "when": { "mode": ["in-person"] },
+      "ask": { "label": "Area", "question": "Where can you meet?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 5 } }
+    },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": { "label": "Days and times", "question": "When are you free?", "start": { "way": "weekly", "hours": "part" } }
+    },
+    "description": { "piece": "text", "ask": { "label": "About", "long": true, "question": "What do you like to talk about?" } }
+  },
+  "preview": ["learns", "level", "languages", "mode", "area", "days"],
+  "review": {
+    "showedUp": {
+      "piece": "choice",
+      "values": ["yes", "no"],
+      "ask": { "label": "Showed up", "question": "Did they come every time as agreed?", "hint": "A meeting missed, or cancelled too late to plan around, is no." }
+    }
+  }
+}

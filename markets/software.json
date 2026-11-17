@@ -1,0 +1,66 @@
+{
+  "name": "software",
+  "summary": "Developers build and fix software, AI, data and automation, remotely.",
+  "description": "Security work included; not design alone, video or hardware.",
+  "status": "beta",
+  "icon": "code",
+  "number": 13,
+  "roles": [
+    { "role": "developer", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
+  ],
+  "listing": {
+    "kind": {
+      "piece": "choice",
+      "values": ["website", "web-app", "mobile-app", "desktop-app", "backend", "data", "ai", "automation", "security", "game"],
+      "several": true,
+      "ask": {
+        "label": "Kind",
+        "labels": { "website": "Website or online shop", "ai": "AI" },
+        "as": { "developer": { "question": "What kinds of software do you work on?" }, "client": { "question": "What kind of software is it?" } }
+      }
+    },
+    "stack": {
+      "piece": "text",
+      "several": true,
+      "ask": {
+        "label": "Stack",
+        "hint": "Such as Python, React or Shopify.",
+        "as": { "developer": { "question": "Which languages, frameworks and tools do you use?" }, "client": { "question": "Which languages, frameworks or tools does it use?" } }
+      }
+    },
+    "price": {
+      "piece": "price",
+      "per": ["hour", "day"],
+      "ask": { "label": "Price", "as": { "developer": { "question": "What do you charge?" }, "client": { "label": "Budget", "question": "What would you pay at most?" } } }
+    },
+    "deliveryDays": {
+      "piece": "number",
+      "unit": "days",
+      "roles": ["developer"],
+      "ask": { "label": "Days to deliver", "question": "How many days does a job take you?", "start": { "range": true } }
+    },
+    "due": { "piece": "date", "roles": ["client"], "ask": { "label": "Needed by", "question": "When do you need it by?", "start": { "way": "until" } } },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Days and times",
+        "start": { "way": "weekly", "hours": true },
+        "as": { "developer": { "question": "When do you work?" }, "client": { "question": "When should they be available?" } }
+      }
+    },
+    "portfolio": { "piece": "link", "roles": ["developer"], "ask": { "label": "Portfolio", "question": "Where can clients see your work?" } },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "developer": { "question": "What should clients know?" }, "client": { "question": "What should the developer know?" } } }
+    }
+  },
+  "preview": ["kind", "stack", "price", "deliveryDays", "due"],
+  "review": {
+    "onTime": { "piece": "choice", "values": ["yes", "no"], "roles": ["developer"], "ask": { "label": "On time", "question": "Did they deliver by the day agreed?" } },
+    "asAgreed": { "piece": "choice", "values": ["yes", "no"], "roles": ["developer"], "ask": { "label": "Done as agreed", "question": "Was the work done as agreed?" } },
+    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
+  }
+}

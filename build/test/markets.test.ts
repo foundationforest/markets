@@ -134,13 +134,17 @@ test('price: always several, each with a per its field lists or none, and a coun
   const socks = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }, { amount: '300', currency: 'EUR' }]
   assert.equal(listing('knitter', { price: socks }), null)
   assert.equal(listing('client', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: 3 }] }), null)
-  const each = 'price takes a list of one or more, each different, each { amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, and count, only with a per, how many of it the amount buys, a whole number'
-  for (const wrong of [price, [], [price, { ...price }], [{ ...price, per: 'night' }], [{ amount: '90', currency: 'EUR', count: 3 }], [{ ...price, count: 0 }], [{ ...price, count: 1.5 }], [{ ...price, amount: '-1' }], [{ ...price, currency: 'eur' }], [{ ...price, amount: 30 }]]) {
+  const each = "price takes a list of one or more, each different, each { amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, what that price is for in the person's words, one line of at most 80 characters"
+  // A note: the person's words on what one price is for, one line of at most 80 characters, counted as characters.
+  const noted = [{ ...price, note: 'Mending, not new work' }, { amount: '120', currency: 'EUR', note: 'from, for a simple jumper' }]
+  assert.equal(listing('knitter', { price: noted }), null)
+  assert.equal(listing('knitter', { price: [{ ...price, note: 'é'.repeat(80) }] }), null)
+  for (const wrong of [price, [], [price, { ...price }], [{ ...price, per: 'night' }], [{ amount: '90', currency: 'EUR', count: 3 }], [{ ...price, count: 0 }], [{ ...price, count: 1.5 }], [{ ...price, amount: '-1' }], [{ ...price, currency: 'eur' }], [{ ...price, amount: 30 }], [{ ...price, note: '' }], [{ ...price, note: ' ' }], [{ ...price, note: 'two\nlines' }], [{ ...price, note: 'x'.repeat(81) }], [{ ...price, note: 3 }]]) {
     assert.equal(listing('knitter', { price: wrong }), each)
   }
   // A price field with no per list: the whole deal, always.
   assert.equal(listing('knitter', { deposit: [{ amount: '40', currency: 'EUR' }] }), null)
-  const noPer = 'deposit takes a list of one or more, each different, each { amount, currency }: amount as decimal text, currency a code such as USD, and no per or count'
+  const noPer = "deposit takes a list of one or more, each different, each { amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, what that price is for in the person's words, one line of at most 80 characters"
   for (const wrong of [{ amount: '40', currency: 'EUR' }, [{ amount: '40', currency: 'EUR', per: 'item' }]]) assert.equal(listing('knitter', { deposit: wrong }), noPer)
 })
 
@@ -169,7 +173,7 @@ test('date: days, and hours or a part of the day with their zone if wanted', () 
     { from: '2026-12-05', to: '2026-12-07', part: 'afternoon', zone: 'Europe/Madrid' },
   ]
   for (const value of fine) assert.equal(due(value), null, JSON.stringify(value))
-  const takes = 'due takes { on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
+  const takes = 'due takes { on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday, all seven for hours on any day; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
   const wrong = [
     {}, { on: '2026-02-29' }, { on: '2026-11-31' }, { on: '2026-11-24T10:00:00Z' }, { on: '24/11/2026' }, { on: '2026-11-24', to: '2026-11-25' },
     { from: '2026-12-02', to: '2026-12-01' }, { every: [] }, { every: ['Saturday'] }, { every: ['saturday', 'saturday'] }, { every: 'saturday' },
@@ -321,6 +325,10 @@ test('a part of the day matches as 6:00 to 12:00, 12:00 to 18:00 and 18:00 to 24
   assert.equal(match(date, { every: weekdays, start: '09:00', end: '17:00', zone: Z }, thursdayMornings), true)
   assert.equal(match(date, { every: weekdays, start: '18:00', end: '22:00', zone: Z }, thursdayMornings), false)
   assert.equal(match(date, thursdayMornings, { every: ['thursday'], part: 'morning', zone: Z }), true)
+  // Evenings with no days named are every day, any of them: a Tuesday evening fits, a Tuesday morning does not.
+  const evenings = { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }
+  assert.equal(match(date, { every: ['tuesday'], start: '19:00', end: '21:00', zone: Z }, evenings), true)
+  assert.equal(match(date, { every: ['tuesday'], start: '09:00', end: '11:00', zone: Z }, evenings), false)
   // Each part ends where the next begins, and they share no moment.
   assert.equal(match(date, thursdayMornings, { every: ['thursday'], part: 'afternoon', zone: Z }), false)
   const saturdayMorning = { on: '2026-11-28', part: 'morning', zone: Z }
@@ -376,6 +384,9 @@ test("prices: the offer's costs no more than the request's, per the same thing i
   // Prices that cannot be compared never block.
   assert.equal(match(field, offer, [{ amount: '10', currency: 'USD', per: 'item' }]), true)
   assert.equal(match(field, offer, [{ amount: '10', currency: 'EUR' }]), true)
+  // A note is read, never matched.
+  assert.equal(match(field, [{ ...offer[0]!, note: 'Mending only' }], [{ amount: '30', currency: 'EUR', per: 'item', note: 'A new jumper' }]), false)
+  assert.equal(match(field, [{ ...offer[0]!, note: 'Mending only' }], [{ amount: '40', currency: 'EUR', per: 'item' }]), true)
 })
 
 test('text, a photo and a link are read, not matched', () => {
@@ -396,14 +407,19 @@ test('a date reads as people say it, the year left out when it is this one', () 
   assert.equal(read(date, { from: '2026-12-20', to: '2027-01-10' }), '20 December 2026 to 10 January 2027')
   assert.equal(read(date, { every: ['saturday', 'sunday', 'wednesday'] }), 'Wednesdays, Saturdays and Sundays')
   assert.equal(read(date, { every: ['friday', 'monday', 'tuesday', 'wednesday', 'thursday', 'sunday'] }), 'Monday to Friday and Sundays')
-  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'] }), 'Every day')
+  // Every day means any of them, as hours with no days named are written, and reads as the hours alone.
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'] }), 'Any day')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '18:00', end: '22:00', zone: Z }), '18:00 to 22:00')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '07:00', from: '2026-12-01', zone: Z }), '7:00, from 1 December')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], to: '2027-01-15' }), 'Any day, until 15 January 2027')
   assert.equal(read(date, { every: ['friday'], start: '22:00', end: '02:00', to: '2027-05-01', zone: Z }), 'Fridays, 22:00 to 2:00, until 1 May 2027')
   assert.equal(read(dates, [{ every: weekdays, start: '09:00', end: '17:00', zone: Z }, { every: ['saturday'], start: '10:00', end: '14:00', zone: Z }]), 'Monday to Friday, 9:00 to 17:00; Saturdays, 10:00 to 14:00')
   // A part of the day keeps the person's word.
   assert.equal(read(date, { every: ['thursday'], part: 'morning', zone: Z }), 'Thursday mornings')
   assert.equal(read(date, { every: ['friday', 'tuesday'], part: 'afternoon', zone: Z }), 'Tuesday and Friday afternoons')
   assert.equal(read(date, { every: weekdays, part: 'evening', zone: Z }), 'Monday to Friday evenings')
-  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }), 'Every evening')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }), 'Evenings')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], part: 'morning', from: '2026-12-01', zone: Z }), 'Mornings, from 1 December')
   assert.equal(read(date, { every: ['thursday'], part: 'morning', from: '2026-12-01', zone: Z }), 'Thursday mornings, from 1 December')
   assert.equal(read(date, { on: '2026-11-28', part: 'morning', zone: Z }), 'Saturday 28 November, in the morning')
   assert.equal(read(date, { from: '2026-12-05', to: '2026-12-07', part: 'afternoon', zone: Z }), '5 to 7 December, afternoons')
@@ -420,6 +436,8 @@ test('the other pieces read in plain words', () => {
   assert.equal(read(knitting.listing.age!, [{ to: '1' }, { from: '1' }]), 'Up to 1 year and 1 year or more')
   const prices = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '1300', currency: 'MXN', per: 'lesson', count: 5 }, { amount: '300', currency: 'EUR' }, { amount: '50', currency: 'EUR', per: 'person', count: 2 }]
   assert.equal(read({ piece: 'price', per: ['item', 'lesson', 'person'] }, prices), '35 EUR per item; 1,300 MXN for 5 lessons; 300 EUR; 50 EUR for 2 people')
+  const noted = [{ amount: '45', currency: 'EUR', per: 'hour' }, { amount: '30', currency: 'EUR', note: 'call-out, on top' }, { amount: '20', currency: 'EUR', per: 'lesson', count: 4, note: 'per child, in a group' }]
+  assert.equal(read({ piece: 'price', per: ['hour', 'lesson'] }, noted), '45 EUR per hour; 30 EUR (call-out, on top); 20 EUR for 4 lessons (per child, in a group)')
   const places = [{ ...madrid, name: 'Chamberí, Madrid', radiusKm: 1 }, { ...madrid, name: 'Retiro park, Madrid', radiusKm: 0 }, { country: 'PT' }]
   assert.equal(read({ piece: 'place', several: true }, places), 'Around Chamberí, Madrid, 1 km; Retiro park, Madrid; Anywhere in Portugal')
   assert.equal(read({ piece: 'place' }, { lat: '25.6522', lon: '-100.4036', radiusKm: 10, name: 'Del Valle, San Pedro Garza García', country: 'MX' }), 'Around Del Valle, San Pedro Garza García, 10 km')

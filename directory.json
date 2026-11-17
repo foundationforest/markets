@@ -16,6 +16,110 @@
           "listings": "requests"
         }
       ]
+    },
+    {
+      "name": "home-gardening",
+      "summary": "Gardeners mow, prune, plant and care for people's gardens.",
+      "description": "Caring for a garden, not landscaping, building or felling trees. Repairs are home-repair, and cleaning is home-cleaning.",
+      "status": "beta",
+      "icon": "plant",
+      "number": 15,
+      "roles": [
+        {
+          "role": "gardener",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "home-repair",
+      "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
+      "description": "Repairs and small jobs in a home, not renovations or building work. Garden work is home-gardening, and cleaning is home-cleaning.",
+      "status": "beta",
+      "icon": "wrench",
+      "number": 6,
+      "roles": [
+        {
+          "role": "repairer",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "language-exchange",
+      "summary": "Two people practise each other's language, taking turns.",
+      "description": "For adults only, practising for free; paid lessons are tutoring.",
+      "status": "beta",
+      "icon": "translate",
+      "number": 7,
+      "roles": [
+        {
+          "role": "partner",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "software",
+      "summary": "Developers build and fix software, AI, data and automation, remotely.",
+      "description": "Security work included; not design alone, video or hardware.",
+      "status": "beta",
+      "icon": "code",
+      "number": 13,
+      "roles": [
+        {
+          "role": "developer",
+          "listings": "offers"
+        },
+        {
+          "role": "client",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "sports-coaching",
+      "summary": "Coaches teach a sport or fitness, one on one or in groups.",
+      "description": "Sport and fitness; desk subjects and chess are tutoring. The student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
+      "status": "beta",
+      "icon": "soccer-ball",
+      "number": 8,
+      "roles": [
+        {
+          "role": "coach",
+          "listings": "offers"
+        },
+        {
+          "role": "student",
+          "listings": "requests"
+        }
+      ]
+    },
+    {
+      "name": "tutoring",
+      "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
+      "description": "School subjects, languages and chess; sport and fitness are sports-coaching, and practising a language for free is language-exchange. The student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
+      "status": "beta",
+      "icon": "graduation-cap",
+      "number": 12,
+      "roles": [
+        {
+          "role": "tutor",
+          "listings": "offers"
+        },
+        {
+          "role": "student",
+          "listings": "requests"
+        }
+      ]
     }
   ]
 }

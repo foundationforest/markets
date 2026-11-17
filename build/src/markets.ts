@@ -90,7 +90,7 @@ export type Kind = (typeof KINDS)[number]
 // How each piece is written, for programs that type their answers.
 /** One number as decimal text, or from one to another, either end left out for no limit. */
 export type NumberValue = string | { from?: string; to?: string }
-export type PriceValue = { amount: string; currency: string; per?: string; count?: number }
+export type PriceValue = { amount: string; currency: string; per?: string; count?: number; note?: string }
 export type PlaceValue = { lat: string; lon: string; radiusKm: number; name: string; country: string } | { country: string }
 export type DateValue = ({ on: string } | { from?: string; to?: string } | { every: Weekday[]; from?: string; to?: string }) & {
   start?: string
@@ -181,7 +181,8 @@ export type Markets = {
   ask(market: string, role: string, kind?: string, aboutRole?: string): Asked[]
   /**
    * Whether two answers of `field`, ones that fit, match, as build/README.md says for each piece. For a price, `a` is
-   * the offer's and `b` the request's. An answer left out never blocks a match.
+   * the offer's and `b` the request's, and a note is never matched. An answer left out never blocks a match. It
+   * compares a field with the same field: where two fields answer each other, a program filters each on the other.
    */
   match(field: Field, a: unknown, b: unknown, options?: Options): boolean
   /** How an answer of `field`, one that fits, reads in plain English. */
@@ -314,13 +315,14 @@ const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
     case 'price':
       return (
         isObject(v) &&
-        only(v, ['amount', 'currency', 'per', 'count']) &&
+        only(v, ['amount', 'currency', 'per', 'count', 'note']) &&
         typeof v.amount === 'string' &&
         AMOUNT.test(v.amount) &&
         typeof v.currency === 'string' &&
         CURRENCY.test(v.currency) &&
         (!has(v, 'per') || (typeof v.per === 'string' && (field.per ?? []).includes(v.per))) &&
-        (!has(v, 'count') || (has(v, 'per') && Number.isInteger(v.count) && (v.count as number) >= 1))
+        (!has(v, 'count') || (has(v, 'per') && Number.isInteger(v.count) && (v.count as number) >= 1)) &&
+        (!has(v, 'note') || isNote(v.note))
       )
     case 'place':
       return isPlace(v, lists)
@@ -332,6 +334,9 @@ const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
       return typeof v === 'string' && LINK.test(v)
   }
 }
+/** A price's note: one line of the person's words, at most NOTE characters, counted as characters, not code units. */
+const NOTE = 80
+const isNote = (v: unknown): boolean => typeof v === 'string' && LINE.test(v) && [...v].length <= NOTE
 const isNumber = (v: unknown): boolean => {
   if (typeof v === 'string') return DECIMAL.test(v)
   if (!isObject(v) || !only(v, ['from', 'to']) || !(has(v, 'from') || has(v, 'to'))) return false
@@ -386,6 +391,7 @@ const labelOf = (field: Field, value: string, lists: Lists, first = true): strin
   return first ? wordsOf(value) : value.replaceAll('-', ' ')
 }
 
+const NOTE_TAKES = `what that price is for in the person's words, one line of at most ${NOTE} characters`
 /** How a field's answer is written, in words. */
 const takes = (field: Field): string => {
   const one = (() => {
@@ -398,12 +404,12 @@ const takes = (field: Field): string => {
         return 'a number as decimal text, such as "2.5", or { from, to }: two such numbers, from no more than to, either left out for no limit that way'
       case 'price':
         return field.per
-          ? `{ amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, and count, only with a per, how many of it the amount buys, a whole number`
-          : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per or count'
+          ? `{ amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, ${NOTE_TAKES}`
+          : `{ amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, ${NOTE_TAKES}`
       case 'place':
         return '{ lat, lon, radiusKm, name, country }: lat and lon as decimal text, radiusKm in whole kilometres, the place\'s name, and country a two-letter code from the countries list, such as PT; or { country } alone, for anywhere in it'
       case 'date':
-        return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
+        return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday, all seven for hours on any day; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
       case 'photo':
         return 'the SHA-256 of one of the files the body lists in files, in lowercase hex'
       case 'link':
@@ -518,9 +524,10 @@ const readNumber = (v: NumberValue, unit?: Unit): string => {
 }
 const readPrice = (p: PriceValue): string => {
   const cost = `${figure(p.amount)} ${p.currency}`
-  if (p.per === undefined) return cost
-  const per = p.per.replaceAll('-', ' ')
-  return p.count !== undefined && p.count !== 1 ? `${cost} for ${p.count} ${per.replace(/\S+$/, plural)}` : `${cost} per ${per}`
+  const per = p.per?.replaceAll('-', ' ')
+  const said = per === undefined ? cost : p.count !== undefined && p.count !== 1 ? `${cost} for ${p.count} ${per.replace(/\S+$/, plural)}` : `${cost} per ${per}`
+  // A note is the person's words on what the price is for, read after it and never matched.
+  return p.note === undefined ? said : `${said} (${p.note})`
 }
 const readPlace = (p: PlaceValue, lists: Lists): string => {
   if (!('lat' in p)) return `Anywhere in ${lists.countries?.[p.country] ?? p.country}`
@@ -544,7 +551,7 @@ const readDate = (v: DateValue, today: number): string => {
     return f.month === t.month ? `${f.day} to ${t.day} ${end}` : `${f.day} ${MONTHS[f.month - 1]} to ${t.day} ${end}`
   }
   const parts: string[] = []
-  // A part of the day reads as the person said it: Thursday mornings, every evening, in the afternoon.
+  // A part of the day reads as the person said it: Thursday mornings, evenings, in the afternoon.
   const part = v.part
   if ('on' in v) parts.push(day(v.on, true))
   else if ('every' in v) {
@@ -560,13 +567,14 @@ const readDate = (v: DateValue, today: number): string => {
     // With a part, each weekday is singular and the part plural: Tuesday and Friday afternoons.
     const each = (d: number) => (part === undefined ? `${name(d)}s` : name(d))
     const named = or(groups.flatMap((g) => (g.length >= 3 ? [`${name(g[0]!)} to ${name(g.at(-1)!)}`] : g.map(each))), 'and')
-    if (part === undefined) parts.push(days.length === 7 ? 'Every day' : named)
-    else parts.push(days.length === 7 ? `every ${part}` : `${named} ${part}s`)
+    // Every day means any of them, as hours with no days named are written, so it reads as the hours alone.
+    if (days.length === 7) parts.push(part !== undefined ? `${part}s` : v.start === undefined ? 'any day' : '')
+    else parts.push(part === undefined ? named : `${named} ${part}s`)
   } else parts.push(span(v.from, v.to))
   if (v.start !== undefined) parts.push(v.end === undefined ? readTime(v.start) : `${readTime(v.start)} to ${readTime(v.end)}`)
   else if (part !== undefined && !('every' in v)) parts.push('on' in v ? `in the ${part}` : `${part}s`)
   if ('every' in v && (v.from !== undefined || v.to !== undefined)) parts.push(span(v.from, v.to))
-  return capital(parts.join(', '))
+  return capital(parts.filter((part) => part !== '').join(', '))
 }
 
 // Question 4: what does a market ask a role? Each piece's own start, where its input opens.
