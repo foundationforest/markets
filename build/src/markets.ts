@@ -1,64 +1,65 @@
-// The markets from their files, given as data, and checkEntry, which checks a listing, a review, a
-// vouch or a report against its market as the manual says (build/README.md). Both entries use it:
-// index.ts reads the files from a checkout, browser.ts takes them from a page. It imports nothing and
-// makes no code from strings, so it runs where a content security policy forbids eval.
-//
-// A body fits when each of its fields is one its market names for that kind and role, or a shared
-// one, held only where its `when` matches, of its type (build/types.json): a choice among its values,
-// money with a `per` its field lists or none, a listing's price always a list of one or more, a
-// place with a point and a radius, a number or a range where its field allows one, `many` a list of
-// distinct values, each range and span from no later than to, a `file` the SHA-256 of one of the
-// body's `files`. `files` is the standard's,
-// checked with the entry, and no market's field. No field must be held, except that a review, a
-// vouch and a report name their subject: only it says who one is about. Whether `subject`, or the
-// profile in a review's `listing`, is an address is the standard's check (folders), not this one.
+// The markets from their files, given as data, and the four answers every program shares, so an app, an
+// index and a connector cannot disagree (build/README.md says each one):
+//   1. checkEntry: does this entry fit?
+//   2. match: do these two answers match?
+//   3. read: how does this answer read, in plain English?
+//   4. ask: what does this market ask this role?
+// Both entries use it: index.ts reads the files from a checkout, browser.ts takes them from a page. It
+// imports nothing and makes no code from strings, so it runs where a content security policy forbids
+// eval. Time zones are read through Intl, which every runtime has.
 
-export type Type = 'text' | 'number' | 'words' | 'choice' | 'place' | 'money' | 'moment' | 'file' | 'hours'
+/** The eight pieces: the questions any listing can answer. A field is one piece with a name. */
+export const PIECES = ['text', 'choice', 'number', 'price', 'place', 'date', 'photo', 'link'] as const
+export type Piece = (typeof PIECES)[number]
 
-/**
- * The units a number field names, one each, so an app or an AI can show and convert it without
- * reading its description. The manual says what each one measures; nights count the nights of a
- * stay, and convert to nothing; rooms count a home's rooms of one kind, such as its bedrooms.
- */
-export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'years', 'nights', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms', 'people', 'rooms'] as const
+/** The units a number field may name: measures a program could convert. A count names none. */
+export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'years', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms'] as const
 export type Unit = (typeof UNITS)[number]
 
-export type Field = {
-  type: Type
-  description: string
-  values?: string[]
-  /** For a choice field: how people read a value whose words are wrong, such as XL for xl; every other value reads as its words. */
+export const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
+export type Weekday = (typeof WEEKDAYS)[number]
+
+/** The ways a date's input may open: one day, from one day to another, until a day, or weekly. */
+export const WAYS = ['day', 'from-to', 'until', 'weekly'] as const
+export type Way = (typeof WAYS)[number]
+
+/** Where an input opens: a place's size, a date's way and whether it asks hours, a number as a range. */
+export type Start = { radiusKm?: number; way?: Way; hours?: boolean; range?: boolean }
+/** The words a field asks with, for every role or for one. */
+export type Words = { question?: string; hint?: string; start?: Start }
+/** A field's suggestions: how to ask for it. Never checked against an entry; any program may ignore them. */
+export type Ask = Words & {
+  label?: string
+  as?: { [role: string]: Words }
+  usual?: { from?: string; to?: string }
+  long?: true
   labels?: { [value: string]: string }
-  per?: string[]
-  /** For a place field: the radius, in whole kilometres, a new place starts at. */
-  radiusKm?: number
-  /** For a number field, and always on one: what it counts or measures. */
-  unit?: Unit
-  /** For a number field: it may hold a range, { from, to }, either end left out for no limit, instead of one number. Never with many. */
-  range?: true
-  many?: true
+}
+
+/** A field: one piece with a name. Every key but ask is a rule, checked against each entry. */
+export type Field = {
+  piece: Piece
+  several?: true
   roles?: string[]
-  /** The choice fields of the same entry this one depends on, each with the values that make it apply. */
   when?: { [field: string]: string[] }
+  /** For a choice: its own list, or the name of a shared list in build/lists.json. */
+  values?: string[] | string
+  unit?: Unit
+  per?: string[]
+  ask?: Ask
 }
 export type Fields = { [name: string]: Field }
 export type Role = { role: string; listings: 'offers' | 'requests' }
 /**
- * Live: needs no payment between people yet, is polished, and from now on only grows. Beta: works, at
- * your own risk, and may still change in any way. A market goes from beta to live, never back.
+ * Live: needs no payment between people yet, is polished, and from now on only grows, on its rules.
+ * Beta: works, at your own risk, and may still change in any way. A market goes from beta to live, never back.
  */
 export type Status = 'live' | 'beta'
-/**
- * A market file, markets/<name>.json, as build/market.schema.json defines it. Its summary is the line
- * an app shows where someone picks a market, its description what an AI needs. Its icon is the name
- * of a Phosphor icon, which no other market names; without one, an app shows the name's first letter.
- * Its number, a whole number from 1 that no other market holds, is how an app tells markets apart,
- * such as by cycling it through its own palette; the name stays the market's only id.
- */
+/** A market file, markets/<name>.json, as build/market.schema.json defines it. */
 export type Market = {
   name: string
   summary: string
-  description: string
+  description?: string
   status: Status
   icon?: string
   number: number
@@ -67,106 +68,94 @@ export type Market = {
   preview?: string[]
   review?: Fields
 }
-/** directory.json: every market, with its summary, description, status, icon and number, and its roles. */
+/** directory.json: every market, with what a list of markets shows. */
 export type Directory = { markets: Array<Pick<Market, 'name' | 'summary' | 'description' | 'status' | 'icon' | 'number' | 'roles'>> }
-/** The files the markets are read from: directory.json, build/types.json, and the market file of each market the directory lists. */
-export type Files = { directory: Directory; types: unknown; markets: Market[] }
+/** build/lists.json: each shared list by name, each value with its English words. */
+export type Lists = { [list: string]: { [value: string]: string } }
+/** The files the markets are read from: directory.json, build/lists.json, and each market file the directory lists. */
+export type Files = { directory: Directory; lists: Lists; markets: Market[] }
 
 const KINDS = ['listing', 'review', 'vouch', 'report'] as const
 /** The kinds of entry, each at `<kind>/<id>` in a profile's folder. */
 export type Kind = (typeof KINDS)[number]
 
+// How each piece is written, for programs that type their answers.
+/** One number as decimal text, or from one to another, either end left out for no limit. */
+export type NumberValue = string | { from?: string; to?: string }
+export type PriceValue = { amount: string; currency: string; per?: string; count?: number }
+export type PlaceValue = { lat: string; lon: string; radiusKm: number; name: string; country: string } | { country: string }
+export type DateValue = ({ on: string } | { from?: string; to?: string } | { every: Weekday[]; from?: string; to?: string }) & {
+  start?: string
+  end?: string
+  zone?: string
+}
+
 /**
- * The fields each kind holds in every market, beyond its market's, as the manual defines them: a
- * listing's contact (Shared names), and what every review, vouch and report holds (Reviews, vouches
- * and reports). A market adds fields to its reviews only, and never lists contact.
+ * The fields each kind holds in every market, beyond its market's: a listing's contact, and what every
+ * review, vouch and report holds. A market adds fields to its reviews only, and never lists contact.
  */
 export const SHARED: { [kind in Kind]: Fields } = {
   listing: {
-    contact: { type: 'text', description: 'How to reach the writer outside Forest, such as a phone, a handle or an email.' },
+    contact: {
+      piece: 'text',
+      ask: { label: 'Contact', question: 'How can people reach you outside Forest?', hint: 'A phone, a handle or an email. Anyone can read it, and the same contact on two profiles links them.' },
+    },
   },
   review: {
-    subject: { type: 'text', description: 'The address of the profile the review is about, in the same market.' },
-    score: { type: 'number', description: 'The rating, from "1" to "10" with at most one decimal, such as "8.5".' },
-    text: { type: 'text', description: 'What the reviewer says.' },
-    listing: { type: 'text', description: 'The address of the listing the review is about, <profile address>/listing/<id>, whoever wrote it.' },
+    subject: { piece: 'text', ask: { label: 'About', question: 'Which profile is it about?' } },
+    listing: { piece: 'text', ask: { label: 'Listing', question: 'Which listing was the deal?' } },
+    score: { piece: 'number', ask: { label: 'Score', question: 'How did it go, from 1 to 10?', usual: { from: '1', to: '10' } } },
+    text: { piece: 'text', ask: { label: 'Review', question: 'What would you tell others?', long: true } },
   },
   vouch: {
-    subject: { type: 'text', description: 'The address of the profile the vouch is about, in the same market.' },
-    text: { type: 'text', description: 'Why the writer vouches for it.' },
+    subject: { piece: 'text', ask: { label: 'About', question: 'Which profile is it about?' } },
+    text: { piece: 'text', ask: { label: 'Vouch', question: 'How do you know they are real and honest?', long: true } },
   },
   report: {
-    subject: { type: 'text', description: 'The address of the profile the report is about, in the same market.' },
-    text: { type: 'text', description: 'Why the writer reports it.' },
+    subject: { piece: 'text', ask: { label: 'About', question: 'Which profile is it about?' } },
+    text: { piece: 'text', ask: { label: 'Report', question: 'What is fake or a scam about it?', long: true } },
   },
 }
 
-/**
- * The names of a market's listing fields that matter first, most needed first, as the manual's Preview
- * says: its preview, or else description, price, then its place fields, of those it has.
- */
-export function previewOf(market: Market): string[] {
-  const { listing } = market
-  return market.preview ?? [...['description', 'price'].filter((name) => Object.hasOwn(listing, name)), ...Object.keys(listing).filter((name) => listing[name]!.type === 'place')]
-}
-
-/** What a shared name takes beyond its type. */
+/** What a shared name takes beyond its piece. */
 const MEANS: { [name: string]: { fits: RegExp; takes: string } } = {
-  score: { fits: /^(10(\.0)?|[1-9](\.[0-9])?)$/, takes: 'a number from "1" to "10" with at most one decimal, such as "8.5"' },
+  score: { fits: /^(10(\.0)?|[1-9](\.[0-9])?)$/, takes: 'one number from "1" to "10" with at most one decimal, such as "8.5"' },
   listing: { fits: /^[^/]+\/listing\/[^/]+$/, takes: "a listing's address, <profile address>/listing/<id>" },
 }
 
-/** What each type takes, in words; choice and money say what their field allows, and a number whether it takes a range. */
-const TAKES: { [type in Exclude<Type, 'choice' | 'money'>]: string } = {
-  text: 'text',
-  number: 'a number as decimal text, such as "2.5"',
-  words: 'a list of short words, each different',
-  place: '{ lat, lon, radiusKm, area }: lat and lon as decimal text, radiusKm in whole kilometres, and area a name if wanted',
-  moment: 'a time in RFC 3339 with its zone, such as 2026-11-02T18:00:00+01:00, or { from, to }, from no later than to',
-  file: 'the SHA-256 of one of the files the body lists in files, in lowercase hex',
-  hours: '{ zone, slots: [{ days, from, to }] }: days as monday to sunday, times as HH:MM',
-}
-
-/** What a field takes, in words; `least` says a list holds at least one, as a listing's price does. */
-const takes = (field: Field, least = false) => {
-  const one =
-    field.type === 'choice'
-      ? `one of ${field.values!.join(', ')}`
-      : field.type === 'money'
-        ? field.per
-          ? `{ amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, and count, only with a per, how many of it the amount buys, a whole number`
-          : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per or count'
-        : field.type === 'number' && field.range
-          ? `${TAKES.number}, or { from, to }: two such numbers, from no more than to, either left out for no limit that way`
-          : TAKES[field.type]
-  return field.many ? `a list${least ? ' of one or more' : ''}, each different, each ${one}` : one
-}
-
-const isObject = (v: unknown): v is { [key: string]: unknown } => typeof v === 'object' && v !== null && !Array.isArray(v)
-
-/** A list as words do it: "a", "a or b", "a, b or c". */
-const or = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items.join(''))
-
-/** The SHA-256 of each file the body lists in `files`. */
-const filesOf = (body: { [key: string]: unknown }): unknown[] =>
-  Array.isArray(body.files) ? body.files.map((file: unknown) => (isObject(file) ? file.sha256 : undefined)) : []
-
 /**
- * Whether each range and span in a value of its field's type runs forward: a number range's from no
- * more than its to, a moment span's from no later than its to. A range with one end passes.
+ * The names of a market's listing fields that matter first, most needed first: its preview, or else
+ * description, price, then its place fields, of those it has.
  */
-const inOrder = (field: Field, value: unknown): boolean =>
-  (field.many && Array.isArray(value) ? value : [value]).every((v) => {
-    if (!isObject(v) || typeof v.from !== 'string' || typeof v.to !== 'string') return true
-    if (field.type === 'number') return !(Number(v.from) > Number(v.to))
-    if (field.type === 'moment') return !(instant(v.from) > instant(v.to))
-    return true
-  })
+export function previewOf(market: Market): string[] {
+  const { listing } = market
+  return market.preview ?? [...['description', 'price'].filter((name) => Object.hasOwn(listing, name)), ...Object.keys(listing).filter((name) => listing[name]!.piece === 'place')]
+}
+
+/** A field as the market asks it of one role, every fallback applied: question 4's answer. */
+export type Asked = Field & {
+  name: string
+  /** Two or three words for showing a value and for a filter: its label, or else its name in words. */
+  label: string
+  /** The role's question, or else the field's, or else its label. */
+  question: string
+  hint?: string
+  /** Where the input opens, for a place, a date and a number: the role's, or else the field's, over the piece's own. */
+  start?: Start
+  /** For a choice: each value, with how it reads. */
+  choices?: Array<{ value: string; label: string }>
+  /** How an answer is written, in plain words, as checkEntry says it. */
+  takes: string
+}
+/** The day to read from, as YYYY-MM-DD: today by default, in the program's own zone. */
+export type Options = { today?: string }
 
 export type Markets = {
   /** directory.json, as the checkout holds it. */
   directory: Directory
-  /** A market's file, as markets/<name>.json holds it, or undefined when the directory lists no such market. */
+  /** build/lists.json, as the checkout holds it. */
+  lists: Lists
+  /** A market's file, or undefined when the directory lists no such market. */
   market(name: string): Market | undefined
   /**
    * Why `body` does not fit as a `kind` entry by a `role` profile in `market`: the first field that
@@ -175,19 +164,392 @@ export type Markets = {
    * when it is left out.
    */
   checkEntry(market: string, role: string, kind: string, body: unknown, aboutRole?: string): string | null
+  /**
+   * The fields `market` asks a `role` profile in a `kind` entry, in order, each with its piece, its
+   * rules and its words, fallbacks applied. For a review, `aboutRole` is the role of the profile it is
+   * about, which picks its fields and words. Throws on a market, role or kind that is not one.
+   */
+  ask(market: string, role: string, kind?: string, aboutRole?: string): Asked[]
+  /**
+   * Whether two answers of `field`, ones that fit, match, as build/README.md says for each piece. For a price, `a` is
+   * the offer's and `b` the request's. An answer left out never blocks a match.
+   */
+  match(field: Field, a: unknown, b: unknown, options?: Options): boolean
+  /** How an answer of `field`, one that fits, reads in plain English. */
+  read(field: Field, value: unknown, options?: Options): string
 }
 
-/**
- * Whether a value is of a field's type: a choice among its values, money with a `per` its field
- * lists or none, a number or a range where its field allows one, a list of distinct ones when `many`.
- */
-export type Fits = (field: Field, value: unknown) => boolean
+const isObject = (v: unknown): v is { [key: string]: unknown } => typeof v === 'object' && v !== null && !Array.isArray(v)
+const has = (v: { [key: string]: unknown }, key: string) => Object.hasOwn(v, key)
+/** Whether an object holds only these keys. */
+const only = (v: { [key: string]: unknown }, keys: readonly string[]) => Object.keys(v).every((key) => keys.includes(key))
+/** A list as words do it: "a", "a or b", "a, b or c"; and with and. */
+const or = (items: string[], word = 'or') => (items.length > 1 ? `${items.slice(0, -1).join(', ')} ${word} ${items.at(-1)}` : items.join(''))
+const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 
+/** A value's words: hyphens as spaces and a capital first letter, such as "In person" for in-person. */
+export const wordsOf = (value: string) => capital(value.replaceAll('-', ' '))
+/** A field's name in words, such as "Foot length" for footLength. */
+export const nameWords = (name: string) => capital(name.replace(/([a-z])([A-Z0-9])/g, '$1 $2').toLowerCase())
+
+/** Whether a field takes several answers: when it says so, and a price always. */
+const isSeveral = (field: Field) => field.several === true || field.piece === 'price'
+
+/** Whether two values are the same: lists item by item, objects key by key. */
+const equal = (a: unknown, b: unknown): boolean => {
+  if (Array.isArray(a)) return Array.isArray(b) && a.length === b.length && a.every((item, i) => equal(item, b[i]))
+  if (isObject(a)) {
+    const keys = Object.keys(a)
+    return isObject(b) && keys.length === Object.keys(b).length && keys.every((key) => has(b, key) && equal(a[key], b[key]))
+  }
+  return a === b
+}
+/** Whether no two items are the same. */
+const distinct = (items: unknown[]): boolean => items.every((item, i) => items.findIndex((other) => equal(other, item)) === i)
+
+// The pieces, as each is written.
+
+const DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/
+const AMOUNT = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/
+const CURRENCY = /^[A-Z]{3}$/
+const LAT = /^-?(90(\.0+)?|[1-8]?[0-9](\.[0-9]+)?)$/
+const LON = /^-?(180(\.0+)?|(1[0-7][0-9]|[1-9]?[0-9])(\.[0-9]+)?)$/
+const LINE = /^[^\r\n]*\S[^\r\n]*$/
+const SHA256 = /^[0-9a-f]{64}$/
+const LINK = /^https?:\/\/[^\s/?#]+([/?#]\S*)?$/
+const DAY = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/
+const TIME = /^([01][0-9]|2[0-3]):([0-5][0-9])$/
+const ZONE = /^[A-Za-z][A-Za-z0-9_+-]*(\/[A-Za-z0-9_+-]+)*$/
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const DAY_MS = 86_400_000
+
+/** A day's number: days since 1970-01-01, or NaN for text that is not a day that exists. */
+const dayNumber = (text: unknown): number => {
+  const parts = typeof text === 'string' ? DAY.exec(text) : null
+  if (!parts) return NaN
+  const [year, month, day] = [Number(parts[1]), Number(parts[2]), Number(parts[3])]
+  // setUTCFullYear, unlike Date.UTC, reads a year below 100 as itself.
+  const date = new Date(0)
+  date.setUTCFullYear(year, month - 1, day)
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day ? date.getTime() / DAY_MS : NaN
+}
+/** A day number's year, month (1 to 12) and day of the month. */
+const dateOf = (n: number) => {
+  const date = new Date(n * DAY_MS)
+  return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: date.getUTCDate() }
+}
+/** A day number's weekday, 0 for Monday: 1970-01-01 was a Thursday. */
+const weekdayOf = (n: number) => (((n + 3) % 7) + 7) % 7
+/** A time of day's minutes since midnight. */
+const minutesOf = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5))
+
+/** Today's number, as the options give it or in the program's own zone. */
+const todayOf = (options?: Options): number => {
+  if (options?.today === undefined) {
+    const now = new Date()
+    const date = new Date(0)
+    date.setUTCFullYear(now.getFullYear(), now.getMonth(), now.getDate())
+    return date.getTime() / DAY_MS
+  }
+  const n = dayNumber(options.today)
+  if (Number.isNaN(n)) throw new Error(`today is ${JSON.stringify(options.today)}, and takes a day as YYYY-MM-DD`)
+  return n
+}
+
+const formats = new Map<string, Intl.DateTimeFormat | null>()
+/** A formatter that gives the wall clock in `zone`, or null for a zone this runtime does not know. */
+const clock = (zone: string): Intl.DateTimeFormat | null => {
+  if (!formats.has(zone)) {
+    let format: Intl.DateTimeFormat | null = null
+    try {
+      format = new Intl.DateTimeFormat('en-US', { timeZone: zone, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' })
+    } catch {
+      format = null
+    }
+    formats.set(zone, format)
+  }
+  return formats.get(zone)!
+}
+/** Whether a zone is a name, never an offset, that this runtime's time zone database knows. */
+const isZone = (zone: unknown): zone is string => typeof zone === 'string' && ZONE.test(zone) && clock(zone) !== null
+/** How many minutes `zone` is ahead of UTC at the moment `at`, in milliseconds since 1970 in UTC. */
+const offsetAt = (zone: string, at: number): number => {
+  const parts: { [type: string]: number } = {}
+  for (const part of clock(zone)!.formatToParts(new Date(at))) parts[part.type] = Number(part.value)
+  const date = new Date(0)
+  date.setUTCFullYear(parts.year!, parts.month! - 1, parts.day!)
+  date.setUTCHours(parts.hour!, parts.minute!, parts.second!)
+  return Math.round((date.getTime() - Math.floor(at / 1000) * 1000) / 60_000)
+}
 /**
- * The markets in `files`. `fits` checks a value against its field, by default as build/types.json
- * says; the tests put ajv there, as the reference the checker is held to.
+ * The real moment a wall clock in `zone` shows `minutes` into day `n`. In an hour the clocks skip, the
+ * time the clock would show with the offset before; in one they repeat, the first.
  */
-export function fromFiles({ directory, types, markets: given }: Files, fits: Fits = checker(types)): Markets {
+const moment = (zone: string, n: number, minutes: number): number => {
+  const local = n * DAY_MS + minutes * 60_000
+  const before = offsetAt(zone, local - 12 * 3_600_000)
+  const after = offsetAt(zone, local + 12 * 3_600_000)
+  const fits = [before, after].filter((offset) => offsetAt(zone, local - offset * 60_000) === offset)
+  return local - (fits.length ? Math.max(...fits) : before) * 60_000
+}
+
+/** One answer of a field, as its piece writes it. */
+const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
+  switch (field.piece) {
+    case 'text':
+      return typeof v === 'string'
+    case 'choice':
+      return typeof v === 'string' && valuesOf(field, lists).includes(v)
+    case 'number':
+      return isNumber(v)
+    case 'price':
+      return (
+        isObject(v) &&
+        only(v, ['amount', 'currency', 'per', 'count']) &&
+        typeof v.amount === 'string' &&
+        AMOUNT.test(v.amount) &&
+        typeof v.currency === 'string' &&
+        CURRENCY.test(v.currency) &&
+        (!has(v, 'per') || (typeof v.per === 'string' && (field.per ?? []).includes(v.per))) &&
+        (!has(v, 'count') || (has(v, 'per') && Number.isInteger(v.count) && (v.count as number) >= 1))
+      )
+    case 'place':
+      return isPlace(v, lists)
+    case 'date':
+      return isDate(v)
+    case 'photo':
+      return typeof v === 'string' && SHA256.test(v)
+    case 'link':
+      return typeof v === 'string' && LINK.test(v)
+  }
+}
+const isNumber = (v: unknown): boolean => {
+  if (typeof v === 'string') return DECIMAL.test(v)
+  if (!isObject(v) || !only(v, ['from', 'to']) || !(has(v, 'from') || has(v, 'to'))) return false
+  if (![v.from, v.to].every((end) => end === undefined || (typeof end === 'string' && DECIMAL.test(end)))) return false
+  return !(Number(v.from) > Number(v.to))
+}
+const isPlace = (v: unknown, lists: Lists): boolean => {
+  if (!isObject(v) || typeof v.country !== 'string' || !Object.hasOwn(lists.countries ?? {}, v.country)) return false
+  if (only(v, ['country'])) return true
+  return (
+    only(v, ['lat', 'lon', 'radiusKm', 'name', 'country']) &&
+    typeof v.lat === 'string' &&
+    LAT.test(v.lat) &&
+    typeof v.lon === 'string' &&
+    LON.test(v.lon) &&
+    Number.isInteger(v.radiusKm) &&
+    (v.radiusKm as number) >= 0 &&
+    typeof v.name === 'string' &&
+    LINE.test(v.name)
+  )
+}
+const isDate = (v: unknown): boolean => {
+  if (!isObject(v) || !only(v, ['on', 'from', 'to', 'every', 'start', 'end', 'zone'])) return false
+  // The days: one day, from one day to another with either end left out, or weekdays every week.
+  if (has(v, 'on')) {
+    if (has(v, 'from') || has(v, 'to') || has(v, 'every') || Number.isNaN(dayNumber(v.on))) return false
+  } else {
+    if (has(v, 'every') && !(Array.isArray(v.every) && v.every.length > 0 && distinct(v.every) && v.every.every((d) => (WEEKDAYS as readonly unknown[]).includes(d)))) return false
+    if (!has(v, 'every') && !has(v, 'from') && !has(v, 'to')) return false
+    const [from, to] = [has(v, 'from') ? dayNumber(v.from) : -Infinity, has(v, 'to') ? dayNumber(v.to) : Infinity]
+    if (Number.isNaN(from) || Number.isNaN(to) || from > to) return false
+  }
+  // The hours: a start, or a start and an end, with the zone they are in; or none of the three.
+  if (!has(v, 'start')) return !has(v, 'end') && !has(v, 'zone')
+  if (typeof v.start !== 'string' || !TIME.test(v.start) || !isZone(v.zone)) return false
+  return !has(v, 'end') || (typeof v.end === 'string' && TIME.test(v.end) && v.end !== v.start)
+}
+
+/** A choice's values: its own list, or the shared list it names. */
+const valuesOf = (field: Field, lists: Lists): string[] =>
+  typeof field.values === 'string' ? Object.keys(Object.hasOwn(lists, field.values) ? lists[field.values]! : {}) : (field.values ?? [])
+/** How a choice's value reads: the field's label for it, or else its list's, or else its words. */
+const labelOf = (field: Field, value: string, lists: Lists): string => {
+  const labels = field.ask?.labels
+  if (labels && Object.hasOwn(labels, value)) return labels[value]!
+  const list = typeof field.values === 'string' && Object.hasOwn(lists, field.values) ? lists[field.values]! : undefined
+  return list && Object.hasOwn(list, value) ? list[value]! : wordsOf(value)
+}
+
+/** How a field's answer is written, in words. */
+const takes = (field: Field): string => {
+  const one = (() => {
+    switch (field.piece) {
+      case 'text':
+        return 'text'
+      case 'choice':
+        return typeof field.values === 'string' ? `one of the values in the ${field.values} list` : `one of ${(field.values ?? []).join(', ')}`
+      case 'number':
+        return 'a number as decimal text, such as "2.5", or { from, to }: two such numbers, from no more than to, either left out for no limit that way'
+      case 'price':
+        return field.per
+          ? `{ amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, and count, only with a per, how many of it the amount buys, a whole number`
+          : '{ amount, currency }: amount as decimal text, currency a code such as USD, and no per or count'
+      case 'place':
+        return '{ lat, lon, radiusKm, name, country }: lat and lon as decimal text, radiusKm in whole kilometres, the place\'s name, and country a two-letter code from the countries list, such as PT; or { country } alone, for anywhere in it'
+      case 'date':
+        return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, with zone, a time zone by name such as Europe/Madrid'
+      case 'photo':
+        return 'the SHA-256 of one of the files the body lists in files, in lowercase hex'
+      case 'link':
+        return 'a web address, starting with https:// or http://'
+    }
+  })()
+  return isSeveral(field) ? `a list of one or more, each different, each ${one}` : one
+}
+
+// Question 2: do two answers match?
+
+const EARTH_KM = 6371.0088
+const radians = (degrees: string) => (Number(degrees) * Math.PI) / 180
+/** Whether two places meet: two circles that touch, a country and a place in it, or the same country. */
+const placesMeet = (a: PlaceValue, b: PlaceValue): boolean => {
+  if (!('lat' in a) || !('lat' in b)) return a.country === b.country
+  const [lat1, lat2] = [radians(a.lat), radians(b.lat)]
+  const h = Math.sin((lat2 - lat1) / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin((radians(b.lon) - radians(a.lon)) / 2) ** 2
+  return 2 * EARTH_KM * Math.asin(Math.min(1, Math.sqrt(h))) <= a.radiusKm + b.radiusKm
+}
+/** Whether two number answers overlap, a missing end limiting nothing. */
+const numbersMeet = (a: NumberValue, b: NumberValue): boolean => {
+  const span = (v: NumberValue) => (typeof v === 'string' ? [Number(v), Number(v)] : [v.from === undefined ? -Infinity : Number(v.from), v.to === undefined ? Infinity : Number(v.to)])
+  const [[a1, a2], [b1, b2]] = [span(a), span(b)]
+  return a1! <= b2! && b1! <= a2!
+}
+
+/** A date answer's first and last day numbers, an end left out as no limit. */
+const daysOf = (v: DateValue): [number, number] =>
+  'on' in v ? [dayNumber(v.on), dayNumber(v.on)] : [v.from === undefined ? -Infinity : dayNumber(v.from), v.to === undefined ? Infinity : dayNumber(v.to)]
+/** A span of real time, [from, to) in milliseconds since 1970 in UTC; a start alone, from equal to to. */
+type Span = [number, number]
+/**
+ * An answer's spans of real time on each of its days from day `first` to day `last`. With hours, each
+ * day from its start, to its end, the next day when the end is before the start, or that moment alone;
+ * with none, the whole day, in `zone` when given, else as plain days.
+ */
+const spansOf = (v: DateValue, first: number, last: number, zone: string | undefined): Span[] => {
+  const [lo, hi] = daysOf(v)
+  const spans: Span[] = []
+  for (let n = Math.max(first, lo); n <= Math.min(last, hi); n++) {
+    if ('every' in v && !v.every.includes(WEEKDAYS[weekdayOf(n)]!)) continue
+    if (v.start !== undefined) {
+      const start = moment(v.zone!, n, minutesOf(v.start))
+      const end = v.end === undefined ? start : moment(v.zone!, v.end < v.start ? n + 1 : n, minutesOf(v.end))
+      spans.push([start, end])
+    } else {
+      spans.push(zone === undefined ? [n * DAY_MS, (n + 1) * DAY_MS] : [moment(zone, n, 0), moment(zone, n + 1, 0)])
+    }
+  }
+  return spans
+}
+/** Whether two spans share a moment: a start alone inside the other, or the same start alone. */
+const overlap = ([a1, a2]: Span, [b1, b2]: Span): boolean => {
+  if (a1 === a2 && b1 === b2) return a1 === b1
+  if (a1 === a2) return b1 <= a1 && a1 < b2
+  if (b1 === b2) return a1 <= b1 && b1 < a2
+  return Math.max(a1, b1) < Math.min(a2, b2)
+}
+/**
+ * Whether two date answers share a real moment. Each is turned into spans of real time through its
+ * zone; an answer with no hours has no zone, and its days are read in the other's. Over the days both
+ * may hold, with two on each side for zones and hours past midnight, each day is compared; when those
+ * days are more than three weeks, or endless, the week of `today` among them stands for all.
+ */
+const datesMeet = (a: DateValue, b: DateValue, today: number): boolean => {
+  const [[a1, a2], [b1, b2]] = [daysOf(a), daysOf(b)]
+  const [lo, hi] = [Math.max(a1, b1), Math.min(a2, b2)]
+  if (lo - hi > 4) return false
+  let [first, last] = [lo - 2, hi + 2]
+  if (!(hi - lo <= 21)) {
+    let monday = Math.max(today - weekdayOf(today), lo)
+    if (monday + 6 > hi) monday = hi - 6
+    ;[first, last] = [monday - 2, monday + 8]
+  }
+  const [zoneA, zoneB] = [a.zone ?? b.zone, b.zone ?? a.zone]
+  const spansB = spansOf(b, first, last, zoneB)
+  return spansOf(a, first, last, zoneA).some((span) => spansB.some((other) => overlap(span, other)))
+}
+/** What one of a price's `per` costs, in its currency. */
+const each = (p: PriceValue) => Number(p.amount) / (p.count ?? 1)
+
+// Question 3: how does an answer read?
+
+const UNIT_WORDS: { [unit in Unit]: [string, string] } = {
+  seconds: ['second', 'seconds'],
+  minutes: ['minute', 'minutes'],
+  hours: ['hour', 'hours'],
+  days: ['day', 'days'],
+  years: ['year', 'years'],
+  centimetres: ['centimetre', 'centimetres'],
+  metres: ['metre', 'metres'],
+  kilometres: ['kilometre', 'kilometres'],
+  'square-metres': ['square metre', 'square metres'],
+  grams: ['gram', 'grams'],
+  kilograms: ['kilogram', 'kilograms'],
+}
+/** Decimal text with its thousands grouped, such as 1,300 for 1300. */
+const figure = (text: string) => text.replace(/^(-?)([0-9]+)/, (_, sign: string, whole: string) => sign + whole.replace(/\B(?=([0-9]{3})+$)/g, ','))
+/** A word's plural, by the rules English mostly keeps. */
+const plural = (word: string) =>
+  word === 'person' ? 'people' : /(s|x|z|ch|sh)$/.test(word) ? `${word}es` : /[^aeiou]y$/.test(word) ? `${word.slice(0, -1)}ies` : `${word}s`
+const readNumber = (v: NumberValue, unit?: Unit): string => {
+  const words = unit ? UNIT_WORDS[unit] : undefined
+  const withUnit = (text: string, many = true) => (words ? `${figure(text)} ${words[many ? 1 : 0]}` : figure(text))
+  if (typeof v === 'string') return withUnit(v, Number(v) !== 1)
+  if (v.from !== undefined && v.to !== undefined) return v.from === v.to ? withUnit(v.from, Number(v.from) !== 1) : `${figure(v.from)} to ${withUnit(v.to)}`
+  return v.from !== undefined ? `${withUnit(v.from, Number(v.from) !== 1)} or more` : `up to ${withUnit(v.to!, Number(v.to) !== 1)}`
+}
+const readPrice = (p: PriceValue): string => {
+  const cost = `${figure(p.amount)} ${p.currency}`
+  if (p.per === undefined) return cost
+  const per = p.per.replaceAll('-', ' ')
+  return p.count !== undefined && p.count !== 1 ? `${cost} for ${p.count} ${per.replace(/\S+$/, plural)}` : `${cost} per ${per}`
+}
+const readPlace = (p: PlaceValue, lists: Lists): string => {
+  if (!('lat' in p)) return `Anywhere in ${lists.countries?.[p.country] ?? p.country}`
+  return p.radiusKm === 0 ? p.name : `${p.name}, within ${p.radiusKm} km`
+}
+const readTime = (time: string) => time.replace(/^0(?=[0-9]:)/, '')
+const readDate = (v: DateValue, today: number): string => {
+  const year = dateOf(today).year
+  const day = (text: string, weekday = false) => {
+    const n = dayNumber(text)
+    const { year: y, month, day: d } = dateOf(n)
+    return `${weekday ? `${capital(WEEKDAYS[weekdayOf(n)]!)} ` : ''}${d} ${MONTHS[month - 1]}${y === year ? '' : ` ${y}`}`
+  }
+  const span = (from?: string, to?: string): string => {
+    if (from === undefined) return `until ${day(to!)}`
+    if (to === undefined) return `from ${day(from)}`
+    const [f, t] = [dateOf(dayNumber(from)), dateOf(dayNumber(to))]
+    if (f.year !== t.year) return `${f.day} ${MONTHS[f.month - 1]} ${f.year} to ${t.day} ${MONTHS[t.month - 1]} ${t.year}`
+    const end = `${MONTHS[t.month - 1]}${t.year === year ? '' : ` ${t.year}`}`
+    return f.month === t.month ? `${f.day} to ${t.day} ${end}` : `${f.day} ${MONTHS[f.month - 1]} to ${t.day} ${end}`
+  }
+  const parts: string[] = []
+  if ('on' in v) parts.push(day(v.on, true))
+  else if ('every' in v) {
+    // Weekdays in week order, three or more in a row as a run: Monday to Friday, then Saturdays.
+    const days = [...v.every].map((d) => WEEKDAYS.indexOf(d)).sort((x, y) => x - y)
+    const groups: number[][] = []
+    for (const d of days) {
+      const last = groups.at(-1)
+      if (last && last.at(-1) === d - 1) last.push(d)
+      else groups.push([d])
+    }
+    const name = (d: number) => capital(WEEKDAYS[d]!)
+    parts.push(days.length === 7 ? 'Every day' : or(groups.flatMap((g) => (g.length >= 3 ? [`${name(g[0]!)} to ${name(g.at(-1)!)}`] : g.map((d) => `${name(d)}s`))), 'and'))
+  } else parts.push(span(v.from, v.to))
+  if (v.start !== undefined) parts.push(v.end === undefined ? readTime(v.start) : `${readTime(v.start)} to ${readTime(v.end)}`)
+  if ('every' in v && (v.from !== undefined || v.to !== undefined)) parts.push(span(v.from, v.to))
+  return capital(parts.join(', '))
+}
+
+// Question 4: what does a market ask a role? Each piece's own start, where its input opens.
+const OWN_START: { [piece in Piece]?: Start } = { place: { radiusKm: 5 }, date: { way: 'day', hours: false }, number: { range: false } }
+
+/** The markets in `files`. */
+export function fromFiles({ directory, lists, markets: given }: Files): Markets {
+  if (!isObject(lists) || !isObject(lists.countries)) throw new Error('build/lists.json holds no countries list')
   const byName = new Map(given.map((market) => [market.name, market]))
   const markets = new Map(
     directory.markets.map(({ name }) => {
@@ -196,214 +558,142 @@ export function fromFiles({ directory, types, markets: given }: Files, fits: Fit
       return [name, market]
     }),
   )
+  /** A kind's fields in a market, its own and the shared ones, in the order a form asks them. */
+  const fieldsOf = (market: Market, kind: Kind): Fields =>
+    kind === 'listing' ? { ...market.listing, ...SHARED.listing } : kind === 'review' ? { ...SHARED.review, ...market.review } : SHARED[kind]
+  /** Why the market, the role, the kind and the role reviewed are not ones, or null when each is. */
+  const named = (name: string, role: string, kind: string, aboutRole?: string): string | null => {
+    const market = markets.get(name)
+    if (!market) return `${name} is not a market in the directory`
+    const roles = market.roles.map((r) => r.role)
+    if (!roles.includes(role)) return `${role} is not a role in ${name}: its roles are ${roles.join(', ')}`
+    if (!(KINDS as readonly string[]).includes(kind)) return `${kind} is not a kind of entry: the kinds are listing, review, vouch and report`
+    if (aboutRole !== undefined && !roles.includes(aboutRole)) return `${aboutRole} is not a role in ${name}: its roles are ${roles.join(', ')}`
+    return null
+  }
 
   return {
     directory,
+    lists,
     market: (name) => markets.get(name),
+
     checkEntry(name, role, kind, body, aboutRole) {
-      const market = markets.get(name)
-      if (!market) return `${name} is not a market in the directory`
-      const roles = market.roles.map((r) => r.role)
-      if (!roles.includes(role)) return `${role} is not a role in ${name}: its roles are ${roles.join(', ')}`
-      if (!(KINDS as readonly string[]).includes(kind)) return `${kind} is not a kind of entry: the kinds are listing, review, vouch and report`
-      if (aboutRole !== undefined && !roles.includes(aboutRole)) return `${aboutRole} is not a role in ${name}: its roles are ${roles.join(', ')}`
+      const wrong = named(name, role, kind, aboutRole)
+      if (wrong) return wrong
+      const market = markets.get(name)!
       if (!isObject(body)) return `a ${kind} is an object of its fields`
+      if (kind !== 'listing' && !has(body, 'subject')) return `a ${kind} names its subject: the address of the profile it is about`
       const shared = SHARED[kind as Kind]
-      if (kind !== 'listing' && !Object.hasOwn(body, 'subject')) return `a ${kind} names its subject: the address of the profile it is about`
-      const fields: Fields = kind === 'listing' ? { ...market.listing, ...shared } : kind === 'review' ? { ...shared, ...market.review } : shared
-      const files = filesOf(body)
+      const fields = fieldsOf(market, kind as Kind)
+      const files = Array.isArray(body.files) ? body.files.map((file: unknown) => (isObject(file) ? file.sha256 : undefined)) : []
       for (const [key, value] of Object.entries(body)) {
         if (key === 'files') continue
-        if (!Object.hasOwn(fields, key)) return `a ${kind} in ${name} has no field ${key}`
-        // A listing's price is always a list of one or more prices, each different: the format sets
-        // it, and no market writes many on it. A single price is a list of one.
-        const price = kind === 'listing' && key === 'price'
-        const field: Field = price ? { ...fields[key]!, many: true } : fields[key]!
+        if (!has(fields, key)) return `a ${kind} in ${name} has no field ${key}`
+        const field = fields[key]!
         const is = kind === 'listing' ? role : aboutRole
         if (field.roles && is !== undefined && !field.roles.includes(is)) {
           return `${key} is for ${kind === 'listing' ? 'listings by' : `${kind}s of`} ${field.roles.join(' or ')}`
         }
-        // when: each field it names holds one of its values; a many field, any of them.
+        // when: each field it names holds one of its values; a field with several, any of them.
         const when = Object.entries(field.when ?? {})
         const applies = when.every(([other, values]) => {
-          const held = Object.hasOwn(body, other) ? body[other] : undefined
-          return (fields[other]?.many && Array.isArray(held) ? held : [held]).some((v) => values.includes(v as string))
+          const held = has(body, other) ? body[other] : undefined
+          return (fields[other]?.several && Array.isArray(held) ? held : [held]).some((v) => values.includes(v as string))
         })
         if (!applies) return `${key} is only for a ${kind} whose ${when.map(([other, values]) => `${other} is ${or(values)}`).join(', and whose ')}`
-        if (!fits(field, value) || !inOrder(field, value) || (price && (value as unknown[]).length === 0)) return `${key} takes ${takes(field, price)}`
-        if (field.type === 'file' && !(field.many ? (value as string[]) : [value]).every((sha256) => files.includes(sha256))) {
-          return `${key} names a file the body's files do not list`
-        }
-        const means = Object.hasOwn(shared, key) ? MEANS[key] : undefined
+        const answers = isSeveral(field) ? value : [value]
+        if (!Array.isArray(answers) || answers.length === 0 || !distinct(answers) || !answers.every((v) => fitsOne(field, v, lists))) return `${key} takes ${takes(field)}`
+        if (field.piece === 'photo' && !answers.every((sha256) => files.includes(sha256))) return `${key} names a file the body's files do not list`
+        const means = has(shared, key) ? MEANS[key] : undefined
         if (means && !means.fits.test(value as string)) return `${key} takes ${means.takes}`
       }
       return null
     },
-  }
-}
 
-// The checker: build/types.json read as data, each keyword as JSON Schema means it. It knows the
-// keywords types.json uses, and throws on any other when the markets load, so none is passed over;
-// build/check.sh checks the rest of types.json against JSON Schema itself.
+    ask(name, role, kind = 'listing', aboutRole) {
+      const wrong = named(name, role, kind, aboutRole)
+      if (wrong) throw new Error(wrong)
+      const market = markets.get(name)!
+      const fields = fieldsOf(market, kind as Kind)
+      const who = kind === 'listing' ? role : aboutRole
+      const names = Object.keys(fields).filter((key) => !fields[key]!.roles || who === undefined || fields[key]!.roles!.includes(who))
+      // A listing's preview first, then the rest as the file has them; each after the fields its when names.
+      const first = kind === 'listing' ? previewOf(market).filter((key) => names.includes(key)) : []
+      const ordered: string[] = []
+      const after = (key: string, path: string[] = []) => {
+        if (ordered.includes(key) || path.includes(key)) return
+        for (const other of Object.keys(fields[key]!.when ?? {})) if (names.includes(other)) after(other, [...path, key])
+        ordered.push(key)
+      }
+      for (const key of [...first, ...names]) after(key)
+      return ordered.map((key) => {
+        const field = fields[key]!
+        const words = who !== undefined && field.ask?.as && Object.hasOwn(field.ask.as, who) ? field.ask.as[who] : undefined
+        const label = field.ask?.label ?? nameWords(key)
+        const hint = words?.hint ?? field.ask?.hint
+        const own = OWN_START[field.piece]
+        return {
+          ...field,
+          name: key,
+          label,
+          question: words?.question ?? field.ask?.question ?? label,
+          ...(hint === undefined ? {} : { hint }),
+          ...(own ? { start: { ...own, ...(words?.start ?? field.ask?.start) } } : {}),
+          ...(field.piece === 'choice' ? { choices: valuesOf(field, lists).map((value) => ({ value, label: labelOf(field, value, lists) })) } : {}),
+          takes: takes(field),
+        }
+      })
+    },
 
-type Schema = { readonly [keyword: string]: any }
+    match(field, a, b, options) {
+      if (a === undefined || b === undefined) return true
+      const [xs, ys] = isSeveral(field) ? [a as unknown[], b as unknown[]] : [[a], [b]]
+      if (field.piece === 'price') {
+        // Prices in different currencies, or per different things, cannot be compared: they never block.
+        const pairs = (xs as PriceValue[]).flatMap((x) => (ys as PriceValue[]).filter((y) => x.currency === y.currency && x.per === y.per).map((y) => [x, y] as const))
+        return pairs.length === 0 || pairs.some(([offer, request]) => each(offer) <= each(request))
+      }
+      const today = field.piece === 'date' ? todayOf(options) : 0
+      const meet = (x: unknown, y: unknown): boolean => {
+        switch (field.piece) {
+          case 'choice':
+            return x === y
+          case 'number':
+            return numbersMeet(x as NumberValue, y as NumberValue)
+          case 'place':
+            return placesMeet(x as PlaceValue, y as PlaceValue)
+          case 'date':
+            return datesMeet(x as DateValue, y as DateValue, today)
+          default:
+            // Text, a photo and a link are read, not matched.
+            return true
+        }
+      }
+      return xs.some((x) => ys.some((y) => meet(x, y)))
+    },
 
-/** Each type a schema's `type` names. */
-const IS: { [type: string]: (v: unknown) => boolean } = {
-  string: (v) => typeof v === 'string',
-  number: (v) => typeof v === 'number' && Number.isFinite(v),
-  integer: (v) => Number.isInteger(v),
-  boolean: (v) => typeof v === 'boolean',
-  null: (v) => v === null,
-  array: (v) => Array.isArray(v),
-  object: isObject,
-}
-
-/** Whether two values are the same: lists item by item, objects key by key. */
-const equal = (a: unknown, b: unknown): boolean => {
-  if (Array.isArray(a)) return Array.isArray(b) && a.length === b.length && a.every((item, i) => equal(item, b[i]))
-  if (isObject(a)) {
-    const keys = Object.keys(a)
-    return isObject(b) && keys.length === Object.keys(b).length && keys.every((key) => Object.hasOwn(b, key) && equal(a[key], b[key]))
-  }
-  return a === b
-}
-
-/** Whether no two items are the same. Text, numbers and the like go in a set, so a long list stays fast. */
-const distinct = (items: unknown[]): boolean => {
-  const plain = new Set<unknown>()
-  const nested: unknown[] = []
-  for (const item of items) {
-    if (typeof item === 'object' && item !== null) {
-      if (nested.some((seen) => equal(seen, item))) return false
-      nested.push(item)
-    } else {
-      if (plain.has(item)) return false
-      plain.add(item)
-    }
-  }
-  return true
-}
-
-const DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)(?:[Zz]|([+-])(\d{2}):(\d{2}))$/
-const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
-/**
- * Whether text is a date-time as RFC 3339 writes one: a day that exists, hours to 23, minutes to 59,
- * a zone of hours to 23 and minutes to 59, and a second of 60 only in the last minute of a day in
- * UTC, when a leap second is added.
- */
-const isDateTime = (text: string): boolean => {
-  const parts = DATE_TIME.exec(text)
-  if (!parts) return false
-  const n = (i: number) => Number(parts[i] ?? 0)
-  const [year, month, day, hour, minute, second, zoneHour, zoneMinute] = [n(1), n(2), n(3), n(4), n(5), n(6), n(8), n(9)]
-  const days = month === 2 && year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : DAYS[month - 1]
-  if (days === undefined || day < 1 || day > days) return false
-  if (hour > 23 || minute > 59 || second >= 61 || zoneHour > 23 || zoneMinute > 59) return false
-  const zone = (parts[7] === '-' ? -1 : 1) * (zoneHour * 60 + zoneMinute)
-  return second < 60 || (hour * 60 + minute - zone + 1440) % 1440 === 1439
-}
-
-/**
- * A date-time's instant, in milliseconds since 1970 in UTC: its zone taken off, a leap second as the
- * next minute's first; NaN for text that is not a date-time.
- */
-const instant = (text: string): number => {
-  const parts = DATE_TIME.exec(text)
-  if (!parts) return NaN
-  const n = (i: number) => Number(parts[i] ?? 0)
-  const zone = (parts[7] === '-' ? -1 : 1) * (n(8) * 60 + n(9))
-  // setUTCFullYear, unlike Date.UTC, reads a year below 100 as itself.
-  const date = new Date(0)
-  date.setUTCFullYear(n(1), n(2) - 1, n(3))
-  date.setUTCHours(n(4), n(5) - zone)
-  return date.getTime() + n(6) * 1000
-}
-
-/** Whether a value fits build/types.json's type for a field, read as data, with no code made from it. */
-export function checker(types: unknown): Fits {
-  if (!isObject(types) || !isObject(types.$defs)) throw new Error('build/types.json holds no $defs')
-  const root = types
-  const patterns = new Map<string, RegExp>()
-
-  /** The schema a `$ref` names, within types.json. */
-  const resolve = (ref: string): Schema => {
-    let schema: unknown = ref.startsWith('#/') ? root : undefined
-    for (const part of ref.slice(2).split('/')) schema = isObject(schema) && Object.hasOwn(schema, part) ? schema[part] : undefined
-    if (!isObject(schema)) throw new Error(`build/types.json has no ${ref}`)
-    return schema
-  }
-  /** Whether an object holds a property: its own, and not undefined. */
-  const has = (v: { [key: string]: unknown }, key: string) => Object.hasOwn(v, key) && v[key] !== undefined
-  const fits = (schema: Schema, value: unknown): boolean => Object.entries(schema).every(([keyword, arg]) => KEYWORDS[keyword]!(arg, value, schema))
-  const note = () => true
-
-  /**
-   * Each keyword the checker knows: whether a value fits it. A keyword about one type, such as
-   * minLength about text, lets a value of another through: `type` is what rules that out.
-   */
-  const KEYWORDS: { [keyword: string]: (arg: any, v: any, schema: Schema) => boolean } = {
-    $schema: note,
-    $id: note,
-    $defs: note,
-    title: note,
-    description: note,
-    type: (type: string, v) => IS[type]!(v),
-    $ref: (ref: string, v) => fits(resolve(ref), v),
-    const: (c, v) => equal(c, v),
-    enum: (values: unknown[], v) => values.some((c) => equal(c, v)),
-    oneOf: (schemas: Schema[], v) => schemas.filter((s) => fits(s, v)).length === 1,
-    minimum: (min: number, v) => typeof v !== 'number' || v >= min,
-    minLength: (min: number, v) => typeof v !== 'string' || [...v].length >= min,
-    maxLength: (max: number, v) => typeof v !== 'string' || [...v].length <= max,
-    pattern: (pattern: string, v) => typeof v !== 'string' || patterns.get(pattern)!.test(v),
-    format: (_, v) => typeof v !== 'string' || isDateTime(v),
-    minItems: (min: number, v) => !Array.isArray(v) || v.length >= min,
-    minProperties: (min: number, v) => !isObject(v) || Object.keys(v).length >= min,
-    dependentRequired: (needs: { [name: string]: string[] }, v) =>
-      !isObject(v) || Object.entries(needs).every(([name, names]) => !has(v, name) || names.every((other) => has(v, other))),
-    uniqueItems: (unique: boolean, v) => !unique || !Array.isArray(v) || distinct(v),
-    items: (items: Schema, v) => !Array.isArray(v) || v.every((item) => fits(items, item)),
-    required: (names: string[], v) => !isObject(v) || names.every((name) => has(v, name)),
-    properties: (properties: { [name: string]: Schema }, v) =>
-      !isObject(v) || Object.entries(properties).every(([name, schema]) => !has(v, name) || fits(schema, v[name])),
-    additionalProperties: (_, v, schema) => !isObject(v) || Object.keys(v).every((key) => Object.hasOwn(schema.properties ?? {}, key)),
-  }
-
-  /** Every schema in types.json: each keyword one the checker knows, in a form it checks. */
-  const walk = (schema: unknown, at: string): void => {
-    if (!isObject(schema)) throw new Error(`build/types.json: ${at} is not a schema object`)
-    for (const [keyword, arg] of Object.entries(schema)) {
-      const known =
-        Object.hasOwn(KEYWORDS, keyword) &&
-        (keyword !== 'type' || (typeof arg === 'string' && Object.hasOwn(IS, arg))) &&
-        (keyword !== 'format' || arg === 'date-time') &&
-        (keyword !== 'additionalProperties' || arg === false)
-      if (!known) throw new Error(`build/types.json: ${at} has ${keyword}: ${JSON.stringify(arg)}, which the checker does not know`)
-    }
-    if (typeof schema.pattern === 'string') patterns.set(schema.pattern, new RegExp(schema.pattern, 'u'))
-    if (typeof schema.$ref === 'string') resolve(schema.$ref)
-    for (const key of ['$defs', 'properties'] as const) {
-      for (const [name, sub] of Object.entries(isObject(schema[key]) ? schema[key] : {})) walk(sub, `${at}/${key}/${name}`)
-    }
-    if (schema.items !== undefined) walk(schema.items, `${at}/items`)
-    if (Array.isArray(schema.oneOf)) schema.oneOf.forEach((sub, i) => walk(sub, `${at}/oneOf/${i}`))
-  }
-  walk(root, '#')
-
-  // What a field allows beyond its type: a money field, only the per it lists. An empty enum fits
-  // nothing, so with no list it keeps per out.
-  const allows = (field: Field): Schema =>
-    field.type === 'money' ? { type: 'object', properties: { per: { enum: field.per ?? [] } } } : {}
-  // A number field that allows a range takes one number or the range types.json defines beside it.
-  return (field, value) => {
-    const one =
-      field.type === 'choice'
-        ? { type: 'string', enum: field.values }
-        : field.type === 'number' && field.range
-          ? { oneOf: [{ $ref: '#/$defs/number' }, { $ref: '#/$defs/number/$defs/range' }] }
-          : { $ref: `#/$defs/${field.type}`, ...allows(field) }
-    return fits(field.many ? { type: 'array', uniqueItems: true, items: one } : one, value)
+    read(field, value, options) {
+      const answers = isSeveral(field) ? (value as unknown[]) : [value]
+      if (field.piece === 'photo') return answers.length === 1 ? '1 photo' : `${answers.length} photos`
+      const today = field.piece === 'date' ? todayOf(options) : 0
+      const parts = answers.map((v) => {
+        switch (field.piece) {
+          case 'choice':
+            return labelOf(field, v as string, lists)
+          case 'number':
+            return readNumber(v as NumberValue, field.unit)
+          case 'price':
+            return readPrice(v as PriceValue)
+          case 'place':
+            return readPlace(v as PlaceValue, lists)
+          case 'date':
+            return readDate(v as DateValue, today)
+          default:
+            return v as string
+        }
+      })
+      const said = ['price', 'place', 'date'].includes(field.piece) ? parts.join('; ') : or(parts, 'and')
+      return field.piece === 'number' ? capital(said) : said
+    },
   }
 }

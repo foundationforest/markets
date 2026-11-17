@@ -1,548 +1,203 @@
-# Build a market
+# Pieces
 
-How to build a market, from why it exists to the file and how to propose it. It is for people and
-AIs who will build markets nobody here thought of, so it gives the reasons and leaves the judgment
-to you. From [The file](#the-file) on, it is the format: what it says a file or an entry holds is a
-**rule**, enforced by [`check.sh`](check.sh) on each market file, `checkEntry` on each entry
-([From a program](#from-a-program)) or a test on every market's values, and said once, with its
-reason; [`market.schema.json`](market.schema.json) and [`types.json`](types.json) hold it as data,
-and [`icons.json`](icons.json) the icons a market may name.
-Which markets this repo takes is the Forest Foundation's call, by
-[the line below](#which-markets-this-repo-takes). Everything else is advice, with its reason, for
-you to weigh.
+The standard for what entries hold in every Forest market, for the people and AIs who build markets
+and the programs that read them. A **rule** here is checked, by [`check.sh`](check.sh) on each
+market file or by `checkEntry` on each entry; anything else is advice, with its reason.
 
-## What a market is
+## Three layers
 
-A market is one reputation under one name. A person's profiles are made from their seed, the secret
-their app keeps: one profile per market and role, named by its label, `<market>/<role>`, and nothing
-public links one profile to another. Apps, indexes and AIs read the market's file to know what its
-listings and reviews hold, so everyone in a market writes the same shape.
+1. **Pieces**: the questions any listing can answer, and the ways to answer each, shared by every
+   market.
+2. **A market**: its roles and its fields. Each field is one piece with a name.
+3. **Programs that meet a person**: an app, an index, an AI's connector. They read the first two and
+   own their look.
 
-## Privacy first
+If it is not written in an entry, a reader cannot see it, so it cannot be a rule. So a field holds
+**rules**, what an entry must be, checked, and an entry that breaks one is refused; and
+**suggestions**, under `ask`, how to ask for it, which no entry is checked against, any program may
+ignore, and may change at any time, even in a live market. Nothing is written only for AIs: the
+question a person reads in a form is what an AI reads.
 
-Anyone you deal with can learn who is behind your profile, and can then read everything that
-profile did in that market: each listing, and each review of it. A narrower market shows each of
-them less.
+## The pieces
 
-What carries from one profile to another is trust, by
-[proofs](https://github.com/foundationforest/standard/blob/main/proofs/README.md) that name no
-profile. A verification shows that a verifier stamped the seed behind a profile, such as for being
-one real person. A reputation proof shows the average score an index gave to other profiles of the
-same seed, a score that means what that index says it means; since the person picks which profiles
-go in, it shows a good record, never a clean one. What stays in each market is its reviews and their
-ratings, which are about skill.
+An entry is a JSON object of answers, by field name. Any field may be left out, and a field one
+side leaves out never blocks a match. A field takes one answer unless it says `several`: then a list
+of one or more, each different, and two fields match when any pair of answers does. An entry holds
+no fractions as JSON numbers, so numbers, amounts and coordinates are decimal text, such as `"2.5"`,
+and only `radiusKm` and a price's `count` are plain whole numbers.
 
-So splitting a market restarts only the ratings, and ratings should restart when the skill changes.
+**text**: your own words, `"Merino jumpers, to your measure."`; with `several`, short words such as
+`["merino", "alpaca"]`. Never matched: a program searches text its own way.
 
-## Where to draw the line
+**choice**: one value from the field's `values`, its own list or a shared list in
+[`lists.json`](lists.json) by name: `languages`, as ISO 639-1 codes such as `es`, or `countries`,
+as ISO 3166-1 codes such as `PT`. A shared list only grows. Two choices match when they are the
+same.
 
-First read [`directory.md`](../directory.md), and the file of each market near yours, by what people
-deal in or by how they deal: the market may be there. If not, ask two questions of the nearest,
-about both sides of the deal:
+**number**: `"10"`, or from one to another, both included, `{ "from": "9", "to": "11" }`, either end
+left out for no limit, as `{ "from": "18" }` is 18 and over. A field names a `unit` only for a measure a program
+could convert: `seconds`, `minutes`, `hours`, `days`, `years`, `centimetres`, `metres`,
+`kilometres`, `square-metres`, `grams` or `kilograms`. A count names none, since its label says what
+is counted: people, rooms, nights. Two numbers match when they overlap: 9 to 11 matches 10.
 
-1. **Good at the same things?** Leave out trust, which carries anyway, and compare what a good
-   review of each would praise. If it would praise different things, being great at one tells you
-   little about the other: split. A maths tutor and a physics tutor are praised alike, for
-   explaining well and for the student's progress; a tutor and a tennis coach are not. The same
-   question tells roles apart: a tennis partner and a tennis student are judged on different
-   things, so a person who plays and takes lessons holds two profiles.
-2. **Fine to show together?** If one profile holding both would tell the people you deal with
-   something they would keep apart, split.
+**price**: always a list of one or more, each `{ "amount", "currency", "per", "count" }`: `amount`
+as decimal text, `currency` a code such as `EUR`, `per` one of the field's `per` or left out for the
+whole deal, and `count`, only with a `per`, how many of it the amount buys, 1 when left out. So
+`[{ "amount": "35", "currency": "EUR", "per": "item" }, { "amount": "90", "currency": "EUR", "per": "item", "count": 3 }]`
+is 35 an item or 90 for three. In a request, it is the most the writer would pay. Prices compare by
+amount divided by count, in one currency and `per`, since a rate between currencies is a guess: they
+match when the offer's costs no more than the request's, and prices that cannot be compared never
+block a match.
 
-Both pass: it is one market, since splitting would restart ratings that should carry; a maths tutor
-who adds physics shouldn't start from zero. A topic is then a field, not a market, and needing
-different fields is no reason to split: [`when`](#follow-up-questions) asks each listing only what
-fits it, and a review names its listing, so an index can still tell one topic's reviews from
-another's.
-
-Splitting costs a crowd: each market needs its own before anyone finds a deal in it. That is an
-argument for launching few markets, not for merging two that fail a question. A dealing that could
-go in either of two markets goes to the one where people already look for it.
-
-| Dealings | Good at the same things? | Fine to show together? | So |
-|---|---|---|---|
-| A guest who pays for the bed, and one who works for it | No: one is judged on paying and on caring for the place, the other on the work and on living together | Yes | Two markets |
-| Babysitting, and caring for an elderly person | No: keeping a child safe and busy says little about personal care and health | Yes | Two markets |
-| School tutoring, and sports coaching | No: a coach is praised for technique and fitness, a tutor for explaining and grades | Yes | Two markets |
-| Selling a jacket, and selling a car | No: a car is judged on more, its papers, history and mechanics | No: every jacket buyer would learn what you can afford | Two markets, and the car waits ([below](#which-markets-this-repo-takes)) |
-| Seeing a doctor, and seeing a therapist | No: treating the body is not helping the mind | No: each would learn what the other treats you for | Two markets, and both wait: harm to health is not fixable tomorrow |
-
-## Which markets this repo takes
-
-Until a deal's money can wait in escrow, with an arbiter to settle a dispute, this repo takes only
-markets where a deal gone wrong costs little. Each says whether it is `beta` or `live`, and the
-directory shows which, so a person knows what they can rely on before they make a profile there.
-
-**Beta** needs two things:
-
-- **Small first:** nobody, on either side, risks more money or work than they could lose to a
-  stranger without real harm before they get something. Small, rather than zero, works because a
-  seed gives one profile per market and role, and a verifier that stamps each person once lets each
-  person show one verified profile there: someone who takes the money and vanishes leaves a
-  reported profile behind and can't start clean under a new verified one. That deters small
-  amounts, not big ones.
-- **Fixable tomorrow:** if it goes wrong, you try someone else.
-
-**Live** needs all of that, and:
-
-- **No money between people:** a paid dealing stays beta until escrow exists.
-- **Polished, which here means tried:** listings and reviews posted in it end to end, through the
-  app and through an AI.
-- **It only grows** from then on ([Status](#status)).
-
-A market that can't be beta waits for the service that would make it accountable, such as escrow
-for a big price, and can be proposed once that exists.
-
-## Naming
-
-A name is plain words everyone knows. Read it as family, then kind: a family word comes first only
-where people already start looking from it, as they look for help at home and then for repair or
-cleaning (`home-repair`, `home-cleaning`), or for a stay and then for one they work for or one that
-is free (`stays-work`, `stays-free`). A market that stands alone gets one or two plain words
-(`tutoring`, `goods`), which claim no family. A family's first word alone is left to the family:
-`home` would read as all of them. Pick a name that is still right when the market grows: `goods`
-outlasts the first kind sold there.
-
-A name and its roles' words make every profile's label, and a label makes the profile's key, so a
-new name is a new market, at the cost of a split: ratings start again, while trust carries. A live
-market is never removed, so a renamed one stays beside the new. That makes a rename costly, not
-impossible, and the same goes for a role's word. The spelling is under [The file](#the-file).
-
-Where someone picks a market, an app shows its name, its summary and its icon, and tells it from
-the others by its number. The summary says what the dealing is in one short plain line, such as
-"Knitters knit clothes to order.", because it stands alone there. The description is for an AI,
-which reads both, so it says what the summary leaves out: what is in and what is out, how people
-pay, and who it is for. The icon is a [Phosphor](https://phosphoricons.com) icon that reads as the
-dealing at a glance, as `yarn` reads as knitting; no two markets share one, so each market of a
-family needs its own, and unlike the name it may change once live, since no entry holds it. The
-number comes with the market, in the order markets are added, and an app tells markets apart by
-it, such as by cycling it through its own palette, so each app chooses how many colors it has. It
-is not an id: the name stays the market's only id. The rules are under [The file](#the-file).
-
-## Roles
-
-A role is `{ "role", "listings" }`, as in [knitting](#a-worked-example-knitting). `listings` says
-what its listings are, so each side can find the other's: `offers`, what it gives, or `requests`,
-what it looks for. Where people of one role look for each other, as tennis players do, they are
-requests. Every listing is at `listing/<id>` in its profile's
-[folder](https://github.com/foundationforest/standard/blob/main/folders/README.md#folders). Two
-sides judged on different things are two roles ([question 1](#where-to-draw-the-line)).
-
-## Writing fields
-
-### Follow-up questions
-
-A field can apply only after another field's answer. In knitting, a client who asks for socks is
-asked the foot's length, and one who asks for a jumper the chest:
+**place**: a circle, `{ "lat", "lon", "radiusKm", "name", "country" }`, all five, or a country
+alone, `{ "country": "PT" }`, for anywhere in it. `lat` and `lon` are degrees, `radiusKm` whole
+kilometres round the centre of the named place, `name` stands alone, such as a neighbourhood with
+its town, and `country` is from the countries list. Radius 0 is an exact spot; any other means "in
+or around here", not "inside this line". Two places match when their circles touch, and a country
+matches the places in it. Online is never a place, as [a test on every market](test/content.test.ts)
+holds: where a choice offers `online`, a place field applies only `when` it holds something else.
 
 ```json
-"kind": { "type": "choice", "description": "What is knitted.", "values": ["jumper", "cardigan", "scarf", "hat", "socks"], "many": true },
-"chest": { "type": "number", "description": "The wearer's chest, round its widest part, in centimetres.", "unit": "centimetres", "when": { "kind": ["jumper", "cardigan"] } },
-"footLength": { "type": "number", "description": "The wearer's foot, heel to toe, in centimetres.", "unit": "centimetres", "when": { "kind": ["socks"] } }
+{ "lat": "40.4342", "lon": "-3.7031", "radiusKm": 1, "name": "Chamberí, Madrid", "country": "ES" }
 ```
 
-An app asks `chest` right after `kind`, and only for a jumper or a cardigan; a scarf asks neither.
-A chain works too, such as who it is for, then the kind, then a size. The rules are under
-[The file](#the-file).
-
-### What a field holds
-
-A market file becomes what an AI reads to post for someone, the filters an index offers the other
-side, and the form an app shows. An AI fills most entries, from what a person tells it in their own
-words, so a field asks for the precise thing, and making it simple for the person is the AI's and
-the app's job: a number, or a range, rather than a bucket such as teens, and every price the person
-really charges, packs included. A bucket loses what the person said, and a filter on it finds the
-wrong people: a coach for 9 to 11 year olds is not one for every child. So:
-
-- **Write each description for an AI that has never seen the market**, so that from one sentence a
-  person says it can post a listing that fits: what the field holds, in what unit or standard, and
-  for whom.
-- **Every number names its unit** ([a rule](#the-file)), so an app or an AI can show and convert it
-  without reading the description; since a unit can't change once a market is live, a number
-  posted keeps its meaning.
-- **Let a number take a range where people give one** (`range`), such as ages 9 to 11, a group of
-  4 to 8 or a stay of 2 to 14 nights, and 18 and over as a range with no top. One field then holds
-  what the person means, where a least and a most would take two fields that an index must know to
-  pair, and an index matches ranges that overlap ([Types](#types)).
-- **Ask for every price the person charges**: `price` is always a list
-  ([Shared names](#shared-names)), each price with its `per` and, for a pack, a `count`, such as 35
-  a pair of socks and 90 for 3 pairs, or a price per person and one with no `per` for a private
-  group. A minimum needs no field: a knitter who knits only in threes offers only the pack. An index
-  compares each by what one of its `per` costs ([Types](#types)), so the pack sorts as 30 a pair.
-- **Store values that hold in every country**, and let apps and AIs translate: a point for a place;
-  a price in the person's own currency, which it keeps, since rates move. Ask what the person can
-  give without converting it, since a conversion is a guess, and a size shows the steps: a measure
-  where they can take one, as knitting asks the chest, or as a shoe's label prints its length after
-  CM; else the system most labels share, as a picker, such as letters, a waist in inches or a
-  child's age; and text with its system only where labels share none, as a dress's EU 38 or UK 10.
-- **Write values as lowercase English words joined by hyphens**, such as `in-person`, so their words
-  read right and apps translate them. A list may be as long as people need, and grows by pull
-  request when someone needs a value it lacks.
-- **Where a standard names the values the same in every country, use its codes**, each labelled
-  with its English name, such as ISO 639-1's `es`, Spanish, and copy the list as another market
-  holds it, so a value means one thing in every market. A language's name differs by country; its
-  code doesn't.
-- **Say where two values meet**, in the description: what `like-new` means against `good`, or each
-  level on the scale people already use, as CEFR's B2. Without the line, the same item gets either
-  value, and a filter on one misses the other.
-- **Learn from the apps people already use for that dealing**, across countries: they have learned
-  what people ask. Take what they ask, not how: a form filled in by hand asks for a bucket and one
-  price because typing more is work, and here an AI does that work. Then cut what Forest doesn't
-  need, and what would tell strangers more about a person than the deal needs.
-- **A picker (a `choice`) where people filter by kind, a number where they give an amount**, text
-  where they describe, and `words` only for open tags. Yes or no is a picker of two values, `yes`
-  and `no`.
-- **Every field is one someone would miss.** More fields behind a form are fine when they make it
-  simpler, as each kind above asks one measure.
-
-### Reviews
-
-Reviews, vouches and reports have [one shape in every market](#reviews-vouches-and-reports), and a
-market may add fields to its reviews only. A field there is worth adding only for what a good one is
-judged on, by role, the same thing [question 1](#where-to-draw-the-line) asks; the score and the
-text say the rest.
-
-## A worked example: knitting
-
-1. **The dealing.** People ask a knitter for a jumper, a hat or socks made to their measure, and
-   pick it up or have it shipped.
-2. **The line.** The nearest dealing is selling clothes you own, judged on describing an item
-   honestly and handing it over; a knitter is judged on the craft, the fit and the date. Being great
-   at one tells you little about the other, so knitting is its own market. Jumpers and socks pass
-   both questions, so they share it, and the kind is a field. The knitter and the client are judged
-   on different things, so they are two roles.
-3. **The launch line.** The client risks a deposit that covers the yarn, and pays the rest on
-   handover; the knitter risks the work, and keeps what was knitted if the client never pays: small
-   first, on both sides. A bad scarf means trying another knitter: fixable tomorrow. So it can be
-   beta, and since money passes between people, it stays beta until escrow exists.
-4. **The name.** People look for a knitter, not for crafts and then knitting, so it stands alone:
-   `knitting`. Its summary is the line a picker shows, "Knitters knit clothes to order."; its icon
-   is `yarn`, and its number the next after the highest so far.
-5. **The fields.** Take one sentence a client might say: "a merino jumper for my husband, chest 104,
-   by December; I'm in Madrid and can pick it up." It holds a kind, a measure, a yarn, a date and a
-   handover with a place, which shops that knit to order ask too, beside photos of past work. A
-   measure in centimetres, unlike a letter size, also needs no wearer. Then one a knitter might say:
-   "socks 35 a pair or 90 for three, ready in 10 to 14 days." A shop's form would take one price and
-   one number of days, which says less than the knitter did, so `price` holds both, the pack with
-   its count, and `days` takes a range.
-6. **The reviews.** A knitter is judged on the date and the fit, a client on paying: `onTime`,
-   `daysLate` only when it came late, and `fits` for the knitter, `paid` for the client.
-7. **The preview.** A client looks at what is knitted and at past work before the price.
-8. **The trial.** Before you propose, fill in a listing as a knitter and as a client, search as
-   each, review each, and run the check.
+**date**: days, and hours if wanted. Days are one day, `{ "on": "2026-11-24" }`; from one day to
+another, both included, `{ "from": "2027-06-01", "to": "2027-08-31" }`, either end left out, so a
+deadline is `{ "to": "2027-01-15" }`; or weekdays every week, `{ "every": ["monday", "thursday"] }`,
+`monday` to `sunday`, with a `from` and a `to` if wanted. Hours are a `start`, or a `start` and an
+`end`, as `HH:MM`, on each of those days; an end before the start runs past midnight. An answer with
+hours names its `zone` as the IANA time zone database does, such as `Europe/Madrid`, never by
+offset; one without has none.
 
 ```json
-{
-  "name": "knitting",
-  "summary": "Knitters knit clothes to order.",
-  "description": "Knitters knit jumpers, cardigans, scarves, hats and socks to the wearer's measure, handed over in person or shipped.",
-  "status": "beta",
-  "icon": "yarn",
-  "number": 20,
-  "roles": [
-    { "role": "knitter", "listings": "offers" },
-    { "role": "client", "listings": "requests" }
-  ],
-  "listing": {
-    "description": { "type": "text", "description": "What is knitted, in what style and colours, and anything the knitter needs to know." },
-    "price": { "type": "money", "description": "Each price, per item or for the whole order, with a count for a pack, such as 3 pairs of socks; in a request, the most the client would pay.", "per": ["item"] },
-    "deposit": { "type": "money", "description": "What the client pays before the knitting starts, such as the yarn's cost." },
-    "kind": { "type": "choice", "description": "What is knitted.", "values": ["jumper", "cardigan", "scarf", "hat", "socks"], "many": true },
-    "chest": { "type": "number", "description": "The wearer's chest, round its widest part, in centimetres.", "unit": "centimetres", "when": { "kind": ["jumper", "cardigan"] } },
-    "head": { "type": "number", "description": "The wearer's head, round the forehead, in centimetres.", "unit": "centimetres", "when": { "kind": ["hat"] } },
-    "footLength": { "type": "number", "description": "The wearer's foot, heel to toe, in centimetres.", "unit": "centimetres", "when": { "kind": ["socks"] } },
-    "yarns": { "type": "words", "description": "The yarns, such as merino, alpaca or cotton." },
-    "days": { "type": "number", "description": "How many days the knitter takes, from the order to handover, or the fewest and the most, such as 10 to 14.", "unit": "days", "range": true, "roles": ["knitter"] },
-    "due": { "type": "moment", "description": "When the client needs it by, or the span it may come in.", "roles": ["client"] },
-    "photos": { "type": "file", "description": "Photos of work the knitter has done.", "many": true, "roles": ["knitter"] },
-    "handover": { "type": "choice", "description": "How it is handed over: in person, shipped, or both.", "values": ["in-person", "shipped"], "many": true },
-    "studio": { "type": "place", "description": "Where the knitter hands work over: anywhere in the circle they will go.", "radiusKm": 10, "roles": ["knitter"], "when": { "handover": ["in-person"] } },
-    "home": { "type": "place", "description": "Roughly where the client lives.", "radiusKm": 1, "roles": ["client"], "when": { "handover": ["in-person"] } }
-  },
-  "preview": ["kind", "photos", "description", "price"],
-  "review": {
-    "onTime": { "type": "choice", "description": "Whether it came by the day agreed.", "values": ["yes", "no"], "roles": ["knitter"] },
-    "daysLate": { "type": "number", "description": "How many days late it came.", "unit": "days", "roles": ["knitter"], "when": { "onTime": ["no"] } },
-    "fits": { "type": "choice", "description": "Whether it fitted the measurements given.", "values": ["yes", "no"], "roles": ["knitter"] },
-    "paid": { "type": "choice", "description": "Whether the client paid as agreed.", "values": ["yes", "no"], "roles": ["client"] }
+{ "every": ["saturday"], "from": "2027-05-01", "to": "2027-09-30", "start": "10:00", "zone": "Europe/Lisbon" }
+```
+
+Weekly hours are several answers: Monday to Friday 9 to 17 and Saturday 10 to 14 are two. Clock
+times at both ends of a span of days, taken slots, exceptions and "every two weeks" stay in words.
+Two answers match when their real moments overlap: each becomes spans of real time through its zone.
+A start alone is that moment; with no hours, the whole day, in the zone of the answer it meets. Two
+weekly answers are compared in the week of a given day, today by default, since summer time moves
+one zone against another.
+
+**photo**: one of the entry's files, by the SHA-256 of its bytes in lowercase hex, which the entry
+lists in `files` as [the standard names a file](https://github.com/foundationforest/standard/blob/main/folders/README.md#files).
+**link**: a web address starting `https://` or `http://`. Neither is matched.
+
+## The market file
+
+`markets/<name>.json` holds these keys and no others:
+
+| Key | Holds |
+|---|---|
+| `name` | The file's name: lowercase letters, digits and single hyphens, at most 64. It is half of every label, `<market>/<role>`. |
+| `summary` | What the dealing is, one line of at most 80 characters, since an app shows it where someone picks a market. |
+| `description` | Optional: a few plain sentences more, in one line. |
+| `status` | `beta` or `live` ([Status](#status)). |
+| `icon` | Optional: one of the [Phosphor](https://phosphoricons.com) icons in [`icons.json`](icons.json), no other market's. |
+| `number` | A whole number from 1 no other market holds, since apps tell markets apart by it. The name stays the only id. |
+| `roles` | Each `{ "role", "listings" }`: a word, spelled as a name is, and whether its listings are `offers` or `requests`. |
+| `listing` | A listing's fields, by name. |
+| `preview` | Optional: the listing fields that matter first. Left out: `description`, `price`, then the places. |
+| `review` | Optional: fields a review here adds, by name. |
+
+A field's name is a lowercase letter, then letters and digits, at most 64 (`startTime`), never
+`files`, which the standard keeps, nor a name every entry holds: `contact`, and in a review
+`subject`, `listing`, `score` and `text`. In `listing`, `description` is one
+text and `price` a price, so a program finds them by name.
+
+A field's **rules**:
+
+- `piece`: one of the eight.
+- `several: true`: a list of answers. Never on a price, always several.
+- `roles`: the roles it is for, in a listing by the writer, in a review by the profile reviewed.
+  Left out: every role.
+- `when`: it applies only when other choice fields of the same entry hold one of the values listed,
+  such as `{ "kind": ["socks"] }`; with several named, all must, and a field with several answers
+  counts when any does. Never in a loop, so a form can ask each field after those it depends on.
+  An entry never holds a field that does not apply.
+- `values`, on a choice; `unit`, on a number that measures; and `per`, on a price, what its amount
+  may be for, such as `["hour", "lesson"]`, else always the whole deal.
+
+Its **suggestions**, under `ask`, each with a fallback:
+
+- `label`: two or three words, for showing a value and for a filter. Left out: the name in words,
+  as `footLength` reads "Foot length".
+- `question`, and a `hint` if needed. Left out: the label.
+- `start`, where the input opens, and so the answer when the person gives no other: a place's
+  `radiusKm`, a date's `way` (`day`, `from-to`, `until` or `weekly`) and `hours: true`, a number's
+  `range: true`. Left out: a 5 km circle, one day, one number.
+- `as`: by role, its own `question`, `hint` and `start`. In a review, a role names the one reviewed.
+- `usual`, a number's usual span; `long: true`, text of several lines; `labels`, how a choice's
+  values read, such as `{ "xl": "XL" }`. Left out, a value reads as its shared list says, or as
+  itself with a capital and hyphens as spaces.
+
+`check.sh` checks suggestions only for being well formed. The shortest field is its piece:
+
+```json
+"area": {
+  "piece": "place",
+  "ask": {
+    "label": "Area",
+    "as": {
+      "cleaner": { "question": "Where do you work?", "start": { "radiusKm": 10 } },
+      "client": { "question": "Where is your home?", "start": { "radiusKm": 1 } }
+    }
   }
 }
 ```
 
-## The file
-
-`markets/<name>.json` holds these keys and no others:
-
-| Key | What it holds |
-|---|---|
-| `name` | Lowercase letters, digits and single hyphens, at most 64 characters, since it is half of every label, and the same as the file's, so no two markets share one ([Naming](#naming)). |
-| `summary` | What the dealing is, in one plain line of at most 80 characters, since an app shows it where someone picks a market ([Naming](#naming)). The directory holds it too. |
-| `description` | What an AI needs to know of the dealing beyond the summary, in one line ([Naming](#naming)). |
-| `status` | `beta` or `live` ([Status](#status)). |
-| `icon` | Optional: the name of a [Phosphor](https://phosphoricons.com) icon, such as `yarn` ([Naming](#naming)), one of those in [`icons.json`](icons.json), which pins a Phosphor release so the check reads nothing over the network, and no other market's, so a list of markets tells each apart. The directory holds it too. Without one, an app shows the name's first letter. |
-| `number` | A whole number from 1 that no other market holds, since apps tell markets apart by it, such as by cycling it through their own palette ([Naming](#naming)). A market new on main takes the highest number there plus one, so numbers follow the order markets are added, and a live market never changes its own, so each app keeps showing it as it did. It is not an id: the name stays the market's only id. The directory holds it too. |
-| `roles` | One role or several ([Roles](#roles)), each word spelled as a name is and listed once, since a label names one role. |
-| `listing` | The fields of a listing, by name. |
-| `preview` | Optional: names of `listing` fields, those that matter first ([below](#preview)). |
-| `review` | Optional: fields a review here holds besides [the shared ones](#reviews-vouches-and-reports), by name. |
-
-An entry holds only its market's fields and [the shared ones](#shared-names), and may leave out any
-of them, so a person posts what they know and a field added later never makes an older entry stop
-fitting. A review, a vouch and a report name their `subject`, since only it says who one is about.
-
-A field is `{ "type", "description" }`: one of the [types](#types), and what it holds, in one line.
-It may add:
-
-- `"values"`, for a `choice` and only for one: the list to choose from. None is `other`, `either`,
-  `both` or `unisex`, which a test on every market refuses: leave the field out when no value fits,
-  and `many` says both, so a filter on one value never misses what such a value would hide. Values
-  that don't overlap let a filter on one find all of it.
-- `"labels"`, for a `choice` and only for one: how people read a value whose words are wrong, such
-  as `{ "xl": "XL" }`. A value's words are the value with hyphens as spaces and a capital first
-  letter, such as `New with tags`. Readers show a value's label where it has one, else its words.
-- `"per"`, for a `money` field and only for one: what its amount may be for, such as
-  `["hour", "session"]`. An amount may always leave `per` out, for the whole deal; with no list,
-  it always does, as the price of a jacket.
-- `"radiusKm"`, on every `place` field and only on one: the radius, in whole kilometres, a new place
-  starts at before the person changes it ([Types](#types)), such as 2 for an item to pick up, 1 for
-  a home, 5 for where people meet and 10 for where a pro works.
-- `"unit"`, on every `number` field and only on one: one of the [units](#units), such as
-  `"minutes"` ([why](#what-a-field-holds)).
-- `"range": true`, for a `number` field and only for one: it may hold a range instead of one number
-  ([Types](#types)), and one number still fits, so a live market may add it. Never with `many`:
-  each shape a field may hold is one every app and index must handle, and no market needs a list
-  of ranges yet.
-- `"many": true`: a list of its type, such as several photos. Never on `words`, a list already.
-- `"roles"`: the market's roles the field is for. In `listing`, only their listings hold it; in
-  `review`, only reviews of a profile in them. Left out: every role.
-- `"when"`: the field applies only when other `choice` fields of the same entry hold one of the
-  values listed, such as `"when": { "kind": ["socks"] }`. With several fields named, all must
-  match; a `many` field matches when any of its values does. It names only `choice` fields and
-  their values, so an app knows ahead what each answer opens, and never in a loop, so a form can ask
-  each field after those it depends on. A field that does not apply is never held: `checkEntry`
-  refuses it, and an app drops it when an answer changes. With `roles` too, both must match, and if
-  a field it names is kept to some roles, this one is kept to those or fewer, since for any other
-  role it could never apply.
-
-A field's name is a key in an entry's body: a lowercase letter, then letters and digits, at most 64
-characters (`startTime`, not `start-time`). It is never `files`, which the standard keeps for an
-entry's files ([Photos](#photos)), never `contact`, which every listing may hold
-([Shared names](#shared-names)), and in `review` never a shared name.
-
-### Preview
-
-`preview` lists the `listing` fields that matter first, most needed first. A form asks them first,
-each after any field it depends on through `when`, then the rest; a search result, a short list or
-a spoken summary shows them first, of those the listing holds. It names content, never a screen
-shape. Left out, it is `description`, `price`, then the `place` fields, of those the market has.
-Write it only where that is wrong, such as with no price, or where photos or a topic matter first,
-as in knitting.
-
-### Status
-
-`status` is `beta` or `live` ([which markets this repo takes](#which-markets-this-repo-takes)). A
-beta market may change in any way; a pull request that makes listings or reviews already posted
-stop fitting says so at its top, plainly, so their writers know which to post again.
-
-A live market is a promise that whatever was posted in it keeps fitting and every profile in it
-stays what it is. So a new market starts as beta, and a live one never goes back. A pull request to
-a live market may add roles, fields, values, `per` values and labels, let a number field take a
-range, widen a field's `roles` or `when`, reword the summary, descriptions and labels, and change or
-drop the icon. It may not remove or rename the market, a role, a field or a value, change the
-market's number or a role's `listings`, change a field's type, `many` or `unit`, take a number
-field's range away, narrow its `roles` or `when`, or change a type in [`types.json`](types.json) a
-live market uses, beyond its descriptions. [`check.sh`](check.sh) compares main with yours and fails
-on a new market that is live or does not take the next number, a live one gone back to beta, and
-any of these, with no exception: a live market that must break becomes a new market, with a new
-name.
-
 ## Reviews, vouches and reports
-
-The same in every market:
 
 | Kind | At | Says | Fields |
 |---|---|---|---|
-| review | `review/<id>` | how a deal with the profile went | `subject`, `score`, `text`, `listing`, and the market's `review` fields |
+| review | `review/<id>` | how a deal with the profile went | `subject`, `listing`, `score`, `text`, and the market's `review` fields |
 | vouch | `vouch/<id>` | "I know this profile is real and honest." | `subject`, `text` |
 | report | `report/<id>` | "This profile is fake or a scam." | `subject`, `text` |
 
-- `subject` (text): the address of the profile it is about, in the same market, and the one field
-  it must hold.
-- `score` (number): the rating, `"1"` to `"10"` with at most one decimal, such as `"8.5"`.
-- `text` (text): what the writer says.
-- `listing` (text): the address of the listing a review is about,
-  `<profile address>/listing/<id>`, whoever wrote it.
+`subject`, the address of the profile it is about, is the one field each must hold, since only it
+says who one is about. `listing` is the address of the deal's listing, `<profile address>/listing/<id>`;
+`score`, one number from `"1"` to `"10"` with at most one decimal; `text`, the writer's words. Every
+listing may hold `contact`, text: how to reach the writer outside Forest, public, and the same on two
+profiles links them. No market lists these.
 
-## Types
+## Status
 
-Every field is one of nine types, in [`types.json`](types.json). A program acts on a field by its
-type, never its name, except for the [shared names](#shared-names).
+A beta market may change in any way. A live market only grows, on its rules, so whatever was
+posted in it keeps fitting and every profile stays what it is: it may add roles, fields, values and
+`per` values, and widen `roles` or `when`, but never drop or rename itself, a role, a field or a
+value, change its number, a role's `listings` or a field's piece, `several` or `unit`, or narrow
+`roles` or `when`. Everything else may change. A market starts as beta and never goes back from
+live; `check.sh` fails on any break against main, so one that must break becomes a new market, with
+a new name.
 
-| Type | A value | A program |
-|---|---|---|
-| `text` | text | searches it and shows it |
-| `number` | decimal text, such as `"2.5"`, in its field's [unit](#units), or `{ "from", "to" }` where its field takes a range | matches ranges that overlap |
-| `words` | a list of short words | filters by them |
-| `choice` | one of the field's `values` | filters by it |
-| `place` | `{ "lat", "lon", "radiusKm" }`, and `"area"` if wanted | matches circles that touch |
-| `money` | `{ "amount", "currency", "per", "count" }` | prints it and sorts by it |
-| `moment` | a time, or `{ "from", "to" }` | matches spans that overlap |
-| `file` | the SHA-256 of one of the entry's `files`, in lowercase hex ([Photos](#photos)) | fetches it and shows it |
-| `hours` | `{ "zone", "slots": [ { "days", "from", "to" } ] }` | filters by day and time |
+## Notes for apps
 
-- Numbers, amounts and coordinates are decimal text, since an entry holds only whole numbers.
-- `number`: a range is `{ "from", "to" }`, both in the field's unit, either left out for no limit
-  that way, as `{ "from": "18" }` is 18 and over, but not both, which would say nothing; with both,
-  `from` is at most `to`, since a range that runs backwards matches nothing. A number is the range
-  from itself to itself, and two match when each one's `from` is at most the other's `to`, a missing
-  end limiting nothing: 9 to 11 matches 10, and 18 and over matches 30 to 40.
-- `place`: a point, `lat` and `lon` in degrees, and `radiusKm`, a whole number of kilometres, both
-  required; `area` is the name people know the area by, such as a town or a court, which an index
-  shows and finds the place by. Radius 0 is that exact spot; otherwise the place is somewhere in the
-  circle, or anywhere in it the person will go. Two places match when their circles touch: the
-  distance between their points is at most the sum of their radii. A point is rough unless the
-  radius is 0, and exact only for a public spot meant to be found, never a home's door. An app puts
-  the centre near the person, not on them, picks that spot once and keeps it, since fresh random
-  centres would average out to their home, and keeps their real spot inside the circle. Online is
-  never a place: a market where people deal online too gives that its own `choice`, and asks for a
-  place only `when` it is in person, as knitting does with `handover`.
-- `money`: `currency` is a code such as `USD`; `per` is what the amount is for, one of its field's
-  `per`, left out for the whole deal; `count` is how many of that `per` the amount buys, a whole
-  number, 1 when left out, and only with a `per`, since the whole deal is one: 90 per item with
-  count 3 is 90 for 3 items. Two prices compare by amount divided by count, within the same `per`
-  and currency, since any rate between currencies is a guess: 90 for 3 items is 30 an item.
-- `moment`: RFC 3339 with its zone, such as `2026-11-02T18:00:00+01:00`. A span's `from` is no
-  later than its `to`, each read in its own zone, since a span that runs backwards matches nothing.
-  As with a range, a time is the span from itself to itself, and two match when they overlap.
-- `hours`: when a person is free each week. `zone` is a time zone name, such as `Europe/Madrid`;
-  each slot's `days` are `monday` to `sunday`, and `from` and `to` are `HH:MM` in that zone.
-
-## Units
-
-The units a `number` field may name. The list grows when a market needs a unit it lacks: add it to
-`UNITS` in [`src/markets.ts`](src/markets.ts), to the schema's list, which the check holds equal,
-and to this table, in the market's pull request. No unit leaves while a live market uses it.
-
-| Measures | Units |
-|---|---|
-| time | `seconds`, for a short span such as a video's length, which minutes would give in fractions; `minutes`, `hours`, `days`; `years`, such as an age |
-| nights of a stay | `nights`, which convert to no other unit |
-| length | `centimetres`, `metres`, `kilometres` |
-| area | `square-metres` |
-| weight | `grams`, `kilograms` |
-| a count | `people`; `rooms`, a home's rooms of one kind, such as its bedrooms, which every country counts alike |
-
-## Photos
-
-A photo is one of its entry's files. Give `listing` a field of type `file`, `many` for several, as
-knitting's `photos`. A listing names each photo there by its SHA-256, and lists it in `files` as
-[the standard names a file](https://github.com/foundationforest/standard/blob/main/folders/README.md#files):
-
-```json
-{
-  "description": "A merino jumper, knitted to your chest.",
-  "photos": ["04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86"],
-  "files": [
-    { "sha256": "04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86", "type": "image/jpeg", "size": 48213 }
-  ]
-}
-```
-
-The app writes the listing, then uploads the bytes to the folder's hosts, which keep them while a
-current entry names them: a newer version that leaves a photo out lets it go, and a hash not in
-`files` names nothing. A review holds files the same way.
-
-## Shared names
-
-These keep their meaning and type in every market, so a program finds them by name: the fields
-every review, vouch and report holds, and three in `listing`:
-
-- `description` (text): the listing's main text, among any other text it holds. A market lists it,
-  since every listing says something, and never `many`, so a program finds one.
-- `price` (money): what the listing costs, however it is paid, and in a request the most its writer
-  would pay; the money a program sorts by. It is always a list of one or more prices, each
-  different, a single price a list of one: the format sets it, and a market never writes `many` on
-  it, so a listing can give every price its writer charges
-  ([What a field holds](#what-a-field-holds)), and a market never has a single price to outgrow. A
-  market lists it where listings have a price.
-- `contact` (text): how to reach the writer outside Forest, such as a phone, a handle or an
-  email, one text. Every listing may hold it, and no market lists it. It is public to anyone, and
-  the same contact on two profiles links them, so it is the person's choice per listing.
-
-## Propose
-
-1. Write `markets/<name>.json`, with the next number, the highest in `directory.json` plus one, or
-   edit one as [Status](#status) allows.
-2. Run `build/check.sh` (Node 22.18 or later, npm and git), and fix what it prints. It compares
-   each market live on `origin/main` with yours, or on the commit you name, as in
-   `build/check.sh HEAD~1`. Once every market passes, it rewrites a stale `directory.json` or
-   `directory.md` and fails, so run it again. Never edit either by hand. Then run `npm test` in
-   `build/`: [`test/content.test.ts`](test/content.test.ts) holds every market to the rules on its
-   values, and names none.
-3. Commit the market file and both directory files.
-4. Open a pull request. The check and the tests run again and must pass; then the Forest Foundation
-   reviews it, as [the README](../README.md#who-decides-what) says, and merges it.
+- Centre a home's circle on its named place, never sized by where the person is: a circle drawn
+  around them points to their door.
+- An exact spot is for a public place, meant to be found, such as a court.
+- Take the zone from the listing's place when it has one: the hours are where the deal is.
+- Store what the person said, and convert only when showing: a conversion is a guess, and stored, it
+  replaces their words.
 
 ## From a program
 
-`build/` is a private npm package, `@foundationforest/markets`, linked from a markets checkout, not
-from npm:
-
-```json
-"dependencies": { "@foundationforest/markets": "file:../markets/build" }
-```
-
-Run `npm ci && npm run build` in that `build/`, then, with the [worked
-example](#a-worked-example-knitting) as `markets/knitting.json`:
+`build/` is a private npm package, `@foundationforest/markets`, linked from a markets checkout
+(`"file:../markets/build"`) after `npm ci && npm run build` there. It imports nothing and makes no
+code from strings, and answers four questions, so an app, an index and a connector cannot disagree:
 
 ```ts
 import { loadMarkets } from '@foundationforest/markets'
 
-const markets = loadMarkets() // the checkout the package is in; loadMarkets(dir) reads another
-markets.directory // directory.json
-markets.market('knitting') // markets/knitting.json
-markets.checkEntry('knitting', 'client', 'listing', { kind: 'socks' })
-// 'kind takes a list, each different, each one of jumper, cardigan, scarf, hat, socks'
-markets.checkEntry('knitting', 'client', 'listing', { kind: ['scarf'], chest: '96' })
-// 'chest is only for a listing whose kind is jumper or cardigan'
-markets.checkEntry('knitting', 'client', 'review', { subject, onTime: 'no', daysLate: '3' }, 'knitter')
-// null
+const markets = loadMarkets() // the checkout it sits in, or loadMarkets(dir)
+markets.checkEntry('knitting', 'client', 'listing', body) // 1. null when it fits, else why not
+markets.match(field, a, b) // 2. for a price, a is the offer's
+markets.read(field, value) // 3. "Monday to Friday, 9:00 to 17:00"
+markets.ask('knitting', 'client') // 4. its fields in order: piece, rules and words
 ```
 
-`directory.json` holds what a list of markets shows, each market's name, summary, status, icon and
-number, beside its description and roles, so a page draws the list from it alone. A program reads
-the markets at the commit its checkout holds. One that hands a market to an AI, to
-post for someone, hands it [`market.schema.json`](market.schema.json)'s descriptions and
-[`types.json`](types.json) too: a market file alone does not say that `many` makes a list, that a
-listing's price is always a list, that a range may leave out an end, that `count` counts the `per`,
-that `radiusKm` is only where a new place starts, that `roles` on a review field names the profile
-reviewed, or that any field may be left out, and an AI given the file alone guesses each.
-
-A page reads no files, and its content security policy may forbid `eval`. It imports
-`@foundationforest/markets/browser` and gives it the same files as data: `directory.json`,
-`build/types.json`, and the file of each market the directory lists. It throws when one of those is
-missing.
-
-```ts
-import { loadMarkets } from '@foundationforest/markets/browser'
-
-const markets = loadMarkets({ directory, types, markets: [knitting /* , … */] })
-```
-
-Both entries run the same code. It imports nothing, makes no code from strings, and reads
-`build/types.json` as data, so a page and a program give every entry the same answer.
-
-`checkEntry(market, role, kind, body, aboutRole?)` checks a listing, a review, a vouch or a report
-by a `role` profile as this manual says, and answers `null` when it fits, else the first field that
-does not, in plain words. For a review, `aboutRole` is the role of the profile it is about: a field
-kept for some roles is checked against it, and goes unchecked without it. Whether `subject`, or the
-profile in `listing`, is an address, and the body's `files`, are
-[the standard's](https://github.com/foundationforest/standard/blob/main/folders/README.md) checks.
-
-The package also exports `SHARED`, the fields each kind holds in every market beyond its market's,
-as a market's fields are written: a listing's `contact`, and what every review, vouch and report
-holds; and `UNITS`, the units a number field may name. `previewOf(market)` gives the names of a
-market's listing fields that matter first, as [Preview](#preview) says. `npm test` runs its tests,
-on a test market of their own, [`test/knitting.json`](test/knitting.json), shaped to hold every key
-a field may hold rather than as a model; `npm run check` type-checks the package, and the browser
-entry again without Node's types.
+For a review, `checkEntry` and `ask` take the role reviewed last. `match` and `read` take
+`{ today }`; `read` leaves the zone out, for a program to show when the reader is in another. A page
+imports `@foundationforest/markets/browser` and passes the files as data, `loadMarkets({ directory,
+lists, markets })`. `npm test` runs the tests, on [`test/knitting.json`](test/knitting.json), a
+market that holds every key.
