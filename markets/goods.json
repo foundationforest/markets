@@ -124,17 +124,7 @@
       "ask": {
         "label": "Foot length",
         "hint": "The CM size on the label, such as 26.5.",
-        "usual": { "from": "9", "to": "33" },
         "as": { "seller": { "question": "What foot length is it for?" }, "buyer": { "question": "Which foot lengths?", "start": { "range": true } } }
-      }
-    },
-    "labelSize": {
-      "piece": "text",
-      "when": { "category": ["clothes", "shoes"] },
-      "ask": {
-        "label": "Size on label",
-        "hint": "Only when none of the sizes above fits, such as EU 38 or UK 10.",
-        "as": { "seller": { "question": "What size is on the label?" }, "buyer": { "question": "Which sizes on the label?" } }
       }
     },
     "handover": { "piece": "choice", "values": ["in-person", "shipped"], "several": true, "ask": { "label": "In person or shipped", "question": "In person or shipped?" } },
@@ -157,7 +147,7 @@
     },
     "description": { "piece": "text", "ask": { "label": "About", "long": true, "as": { "seller": { "question": "What should buyers know?" }, "buyer": { "question": "What should sellers know?" } } } }
   },
-  "preview": ["photos", "category", "brand", "condition", "price", "wearer", "size", "waist", "leg", "age", "footLength", "labelSize", "area"],
+  "preview": ["photos", "category", "brand", "condition", "price", "wearer", "size", "waist", "leg", "age", "footLength", "area"],
   "review": {
     "asDescribed": { "piece": "choice", "values": ["yes", "no"], "roles": ["seller"], "ask": { "label": "As described", "question": "Was the item as the listing said and showed?" } },
     "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["buyer"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }

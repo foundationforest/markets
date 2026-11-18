@@ -1,8 +1,7 @@
-// The markets from their files, given as data, and the four answers every program shares, so an app, an
-// index and a connector cannot disagree (build/README.md says each one):
+// The markets from their files, given as data, and four answers (build/README.md says each one):
 //   1. checkEntry: does this entry fit?
-//   2. match: do these two answers match?
-//   3. read: how does this answer read, in plain English?
+//   2. match: do these two answers of one field match?
+//   3. read: how does this answer read, in plain English? A helper, not part of the standard.
 //   4. ask: what does this market ask this role?
 // Both entries use it: index.ts reads the files from a checkout, browser.ts takes them from a page. It
 // imports nothing and makes no code from strings, so it runs where a content security policy forbids
@@ -13,7 +12,7 @@ export const PIECES = ['text', 'choice', 'number', 'price', 'place', 'date', 'ph
 export type Piece = (typeof PIECES)[number]
 
 /** The units a number field may name: measures a program could convert. A count names none. */
-export const UNITS = ['seconds', 'minutes', 'hours', 'days', 'years', 'centimetres', 'metres', 'kilometres', 'square-metres', 'grams', 'kilograms'] as const
+export const UNITS = ['minutes', 'hours', 'days', 'years', 'centimetres', 'square-metres'] as const
 export type Unit = (typeof UNITS)[number]
 
 export const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
@@ -39,7 +38,6 @@ export type Words = { label?: string; question?: string; hint?: string; start?: 
 /** A field's suggestions: how to ask for it. Never checked against an entry; any program may ignore them. */
 export type Ask = Words & {
   as?: { [role: string]: Words }
-  usual?: { from?: string; to?: string }
   long?: true
   labels?: { [value: string]: string }
 }
@@ -91,7 +89,7 @@ export type Kind = (typeof KINDS)[number]
 /** One number as decimal text, or from one to another, either end left out for no limit. */
 export type NumberValue = string | { from?: string; to?: string }
 export type PriceValue = { amount: string; currency: string; per?: string; count?: number; note?: string }
-export type PlaceValue = { lat: string; lon: string; radiusKm: number; name: string; country: string } | { country: string }
+export type PlaceValue = { lat: string; lon: string; radiusKm: number }
 export type DateValue = ({ on: string } | { from?: string; to?: string } | { every: Weekday[]; from?: string; to?: string }) & {
   start?: string
   end?: string
@@ -113,7 +111,7 @@ export const SHARED: { [kind in Kind]: Fields } = {
   review: {
     subject: { piece: 'text', ask: { label: 'About', question: 'Which profile is it about?' } },
     listing: { piece: 'text', ask: { label: 'Listing', question: 'Which listing was the deal?' } },
-    score: { piece: 'number', ask: { label: 'Score', question: 'How did it go, from 1 to 10?', usual: { from: '1', to: '10' } } },
+    score: { piece: 'number', ask: { label: 'Score', question: 'How did it go, from 1 to 10?' } },
     text: { piece: 'text', ask: { label: 'Review', question: 'What would you tell others?', long: true } },
   },
   vouch: {
@@ -181,11 +179,14 @@ export type Markets = {
   ask(market: string, role: string, kind?: string, aboutRole?: string): Asked[]
   /**
    * Whether two answers of `field`, ones that fit, match, as build/README.md says for each piece. For a price, `a` is
-   * the offer's and `b` the request's, and a note is never matched. An answer left out never blocks a match. It
-   * compares a field with the same field: where two fields answer each other, a program filters each on the other.
+   * the offer's and `b` the request's, and a note is never matched. It compares one field: how fields combine is
+   * each index's choice.
    */
   match(field: Field, a: unknown, b: unknown, options?: Options): boolean
-  /** How an answer of `field`, one that fits, reads in plain English. */
+  /**
+   * How an answer of `field`, one that fits, reads in plain English, the zone left out. A helper, not part of the
+   * standard: a program may word things its own way.
+   */
   read(field: Field, value: unknown, options?: Options): string
 }
 
@@ -325,7 +326,7 @@ const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
         (!has(v, 'note') || isNote(v.note))
       )
     case 'place':
-      return isPlace(v, lists)
+      return isPlace(v)
     case 'date':
       return isDate(v)
     case 'photo':
@@ -343,21 +344,15 @@ const isNumber = (v: unknown): boolean => {
   if (![v.from, v.to].every((end) => end === undefined || (typeof end === 'string' && DECIMAL.test(end)))) return false
   return !(Number(v.from) > Number(v.to))
 }
-const isPlace = (v: unknown, lists: Lists): boolean => {
-  if (!isObject(v) || typeof v.country !== 'string' || !Object.hasOwn(lists.countries ?? {}, v.country)) return false
-  if (only(v, ['country'])) return true
-  return (
-    only(v, ['lat', 'lon', 'radiusKm', 'name', 'country']) &&
-    typeof v.lat === 'string' &&
-    LAT.test(v.lat) &&
-    typeof v.lon === 'string' &&
-    LON.test(v.lon) &&
-    Number.isInteger(v.radiusKm) &&
-    (v.radiusKm as number) >= 0 &&
-    typeof v.name === 'string' &&
-    LINE.test(v.name)
-  )
-}
+const isPlace = (v: unknown): boolean =>
+  isObject(v) &&
+  only(v, ['lat', 'lon', 'radiusKm']) &&
+  typeof v.lat === 'string' &&
+  LAT.test(v.lat) &&
+  typeof v.lon === 'string' &&
+  LON.test(v.lon) &&
+  Number.isInteger(v.radiusKm) &&
+  (v.radiusKm as number) >= 0
 const isDate = (v: unknown): boolean => {
   if (!isObject(v) || !only(v, ['on', 'from', 'to', 'every', 'start', 'end', 'part', 'zone'])) return false
   // The days: one day, from one day to another with either end left out, or weekdays every week.
@@ -407,7 +402,7 @@ const takes = (field: Field): string => {
           ? `{ amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, ${NOTE_TAKES}`
           : `{ amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, ${NOTE_TAKES}`
       case 'place':
-        return '{ lat, lon, radiusKm, name, country }: lat and lon as decimal text, radiusKm in whole kilometres, the place\'s name, and country a two-letter code from the countries list, such as PT; or { country } alone, for anywhere in it'
+        return '{ lat, lon, radiusKm }: lat and lon as decimal text, and radiusKm in whole kilometres'
       case 'date':
         return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday, all seven for hours on any day; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
       case 'photo':
@@ -423,9 +418,8 @@ const takes = (field: Field): string => {
 
 const EARTH_KM = 6371.0088
 const radians = (degrees: string) => (Number(degrees) * Math.PI) / 180
-/** Whether two places meet: two circles that touch, a country and a place in it, or the same country. */
+/** Whether two places meet: two circles that touch. */
 const placesMeet = (a: PlaceValue, b: PlaceValue): boolean => {
-  if (!('lat' in a) || !('lat' in b)) return a.country === b.country
   const [lat1, lat2] = [radians(a.lat), radians(b.lat)]
   const h = Math.sin((lat2 - lat1) / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin((radians(b.lon) - radians(a.lon)) / 2) ** 2
   return 2 * EARTH_KM * Math.asin(Math.min(1, Math.sqrt(h))) <= a.radiusKm + b.radiusKm
@@ -498,17 +492,12 @@ const each = (p: PriceValue) => Number(p.amount) / (p.count ?? 1)
 // Question 3: how does an answer read?
 
 const UNIT_WORDS: { [unit in Unit]: [string, string] } = {
-  seconds: ['second', 'seconds'],
   minutes: ['minute', 'minutes'],
   hours: ['hour', 'hours'],
   days: ['day', 'days'],
   years: ['year', 'years'],
   centimetres: ['centimetre', 'centimetres'],
-  metres: ['metre', 'metres'],
-  kilometres: ['kilometre', 'kilometres'],
   'square-metres': ['square metre', 'square metres'],
-  grams: ['gram', 'grams'],
-  kilograms: ['kilogram', 'kilograms'],
 }
 /** Decimal text with its thousands grouped, such as 1,300 for 1300. */
 const figure = (text: string) => text.replace(/^(-?)([0-9]+)/, (_, sign: string, whole: string) => sign + whole.replace(/\B(?=([0-9]{3})+$)/g, ','))
@@ -529,11 +518,8 @@ const readPrice = (p: PriceValue): string => {
   // A note is any few of the person's words to read with the price, read after it and never matched.
   return p.note === undefined ? said : `${said} (${p.note})`
 }
-const readPlace = (p: PlaceValue, lists: Lists): string => {
-  if (!('lat' in p)) return `Anywhere in ${lists.countries?.[p.country] ?? p.country}`
-  // A circle is "in or around here", never "inside this line", so it reads as around, not within.
-  return p.radiusKm === 0 ? p.name : `Around ${p.name}, ${p.radiusKm} km`
-}
+// A place reads as its numbers. A circle is "in or around here", never "inside this line", so it reads as around.
+const readPlace = (p: PlaceValue): string => (p.radiusKm === 0 ? `${p.lat}, ${p.lon}` : `Around ${p.lat}, ${p.lon}, ${p.radiusKm} km`)
 const readTime = (time: string) => time.replace(/^0(?=[0-9]:)/, '')
 const readDate = (v: DateValue, today: number): string => {
   const year = dateOf(today).year
@@ -583,7 +569,6 @@ const OWN_START: { [piece in Piece]?: Start } = { place: { radiusKm: 5 }, date: 
 
 /** The markets in `files`. */
 export function fromFiles({ directory, lists, markets: given }: Files): Markets {
-  if (!isObject(lists) || !isObject(lists.countries)) throw new Error('build/lists.json holds no countries list')
   const byName = new Map(given.map((market) => [market.name, market]))
   const markets = new Map(
     directory.markets.map(({ name }) => {
@@ -681,7 +666,6 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
     },
 
     match(field, a, b, options) {
-      if (a === undefined || b === undefined) return true
       const [xs, ys] = isSeveral(field) ? [a as unknown[], b as unknown[]] : [[a], [b]]
       if (field.piece === 'price') {
         // Prices in different currencies, or per different things, cannot be compared: they never block.
@@ -720,7 +704,7 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
           case 'price':
             return readPrice(v as PriceValue)
           case 'place':
-            return readPlace(v as PlaceValue, lists)
+            return readPlace(v as PlaceValue)
           case 'date':
             return readDate(v as DateValue, today)
           default:

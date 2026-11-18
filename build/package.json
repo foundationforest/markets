@@ -2,7 +2,7 @@
   "name": "@foundationforest/markets",
   "version": "0.0.0",
   "private": true,
-  "description": "The Forest markets: the directory, the shared lists and each market file, and the four answers every program shares: checkEntry, whether an entry fits; match, whether two answers match; read, how an answer reads in plain English; and ask, what a market asks a role. The package reads them from a markets checkout; its browser entry takes the same files as data, and runs no code made from strings. check.sh checks every market file, and writes directory.json and directory.md from them.",
+  "description": "The Forest markets: the directory, the shared lists and each market file, and the answers every program shares: checkEntry, whether an entry fits; match, whether two answers of one field match; and ask, what a market asks a role; and read, a helper that says an answer in plain English, not part of the standard. The package reads them from a markets checkout; its browser entry takes the same files as data, and runs no code made from strings. check.sh checks every market file, and writes directory.json and directory.md from them.",
   "license": "CC0-1.0",
   "type": "module",
   "engines": {

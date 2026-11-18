@@ -102,7 +102,7 @@ test('each field is one of the eight pieces, and each rule is kept to the pieces
   assert.equal(
     said((m) => {
       m.listing.yarns.values = ['merino']
-      m.listing.yarns.unit = 'grams'
+      m.listing.yarns.unit = 'days'
       m.listing.yarns.per = ['item']
       m.listing.price.several = true
       m.listing.chest.unit = 'inches'
@@ -149,7 +149,6 @@ test('roles, when and preview name what the market has, and when never goes in a
 test('suggestions are checked only to be well formed: each key for the piece it opens, each role and label for one the market has', () => {
   assert.equal(
     said((m) => {
-      m.listing.yarns.ask.usual = { from: '1' }
       m.listing.kind.ask.long = true
       m.listing.chest.ask.labels = { '100': 'One hundred' }
       m.listing.yarns.ask.start = { radiusKm: 5 }
@@ -157,14 +156,11 @@ test('suggestions are checked only to be well formed: each key for the piece it 
       m.listing.due.ask.start = { range: true, hours: true }
       m.listing.size.ask.labels.xxl = 'XXL'
       m.listing.area.ask.as.seller = { question: 'Where is your shop?' }
-      m.listing.age.ask.usual = { from: '16', to: '0' }
     }),
     of(
       '/listing/kind/ask: "long" is only for a text field',
       '/listing/size/ask/labels: "xxl" is not one of size\'s values',
-      '/listing/age/ask/usual: from must be no more than to',
       '/listing/chest/ask: "labels" is only for a choice field',
-      '/listing/yarns/ask: "usual" is only for a number field',
       '/listing/yarns/ask/start: "radiusKm" is only for a place field',
       '/listing/due/ask/start: "range" is only for a number field',
       '/listing/area/ask/as: "seller" is not a role here: the roles are knitter, client',
@@ -176,7 +172,6 @@ test('suggestions are checked only to be well formed: each key for the piece it 
   assert.equal(said((m) => (m.listing.meet.ask.start.way = 'monthly')), of('/listing/meet/ask/start/way must be one of "day", "from-to", "until", "weekly"'))
   assert.equal(said((m) => (m.listing.meet.ask.start.hours = 'morning')), of('/listing/meet/ask/start/hours must be one of true, "part"'))
   assert.equal(said((m) => (m.listing.price.ask.as.client.label = '')), of('/listing/price/ask/as/client/label must be one line of text, not only spaces'))
-  assert.equal(said((m) => (m.listing.age.ask.usual = { from: 0 })), of('/listing/age/ask/usual/from must be a number as decimal text, such as "2.5"'))
   // A label for a value of a shared list is one of its values.
   assert.equal(said((m) => (m.listing.languages.ask.labels = { es: 'Castilian' })), stale)
 })
@@ -195,18 +190,17 @@ test('an icon is one of the Phosphor icons in build/icons.json, and no two marke
   ].join('\n'))
 })
 
-test("build/lists.json holds lists of values with their words, among them the countries a place's country is checked against", () => {
+test('build/lists.json holds lists of values with their words, each country a two-letter code', () => {
   const lists = json('build/lists.json')
-  assert.equal(run({ markets: [copy()], lists: { languages: lists.languages } }).stderr, "build/lists.json:\n  - holds no countries list: a place's country is checked against it\n")
   assert.equal(run({ markets: [copy()], lists: { ...lists, countries: { ...lists.countries, es: 'Spain' } } }).stderr, 'build/lists.json:\n  - /countries/es is not a two-letter code, as ISO 3166-1 writes one\n')
   assert.equal(run({ markets: [copy()], lists: { ...lists, Sizes: {} } }).stderr, 'build/lists.json:\n  - "Sizes" is not a list name: lowercase letters, digits and single hyphens\n  - /Sizes must be an object of one or more values, each with its words\n')
 })
 
 test("the schema's pieces and units are the package's", () => {
   const schema = json('build/market.schema.json')
-  schema.$defs.field.properties.unit.enum = UNITS.filter((unit) => unit !== 'grams')
+  schema.$defs.field.properties.unit.enum = UNITS.filter((unit) => unit !== 'hours')
   const units = UNITS.join(', ')
-  assert.equal(run({ markets: [copy()], schema }).stderr, `build/market.schema.json:\n  - its units (${units.replace(', grams', '')}) differ from the ones in src/markets.ts (${units})\n`)
+  assert.equal(run({ markets: [copy()], schema }).stderr, `build/market.schema.json:\n  - its units (${units.replace(', hours', '')}) differ from the ones in src/markets.ts (${units})\n`)
 })
 
 test('a shared list only grows: its values may gain words and new values, and none goes', () => {
@@ -267,7 +261,7 @@ test('a market live on main may grow, and change its suggestions in any way: eac
       m.listing.area.ask.as.client.question = 'Roughly where are you?'
       m.listing.area.ask.as.client.start.radiusKm = 2
       delete m.listing.kind.ask
-      m.listing.chest.ask = { label: 'Chest size', usual: { from: '50', to: '150' } }
+      m.listing.chest.ask = { label: 'Chest size' }
       m.listing.size.ask.labels.xl = 'Extra large'
       m.listing.meet.ask.start = { way: 'day' }
       m.preview = ['description']

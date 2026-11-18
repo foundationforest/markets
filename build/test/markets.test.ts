@@ -53,7 +53,7 @@ const read = (field: Field, value: unknown) => both('read', field, value, today)
 const K = 'knitting'
 const subject = '9bpPbLYCPwNWq9BZqnJr3EqRNqymFZ4g58Zk9K86azDC'
 const photo = { sha256: '04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86', type: 'image/jpeg', size: 48213 }
-const madrid = { lat: '40.4168', lon: '-3.7038', radiusKm: 5, name: 'Madrid', country: 'ES' }
+const madrid = { lat: '40.4168', lon: '-3.7038', radiusKm: 5 }
 const price = { amount: '30', currency: 'EUR', per: 'hour' }
 const inPerson = { handover: ['in-person'] }
 const kids = { wearer: ['children'] }
@@ -70,11 +70,10 @@ test('the package reads a checkout: this one, by default or named, and the test 
   assert.equal(markets.market('weaving'), undefined)
 })
 
-test('the browser entry holds the same files, and needs each market the directory lists and the countries list', () => {
+test('the browser entry holds the same files, and needs each market the directory lists', () => {
   assert.deepEqual(browser.directory, markets.directory)
   assert.deepEqual(browser.market(K), markets.market(K))
   assert.throws(() => loadGiven({ ...files, markets: [] }), { message: 'the directory lists knitting, but no markets/knitting.json was given' })
-  assert.throws(() => loadGiven({ ...files, lists: { languages: lists.languages } }), { message: 'build/lists.json holds no countries list' })
   assert.equal(previewGiven, previewOf)
 })
 
@@ -110,7 +109,7 @@ test('text: your own words; several, a list of different ones', () => {
 })
 
 test("choice: one value from the field's own list, or from the shared list it names", () => {
-  assert.equal(listing('knitter', { kind: ['hat', 'socks'], languages: ['es', 'en'] }), null)
+  assert.equal(listing('knitter', { kind: ['hat', 'socks'], languages: ['es', 'en'], handover: ['shipped'], shipsTo: ['PT', 'XK'] }), null)
   const kind = 'kind takes a list of one or more, each different, each one of jumper, cardigan, scarf, hat, socks'
   for (const value of ['hat', ['shawl'], ['HAT'], ['hat', 'hat'], []]) assert.equal(listing('knitter', { kind: value }), kind)
   assert.equal(listing('knitter', { languages: ['spanish'] }), 'languages takes a list of one or more, each different, each one of the values in the languages list')
@@ -148,18 +147,13 @@ test('price: always several, each with a per its field lists or none, and a coun
   for (const wrong of [{ amount: '40', currency: 'EUR' }, [{ amount: '40', currency: 'EUR', per: 'item' }]]) assert.equal(listing('knitter', { deposit: wrong }), noPer)
 })
 
-test('place: a circle with its name and country, or a country alone', () => {
+test('place: a circle, its centre and its radius, and nothing else', () => {
   const { radiusKm: _r, ...noRadius } = madrid
-  const { name: _n, ...noName } = madrid
-  const { country: _c, ...noCountry } = madrid
-  for (const area of [madrid, { ...madrid, radiusKm: 0 }, { ...madrid, name: 'Chamberí, Madrid' }, { country: 'ES' }]) assert.equal(listing('client', { ...inPerson, area }), null)
-  const takes = "area takes { lat, lon, radiusKm, name, country }: lat and lon as decimal text, radiusKm in whole kilometres, the place's name, and country a two-letter code from the countries list, such as PT; or { country } alone, for anywhere in it"
-  for (const area of [noRadius, noName, noCountry, { country: 'XX' }, { country: 'es' }, { ...madrid, country: 'Spain' }, { ...madrid, radiusKm: 1.5 }, { ...madrid, radiusKm: -1 }, { ...madrid, lat: '90.1' }, { ...madrid, lat: 40.4 }, { ...madrid, name: ' ' }, { ...madrid, area: 'Madrid' }, { lat: '40.4', lon: '-3.7', radiusKm: 5 }, 'Madrid']) {
+  for (const area of [madrid, { ...madrid, radiusKm: 0 }]) assert.equal(listing('client', { ...inPerson, area }), null)
+  const takes = 'area takes { lat, lon, radiusKm }: lat and lon as decimal text, and radiusKm in whole kilometres'
+  for (const area of [noRadius, { ...madrid, name: 'Madrid' }, { ...madrid, country: 'ES' }, { country: 'ES' }, { ...madrid, radiusKm: 1.5 }, { ...madrid, radiusKm: -1 }, { ...madrid, lat: '90.1' }, { ...madrid, lat: 40.4 }, 'Madrid']) {
     assert.equal(listing('client', { ...inPerson, area }), takes)
   }
-  assert.equal(listing('knitter', { handover: ['shipped'], shipsTo: [{ country: 'PT' }, { country: 'ES' }] }), null)
-  // Kosovo has no ISO 3166-1 code; XK is the one in common use.
-  assert.equal(listing('knitter', { handover: ['shipped'], shipsTo: [{ country: 'XK' }] }), null)
 })
 
 test('date: days, and hours or a part of the day with their zone if wanted', () => {
@@ -348,21 +342,17 @@ test('a part of the day matches as 6:00 to 12:00, 12:00 to 18:00 and 18:00 to 24
   assert.equal(match(date, londonMorning, { on: '2026-11-26', start: '13:00', zone: Z }), false)
 })
 
-test('places match when their circles touch, and a country matches the places in it', () => {
+test('places match when their circles touch', () => {
   const place: Field = { piece: 'place' }
-  const getafe = { lat: '40.3083', lon: '-3.7327', radiusKm: 10, name: 'Getafe', country: 'ES' }
-  const toledo = { lat: '39.8628', lon: '-4.0273', radiusKm: 5, name: 'Toledo', country: 'ES' }
-  const retiro = { lat: '40.4153', lon: '-3.6845', radiusKm: 0, name: 'Retiro park, Madrid', country: 'ES' }
-  const lisbon = { lat: '38.7223', lon: '-9.1393', radiusKm: 10, name: 'Lisbon', country: 'PT' }
+  const getafe = { lat: '40.3083', lon: '-3.7327', radiusKm: 10 }
+  const toledo = { lat: '39.8628', lon: '-4.0273', radiusKm: 5 }
+  const retiro = { lat: '40.4153', lon: '-3.6845', radiusKm: 0 }
   assert.equal(match(place, madrid, getafe), true)
   assert.equal(match(place, madrid, toledo), false)
   assert.equal(match(place, retiro, madrid), true)
-  assert.equal(match(place, lisbon, { country: 'PT' }), true)
-  assert.equal(match(place, lisbon, { country: 'ES' }), false)
-  assert.equal(match(place, { country: 'PT' }, { country: 'PT' }), true)
 })
 
-test('numbers match when they overlap, choices when the same, and an answer left out never blocks', () => {
+test('numbers match when they overlap, and choices when the same', () => {
   const age: Field = { piece: 'number', unit: 'years' }
   assert.equal(match(age, { from: '9', to: '11' }, '10'), true)
   assert.equal(match(age, { from: '18' }, { from: '30', to: '40' }), true)
@@ -373,7 +363,6 @@ test('numbers match when they overlap, choices when the same, and an answer left
   assert.equal(match(kind, 'hat', 'hat'), true)
   assert.equal(match(kind, 'hat', 'socks'), false)
   assert.equal(match({ ...kind, several: true }, ['hat', 'socks'], ['socks']), true)
-  for (const field of [age, kind, date]) assert.equal(match(field, undefined, '10'), true)
 })
 
 test("prices: the offer's costs no more than the request's, per the same thing in the same currency", () => {
@@ -442,9 +431,8 @@ test('the other pieces read in plain words', () => {
   assert.equal(read({ piece: 'price', per: ['item', 'lesson', 'person'] }, prices), '35 EUR per item; 1,300 MXN for 5 lessons; 300 EUR; 50 EUR for 2 people')
   const noted = [{ amount: '45', currency: 'EUR', per: 'hour' }, { amount: '30', currency: 'EUR', note: 'call-out, on top' }, { amount: '20', currency: 'EUR', per: 'lesson', count: 4, note: 'per child, in a group' }]
   assert.equal(read({ piece: 'price', per: ['hour', 'lesson'] }, noted), '45 EUR per hour; 30 EUR (call-out, on top); 20 EUR for 4 lessons (per child, in a group)')
-  const places = [{ ...madrid, name: 'Chamberí, Madrid', radiusKm: 1 }, { ...madrid, name: 'Retiro park, Madrid', radiusKm: 0 }, { country: 'PT' }]
-  assert.equal(read({ piece: 'place', several: true }, places), 'Around Chamberí, Madrid, 1 km; Retiro park, Madrid; Anywhere in Portugal')
-  assert.equal(read({ piece: 'place' }, { lat: '25.6522', lon: '-100.4036', radiusKm: 10, name: 'Del Valle, San Pedro Garza García', country: 'MX' }), 'Around Del Valle, San Pedro Garza García, 10 km')
+  // A place reads as its numbers.
+  assert.equal(read({ piece: 'place', several: true }, [{ ...madrid, radiusKm: 1 }, { ...madrid, radiusKm: 0 }]), 'Around 40.4168, -3.7038, 1 km; 40.4168, -3.7038')
   assert.equal(read(knitting.listing.languages!, ['es', 'en', 'pt']), 'Spanish, English and Portuguese')
   assert.equal(read(knitting.listing.size!, ['xl']), 'XL')
   assert.equal(read(knitting.listing.handover!, ['in-person']), 'In person')
@@ -486,7 +474,6 @@ test("each field comes with its words: the role's, or else the field's, or else 
   assert.equal(client.area!.hint, 'Your neighbourhood and town, never your door.')
   assert.deepEqual(client.area!.start, { radiusKm: 1 })
   assert.equal(knitter.shipsTo!.label, 'Ships to')
-  assert.deepEqual(knitter.shipsTo!.start, { radiusKm: 5 })
   assert.equal(client.footLength!.label, 'Foot length')
   assert.equal(client.footLength!.question, 'Foot length')
   assert.deepEqual(client.footLength!.start, { range: false })
@@ -515,13 +502,12 @@ test("each field comes with its words: the role's, or else the field's, or else 
   assert.deepEqual(client.size!.when, knitting.listing.size!.when)
   assert.equal(by('client', 'review', 'knitter').again!.label, 'Again')
   assert.equal(by('knitter', 'review', 'client').paid!.question, 'Did they pay as agreed?')
-  assert.equal(by('knitter', 'review', 'client').score!.ask!.usual!.to, '10')
 })
 
 test("previewOf gives a market's preview, or else description, price, then its place fields, of those it has", () => {
   assert.deepEqual(previewOf(knitting), knitting.preview)
   const { preview: _preview, ...none } = knitting
-  assert.deepEqual(previewOf(none), ['description', 'price', 'area', 'shipsTo'])
+  assert.deepEqual(previewOf(none), ['description', 'price', 'area'])
 })
 
 test('the shared fields are pieces, a name in words reads as people write it, and every shared field has a label', () => {
