@@ -7,7 +7,7 @@ hand. What a market is: [`README.md`](README.md).
 A live market needs no payment between people yet, is polished, and from now on only grows. A
 beta market works, at your own risk, and may still change in any way.
 
-- [`goods`](markets/goods.json) (beta): People sell everyday things, new or used. Not motor vehicles or homes, and ship only what either side could lose without real harm. Roles: seller (offers), buyer (requests).
+- [`goods`](markets/goods.json) (beta): People sell everyday things, new or used. Not motor vehicles or homes. If it has to be shipped, keep to things you could afford to lose. Roles: seller (offers), buyer (requests).
 - [`home-cleaning`](markets/home-cleaning.json) (beta): Cleaners clean people's homes. Roles: cleaner (offers), client (requests).
 - [`home-gardening`](markets/home-gardening.json) (beta): Gardeners mow, prune, plant and care for people's gardens. Caring for a garden, not landscaping, building or felling trees. Repairs are home-repair, and cleaning is home-cleaning. Roles: gardener (offers), client (requests).
 - [`home-repair`](markets/home-repair.json) (beta): Repairers do plumbing, electrical and handyman jobs in people's homes. Repairs and small jobs in a home, not renovations or building work. Garden work is home-gardening, and cleaning is home-cleaning. Roles: repairer (offers), client (requests).
@@ -18,4 +18,4 @@ beta market works, at your own risk, and may still change in any way.
 - [`stays-work`](markets/stays-work.json) (beta): Hosts give guests a bed, and often meals, for their help. For adults only, and never childcare. A free stay with no help is stays-free, and help for a cause with no bed is volunteering. Roles: host (offers), guest (requests).
 - [`tours`](markets/tours.json) (beta): Local guides show people around their town or its nature. For adults, who may bring their own children. Learning a sport, such as surfing, is sports-coaching. Roles: guide (offers), guest (requests).
 - [`tutoring`](markets/tutoring.json) (beta): Tutors teach school subjects, languages, chess and other desk subjects. School subjects, languages and chess; sport and fitness are sports-coaching, and practising a language for free is language-exchange. The student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person. Roles: tutor (offers), student (requests).
-- [`volunteering`](markets/volunteering.json) (beta): Volunteers give their time to cleanups, food banks, events and good causes. A bed for help is stays-work. Never caring for children or for people who need care, and in person for adults only. Roles: organizer (offers), volunteer (requests).
+- [`volunteering`](markets/volunteering.json) (beta): Volunteers give their time to cleanups, food banks, events and good causes. For adults only, online too, and never caring for children or for people who need care. A bed for help is stays-work. Roles: organizer (offers), volunteer (requests).

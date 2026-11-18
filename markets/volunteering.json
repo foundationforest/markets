@@ -1,7 +1,7 @@
 {
   "name": "volunteering",
   "summary": "Volunteers give their time to cleanups, food banks, events and good causes.",
-  "description": "A bed for help is stays-work. Never caring for children or for people who need care, and in person for adults only.",
+  "description": "For adults only, online too, and never caring for children or for people who need care. A bed for help is stays-work.",
   "status": "beta",
   "icon": "hand-heart",
   "number": 14,
@@ -16,7 +16,7 @@
       "several": true,
       "ask": {
         "label": "Help",
-        "labels": { "food": "Food banks", "events": "Community events" },
+        "labels": { "cleanup": "litter cleanups", "food": "food banks and meals", "events": "community events", "nature": "trees, land and wildlife", "animals": "animal shelters and rescues", "digital-work": "websites, social media and data" },
         "as": { "organizer": { "question": "What help do you need?" }, "volunteer": { "question": "What help can you give?" } }
       }
     },
@@ -33,7 +33,7 @@
       "ask": {
         "label": "Area",
         "as": {
-          "organizer": { "label": "Meeting point", "question": "Where do volunteers meet?", "hint": "A public spot, such as a park gate or a food bank, by name; the circle can stay rough.", "start": { "radiusKm": 1 } },
+          "organizer": { "label": "Meeting point", "question": "Where do volunteers meet?", "hint": "A public spot, such as a park gate or a food bank.", "start": { "radiusKm": 0 } },
           "volunteer": { "question": "Where can you help?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 5 } }
         }
       }
@@ -55,7 +55,7 @@
       "ask": {
         "label": "Hours a week",
         "hint": "Such as 20 for 4 hours a day, 5 days a week.",
-        "as": { "organizer": { "question": "How many hours of help a week?" }, "volunteer": { "question": "How many hours a week can you help?", "start": { "range": true } } }
+        "as": { "organizer": { "question": "How many hours of help a week?" }, "volunteer": { "question": "How many hours a week can you help?", "hint": "Your limit, such as up to 20 for 4 hours a day, 5 days a week.", "start": { "range": true } } }
       }
     },
     "volunteers": {
@@ -63,7 +63,7 @@
       "ask": {
         "label": "Volunteers",
         "as": {
-          "organizer": { "question": "How many volunteers can come?", "hint": "Up to the most, such as up to 30.", "start": { "range": true } },
+          "organizer": { "question": "How many volunteers can come?", "hint": "Your limit, such as up to 30.", "start": { "range": true } },
           "volunteer": { "question": "How many of you are coming?" }
         }
       }

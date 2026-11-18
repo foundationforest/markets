@@ -16,7 +16,7 @@
       "several": true,
       "ask": {
         "label": "Jobs",
-        "labels": { "hedges": "Hedge trimming", "leaves": "Raking leaves", "clearing": "Clearing overgrowth" },
+        "labels": { "hedges": "hedge trimming", "leaves": "raking leaves", "clearing": "clearing overgrowth" },
         "as": { "gardener": { "question": "What do you do?" }, "client": { "question": "What needs doing?" } }
       }
     },

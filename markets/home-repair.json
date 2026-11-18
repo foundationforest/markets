@@ -14,7 +14,7 @@
       "piece": "choice",
       "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "locks", "mounting", "furniture-assembly"],
       "several": true,
-      "ask": { "label": "Jobs", "labels": { "mounting": "Wall mounting" }, "as": { "repairer": { "question": "What do you do?" }, "client": { "question": "What needs doing?" } } }
+      "ask": { "label": "Jobs", "labels": { "mounting": "wall mounting" }, "as": { "repairer": { "question": "What do you do?" }, "client": { "question": "What needs doing?" } } }
     },
     "area": {
       "piece": "place",

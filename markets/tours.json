@@ -19,13 +19,19 @@
         "as": { "guide": { "question": "What kinds of tours do you give?" }, "guest": { "question": "What kind of tour?" } }
       }
     },
+    "group": {
+      "piece": "choice",
+      "values": ["shared", "private"],
+      "several": true,
+      "ask": { "label": "Shared or private", "as": { "guide": { "question": "Do you give shared or private tours?" }, "guest": { "question": "Shared or private?" } } }
+    },
     "area": {
       "piece": "place",
       "several": true,
       "ask": {
         "label": "Area",
         "as": {
-          "guide": { "label": "Meeting point", "question": "Where does the tour start?", "hint": "A public spot, such as a square or a station, by name; the circle can stay rough.", "start": { "radiusKm": 1 } },
+          "guide": { "label": "Meeting point", "question": "Where does the tour start?", "hint": "A public spot, such as a square or a station.", "start": { "radiusKm": 0 } },
           "guest": { "question": "Where do you want a tour?", "hint": "The town or area, not where you are staying.", "start": { "radiusKm": 10 } }
         }
       }
@@ -41,7 +47,7 @@
         }
       }
     },
-    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?", "as": { "guide": { "question": "Which languages are your tours in?" } } } },
     "price": {
       "piece": "price",
       "per": ["person", "hour"],
@@ -51,14 +57,14 @@
     "tourHours": {
       "piece": "number",
       "unit": "hours",
-      "ask": { "label": "Tour length", "as": { "guide": { "question": "How long is a tour?" }, "guest": { "question": "How long should it be?" } } }
+      "ask": { "label": "Tour length", "as": { "guide": { "question": "How long is a tour?" }, "guest": { "question": "How long should it be?", "hint": "Your limit, such as up to 3.", "start": { "range": true } } } }
     },
     "groupSize": {
       "piece": "number",
       "ask": {
         "label": "Group size",
         "as": {
-          "guide": { "question": "How many people can join?", "hint": "Up to the most, such as up to 12.", "start": { "range": true } },
+          "guide": { "question": "How many people can join?", "hint": "Your limit, such as up to 12.", "start": { "range": true } },
           "guest": { "question": "How many of you are coming?" }
         }
       }
@@ -68,7 +74,7 @@
       "ask": { "label": "About", "long": true, "as": { "guide": { "question": "What should guests know?" }, "guest": { "question": "What should the guide know?" } } }
     }
   },
-  "preview": ["kind", "area", "days", "languages", "price", "photos"],
+  "preview": ["kind", "group", "area", "days", "languages", "price", "photos"],
   "review": {
     "asDescribed": { "piece": "choice", "values": ["yes", "no"], "roles": ["guide"], "ask": { "label": "As described", "question": "Was the tour as the listing said?" } },
     "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["guest"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }

@@ -17,7 +17,7 @@
         "label": "Area",
         "as": {
           "host": { "question": "Where is your home?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 1 } },
-          "guest": { "question": "Where do you want to stay?", "hint": "Each place on your trip, or a whole country.", "start": { "radiusKm": 10 } }
+          "guest": { "question": "Where do you want to stay?", "hint": "Each place you would stay on the same dates, or a whole country.", "start": { "radiusKm": 10 } }
         }
       }
     },
@@ -41,7 +41,7 @@
       "ask": {
         "label": "Guests",
         "as": {
-          "host": { "question": "How many guests at once?", "hint": "Up to the most, such as up to 2.", "start": { "range": true } },
+          "host": { "question": "How many guests at once?", "hint": "Your limit, such as up to 2.", "start": { "range": true } },
           "guest": { "question": "How many of you are travelling?" }
         }
       }
@@ -51,7 +51,7 @@
       "ask": {
         "label": "Nights",
         "as": {
-          "host": { "question": "How many nights can guests stay?", "hint": "Such as up to 3, or at least 14.", "start": { "range": true } },
+          "host": { "question": "How many nights can guests stay?", "hint": "Your limits, such as up to 3, or at least 14.", "start": { "range": true } },
           "guest": { "question": "How many nights do you want to stay?", "hint": "With one host, not the whole trip." }
         }
       }

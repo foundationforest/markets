@@ -3,7 +3,7 @@
     {
       "name": "goods",
       "summary": "People sell everyday things, new or used.",
-      "description": "Not motor vehicles or homes, and ship only what either side could lose without real harm.",
+      "description": "Not motor vehicles or homes. If it has to be shipped, keep to things you could afford to lose.",
       "status": "beta",
       "icon": "tag",
       "number": 4,
@@ -196,7 +196,7 @@
     {
       "name": "volunteering",
       "summary": "Volunteers give their time to cleanups, food banks, events and good causes.",
-      "description": "A bed for help is stays-work. Never caring for children or for people who need care, and in person for adults only.",
+      "description": "For adults only, online too, and never caring for children or for people who need care. A bed for help is stays-work.",
       "status": "beta",
       "icon": "hand-heart",
       "number": 14,

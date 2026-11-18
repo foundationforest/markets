@@ -22,9 +22,11 @@ question a person reads in a form is what an AI reads.
 
 An entry is a JSON object of answers, by field name. Any field may be left out, and a field one
 side leaves out never blocks a match. A field takes one answer unless it says `several`: then a list
-of one or more, each different, and two fields match when any pair of answers does. An entry holds
-no fractions as JSON numbers, so numbers, amounts and coordinates are decimal text, such as `"2.5"`,
-and only `radiusKm` and a price's `count` are plain whole numbers.
+of one or more, each different, each standing alone, so two fields match when any pair of answers
+does; answers in two fields never pair up, so a place cannot carry its own dates, and Lisbon from 12
+to 15 May and Porto from 16 to 19 May are two listings. An entry holds no fractions as JSON numbers,
+so numbers, amounts and coordinates are decimal text, such as `"2.5"`, and only `radiusKm` and a
+price's `count` are plain whole numbers.
 
 **text**: your own words, `"Merino jumpers, to your measure."`; with `several`, short words such as
 `["merino", "alpaca"]`. Never matched: a program searches text its own way.
@@ -44,22 +46,24 @@ is counted: people, rooms, nights. Two numbers match when they overlap: 9 to 11 
 `amount` as decimal text, `currency` a code such as `EUR`, `per` one of the field's `per` or left out
 for the whole deal, and `count`, only with a `per`, how many of it the amount buys, 1 when left out. So
 `[{ "amount": "35", "currency": "EUR", "per": "item" }, { "amount": "90", "currency": "EUR", "per": "item", "count": 3 }]`
-is 35 an item or 90 for three. A `note`, if wanted, is a few of the person's own words on what that
-price is for when the amount and `per` do not say it, such as "private lesson", "call-out, on top" or
-"from, for a simple site": one line of at most 80 characters, read in brackets after the price and
-never matched. In a request, a price is the most the writer would pay. Prices compare by
-amount divided by count, in one currency and `per`, since a rate between currencies is a guess: they
-match when the offer's costs no more than the request's, and prices that cannot be compared never
-block a match.
+is 35 an item or 90 for three. A `note`, if wanted, is any few words the person wants read with that
+price, such as "private tour, up to 6", "call-out, on top" or "or best offer": one line of at most
+80 characters, read in brackets after the price and never matched. In a request, a price is the most
+the writer would pay. Prices compare by amount divided by count, in one currency and `per`, since a
+rate between currencies is a guess: they match when the offer's costs no more than the request's,
+and prices that cannot be compared never block a match.
 
 **place**: a circle, `{ "lat", "lon", "radiusKm", "name", "country" }`, all five, or a country
 alone, `{ "country": "PT" }`, for anywhere in it. `lat` and `lon` are degrees, `radiusKm` whole
 kilometres round the centre of the named place, `name` stands alone, such as a neighbourhood with
-its town, and `country` is from the countries list. Radius 0 is an exact spot; any other means "in
-or around here", not "inside this line". Two places match when their circles touch, and a country
-matches the places in it. Where people also deal online, ask that as a choice before the place, and
-ask the place only `when` it is in person: an online deal has no place, and one made up to fill a
-form would hide it from people elsewhere.
+its town, and `country` is from the countries list. Radius 0 is an exact spot, for a public place
+meant to be found, picked on a map, looked up or given by the person. Any other radius means "in or
+around here", not "inside this line", and carries the writer's doubt too: a spot written from
+memory gets 1 km, whatever a field's start says, and its name carries it, as "Plaza de Armas,
+Cusco". Two places match when their circles touch, and a country matches the places in it. Where
+people also deal online, ask that as a choice before the place, and ask the place only `when` it is
+in person: an online deal has no place, and one made up to fill a form would hide it from people
+elsewhere.
 
 ```json
 { "lat": "40.4342", "lon": "-3.7031", "radiusKm": 1, "name": "Chamberí, Madrid", "country": "ES" }
@@ -73,9 +77,10 @@ deadline is `{ "to": "2027-01-15" }`; or weekdays every week, `{ "every": ["mond
 of the day, `morning`, `afternoon` or `evening`. A part keeps the person's word and reads as it,
 "Thursday mornings", since clock times made up for it would say hours they never gave; for matching
 only, it counts as 6:00 to 12:00, 12:00 to 18:00 or 18:00 to 24:00. Hours with no days named are
-written with `every` holding all seven days, `monday` to `sunday`, which means any of them, and read
-as the hours alone: "Evenings", not "Every evening". An answer with hours or a part names its `zone`
-as the IANA time zone database does, such as `Europe/Madrid`, never by offset; one without has none.
+written with `every` holding all seven days, `monday` to `sunday`, which means any of them. Several
+answers are joined in a list, so each reads whole: "Evenings", "Any day", "Every day, 10:00". An
+answer with hours or a part names its `zone` as the IANA time zone database does, such as
+`Europe/Madrid`, never by offset; one without has none.
 
 ```json
 { "every": ["saturday"], "from": "2027-05-01", "to": "2027-09-30", "start": "10:00", "zone": "Europe/Lisbon" }
@@ -146,8 +151,10 @@ Its **suggestions**, under `ask`, each with a fallback:
   `start` merges over the field's key by key, as the field's does over the piece's own, so
   `{ "hours": "part" }` keeps the field's `way`. In a review, a role names the one reviewed.
 - `usual`, a number's usual span; `long: true`, text of several lines; `labels`, how a choice's
-  values read, such as `{ "xl": "XL" }`. Left out, a value reads as its shared list says, or as
-  itself with a capital and hyphens as spaces.
+  values read inside a sentence, lower case but for a name or an abbreviation, such as
+  `{ "food": "food banks", "xl": "XL" }`. Left out, a value reads as its shared list says, or as
+  itself with hyphens as spaces. A program adds the capital where it stands first or alone, and
+  joins answers with semicolons when any one's words hold a comma or "and".
 
 `check.sh` checks suggestions only for being well formed. The shortest field is its piece:
 
@@ -192,7 +199,6 @@ a new name.
 
 - Centre a home's circle on its named place, never sized by where the person is: a circle drawn
   around them points to their door.
-- An exact spot is for a public place, meant to be found, such as a court.
 - Take the zone from the listing's place when it has one: the hours are where the deal is.
 - Store what the person said, and convert only when showing: a conversion is a guess, and stored, it
   replaces their words.

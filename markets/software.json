@@ -16,7 +16,7 @@
       "several": true,
       "ask": {
         "label": "Kind",
-        "labels": { "website": "Website or online shop", "ai": "AI" },
+        "labels": { "website": "website or online shop", "ai": "AI" },
         "as": { "developer": { "question": "What kinds of software do you work on?" }, "client": { "question": "What kind of software is it?" } }
       }
     },

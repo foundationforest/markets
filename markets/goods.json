@@ -1,7 +1,7 @@
 {
   "name": "goods",
   "summary": "People sell everyday things, new or used.",
-  "description": "Not motor vehicles or homes, and ship only what either side could lose without real harm.",
+  "description": "Not motor vehicles or homes. If it has to be shipped, keep to things you could afford to lose.",
   "status": "beta",
   "icon": "tag",
   "number": 4,
@@ -16,7 +16,7 @@
       "values": ["clothes", "shoes", "accessories", "electronics", "appliances", "furniture", "home", "garden", "tools", "books", "music", "games", "toys", "baby", "sports", "bikes"],
       "ask": {
         "label": "Category",
-        "labels": { "accessories": "Bags and accessories", "home": "Home and kitchen", "music": "Music and instruments", "games": "Games and consoles", "baby": "Baby gear", "sports": "Sports gear" },
+        "labels": { "accessories": "bags and accessories", "home": "home and kitchen", "music": "music and instruments", "games": "games and consoles", "baby": "baby gear", "sports": "sports gear" },
         "as": { "seller": { "question": "What is it?" }, "buyer": { "question": "What are you looking for?" } }
       }
     },
@@ -42,7 +42,7 @@
       "piece": "price",
       "ask": {
         "label": "Price",
-        "as": { "seller": { "question": "What is your price?", "hint": "The item alone, without shipping. \"Or best offer\" goes in its note." }, "buyer": { "label": "Budget", "question": "What would you pay at most?", "hint": "The item alone, without shipping." } }
+        "as": { "seller": { "question": "What is your price?", "hint": "The item alone, without shipping." }, "buyer": { "label": "Budget", "question": "What would you pay at most?", "hint": "The item alone, without shipping." } }
       }
     },
     "wearer": {
@@ -153,7 +153,7 @@
       "values": "countries",
       "several": true,
       "when": { "handover": ["shipped"] },
-      "ask": { "label": "Ships to", "as": { "seller": { "question": "Which countries do you ship to?" }, "buyer": { "label": "Ship to", "question": "Where should it be shipped?" } } }
+      "ask": { "label": "Ships to", "as": { "seller": { "question": "Which countries do you ship to?", "hint": "Leave it empty to ship anywhere." }, "buyer": { "label": "Ship to", "question": "Where should it be shipped?" } } }
     },
     "description": { "piece": "text", "ask": { "label": "About", "long": true, "as": { "seller": { "question": "What should buyers know?" }, "buyer": { "question": "What should sellers know?" } } } }
   },
