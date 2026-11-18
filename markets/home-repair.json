@@ -1,7 +1,7 @@
 {
   "name": "home-repair",
   "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
-  "description": "Each job is paid once it is done; not renovations paid in stages. Garden work is home-gardening, and cleaning is home-cleaning.",
+  "description": "Repairs and small jobs in a home, not renovations or building work. Garden work is home-gardening, and cleaning is home-cleaning.",
   "status": "beta",
   "icon": "wrench",
   "number": 6,
@@ -10,26 +10,59 @@
     { "role": "client", "listings": "requests" }
   ],
   "listing": {
-    "description": { "type": "text", "description": "The job, in the writer's words: what needs fixing, or what the repairer fixes, and how." },
-    "price": { "type": "money", "description": "Each price the repairer charges: per hour, or with no per for a whole job, such as mounting a TV; a charge just to come out, on top of it, goes in the description; in a request, the most the client would pay.", "per": ["hour"] },
     "jobs": {
-      "type": "choice",
-      "description": "The kinds of job; mounting is fixing things to walls, such as shelves or a TV.",
+      "piece": "choice",
       "values": ["plumbing", "electrical", "heating", "appliances", "carpentry", "painting", "locks", "mounting", "furniture-assembly"],
-      "many": true
+      "several": true,
+      "ask": { "label": "Jobs", "labels": { "mounting": "wall mounting" }, "as": { "repairer": { "question": "What do you do?" }, "client": { "question": "What needs doing?" } } }
     },
-    "base": { "type": "place", "description": "The area the repairer works in: anywhere in the circle.", "radiusKm": 10, "roles": ["repairer"] },
-    "home": { "type": "place", "description": "Roughly where the home is.", "radiusKm": 1, "roles": ["client"] },
-    "hours": { "type": "hours", "description": "When the repairer works, each week.", "roles": ["repairer"] },
-    "time": { "type": "moment", "description": "When the job is wanted: a time, or a span to fit it in.", "roles": ["client"] },
-    "licences": { "type": "text", "description": "Licences or certificates the repairer holds, each by name, such as for gas or electrical work; a word such as qualified alone goes in the description.", "roles": ["repairer"] },
-    "photos": { "type": "file", "description": "Photos of what needs fixing.", "many": true, "roles": ["client"] },
-    "pastWork": { "type": "file", "description": "Photos of jobs the repairer has done.", "many": true, "roles": ["repairer"] }
+    "area": {
+      "piece": "place",
+      "several": true,
+      "ask": {
+        "label": "Area",
+        "as": {
+          "repairer": { "question": "Where do you work?", "start": { "radiusKm": 10 } },
+          "client": { "question": "Where is your home?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 1 } }
+        }
+      }
+    },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Days and times",
+        "start": { "way": "weekly", "hours": true },
+        "as": { "repairer": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": "part" } } }
+      }
+    },
+    "price": {
+      "piece": "price",
+      "per": ["hour", "visit", "day"],
+      "ask": {
+        "label": "Price",
+        "as": {
+          "repairer": { "question": "What do you charge?" },
+          "client": { "label": "Budget", "question": "What would you pay at most?" }
+        }
+      }
+    },
+    "photos": {
+      "piece": "photo",
+      "several": true,
+      "ask": { "label": "Photos", "as": { "repairer": { "question": "Any photos of your work?" }, "client": { "question": "Any photos of what needs fixing?" } } }
+    },
+    "licences": { "piece": "text", "several": true, "roles": ["repairer"], "ask": { "label": "Licences", "question": "Which licences or certificates do you hold?" } },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "repairer": { "question": "What should clients know?" }, "client": { "question": "What should the repairer know?" } } }
+    }
   },
-  "preview": ["jobs", "description", "price", "photos", "pastWork", "base", "home"],
+  "preview": ["jobs", "area", "days", "price", "photos"],
   "review": {
-    "onTime": { "type": "choice", "description": "Whether the repairer came at the time agreed.", "values": ["yes", "no"], "roles": ["repairer"] },
-    "fixed": { "type": "choice", "description": "Whether the job was done as agreed.", "values": ["yes", "no"], "roles": ["repairer"] },
-    "paid": { "type": "choice", "description": "Whether the client paid as agreed, once the job was done.", "values": ["yes", "no"], "roles": ["client"] }
+    "onTime": { "piece": "choice", "values": ["yes", "no"], "roles": ["repairer"], "ask": { "label": "On time", "question": "Did they come at the time agreed?" } },
+    "fixed": { "piece": "choice", "values": ["yes", "no"], "roles": ["repairer"], "ask": { "label": "Done as agreed", "question": "Was the job done as agreed?" } },
+    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
   }
 }

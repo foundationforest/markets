@@ -1,7 +1,7 @@
 {
   "name": "stays-work",
   "summary": "Hosts give guests a bed, and often meals, for their help.",
-  "description": "Guests help on a farm or in a hostel, with building, or by sitting a house or pets, with no money between them; never childcare, and help for a cause with no bed is volunteering. For adults.",
+  "description": "For adults only, and never childcare. A free stay with no help is stays-free, and help for a cause with no bed is volunteering.",
   "status": "beta",
   "icon": "barn",
   "number": 10,
@@ -10,56 +10,110 @@
     { "role": "guest", "listings": "requests" }
   ],
   "listing": {
-    "description": { "type": "text", "description": "The stay and the help, in the writer's words: the place, the tasks and the days, and what living there is like." },
     "help": {
-      "type": "choice",
-      "description": "What the guest gives for the stay: the help the host asks for, or the guest offers, every kind that applies. Farm work is crops and land; farm animals is caring for livestock, such as goats, chickens or horses; gardening is a garden or a vegetable plot, beside a home; building is building and repairs, such as walls, roofs or carpentry; hostel work is reception and helping run a hostel; house-sitting is living in and minding a home while the host is away; pet-sitting is minding the host's pets, so a home and its pets minded while the host is away are both; teaching is lessons for adults, such as in a language; digital work is photos, social media and websites. A guest's wish for a kind of place, such as a farm, goes in the description.",
+      "piece": "choice",
       "values": ["farm-work", "farm-animals", "gardening", "building", "hostel-work", "house-sitting", "pet-sitting", "cooking", "cleaning", "teaching", "digital-work"],
-      "many": true
+      "several": true,
+      "ask": {
+        "label": "Help",
+        "labels": { "farm-work": "farm work, crops and land", "building": "building and repairs", "house-sitting": "house-sitting", "pet-sitting": "pet-sitting", "teaching": "teaching adults", "digital-work": "photos, social media and websites" },
+        "as": { "host": { "question": "What help do you need?" }, "guest": { "question": "What help can you give?" } }
+      }
     },
     "pets": {
-      "type": "choice",
-      "description": "The pets to look after, or that the guest can look after; small pets are such as rabbits or hamsters.",
+      "piece": "choice",
       "values": ["dogs", "cats", "birds", "fish", "reptiles", "small-pets"],
-      "many": true,
-      "when": { "help": ["pet-sitting"] }
+      "several": true,
+      "when": { "help": ["pet-sitting"] },
+      "ask": {
+        "label": "Pets",
+        "labels": { "small-pets": "small pets, such as rabbits" },
+        "as": { "host": { "question": "Which pets need looking after?" }, "guest": { "question": "Which pets can you look after?" } }
+      }
     },
-    "weeklyHours": { "type": "number", "description": "How many hours of help each guest gives a week, or the fewest and the most, such as 20 to 25, with 4 hours a day for 5 days as 20: what the host asks, or what the guest offers.", "unit": "hours", "range": true },
+    "area": {
+      "piece": "place",
+      "several": true,
+      "ask": {
+        "label": "Area",
+        "as": {
+          "host": { "question": "Where is the stay?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 5 } },
+          "guest": { "question": "Where do you want to stay?", "hint": "Each place you would stay on the same dates.", "start": { "radiusKm": 50 } }
+        }
+      }
+    },
+    "dates": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Dates",
+        "start": { "way": "from-to" },
+        "as": { "host": { "question": "When can you host?" }, "guest": { "question": "When do you need a place?" } }
+      }
+    },
+    "weeklyHours": {
+      "piece": "number",
+      "unit": "hours",
+      "ask": {
+        "label": "Hours a week",
+        "hint": "Such as 20 for 4 hours a day, 5 days a week.",
+        "as": { "host": { "question": "How many hours of help a week?" }, "guest": { "question": "How many hours a week can you help?", "hint": "Your limit, such as up to 20 for 4 hours a day, 5 days a week.", "start": { "range": true } } }
+      }
+    },
     "bed": {
-      "type": "choice",
-      "description": "Where the guest sleeps, the whole home, as when sitting it, a room of their own, a room shared with others, a caravan or a tent: in a host's listing, each the host offers; in a guest's, each the guest would take.",
-      "values": ["whole-home", "private-room", "shared-room", "caravan", "tent"],
-      "many": true
+      "piece": "choice",
+      "values": ["shared-room", "private-room", "whole-home", "caravan", "tent"],
+      "several": true,
+      "ask": { "label": "Bed", "as": { "host": { "question": "Where would guests sleep?" }, "guest": { "question": "Where are you happy to sleep?" } } }
     },
-    "hostAway": { "type": "choice", "description": "Whether the host is away during the stay, as when the guest sits the house.", "values": ["yes", "no"], "roles": ["host"] },
-    "meals": { "type": "choice", "description": "The meals the host gives the guest each day.", "values": ["breakfast", "lunch", "dinner"], "many": true, "roles": ["host"] },
-    "internet": { "type": "choice", "description": "Whether the guest has internet at the stay.", "values": ["yes", "no"], "roles": ["host"] },
-    "welcomes": { "type": "choice", "description": "Who the host takes in, for a host who takes only women or only men; left out, anyone.", "values": ["women", "men"], "many": true, "roles": ["host"] },
-    "guests": { "type": "number", "description": "How many guests the host takes at once, every party together: up to a most, such as up to 4, or the fewest and the most, such as 2 to 4, where a party smaller than the fewest may still come beside others.", "unit": "people", "range": true, "roles": ["host"] },
-    "travellers": { "type": "number", "description": "How many people travel together, the guest included.", "unit": "people", "roles": ["guest"] },
-    "nights": { "type": "number", "description": "How many nights one stay lasts, a week as 7 and a month as 30: in a host's listing, the stays the host takes, such as at least 14, or 14 to 90; in a guest's, how long they want to stay with one host, within dates, such as 7 to 14, left out when dates are the day they arrive and the day they leave.", "unit": "nights", "range": true },
-    "dates": { "type": "moment", "description": "When: in a host's listing, the span the host takes guests in; in a guest's, from the earliest day they could arrive to the latest day they would leave." },
-    "languages": {
-      "type": "choice",
-      "description": "By ISO 639-1 code, such as en for English: in a host's listing, the languages spoken at the stay, even a little; in a guest's, those the guest can talk in, even a little.",
-      "values": ["aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az", "ba", "be", "bg", "bi", "bm", "bn", "bo", "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy", "da", "de", "dv", "dz", "ee", "el", "en", "eo", "es", "et", "eu", "fa", "ff", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl", "gn", "gu", "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz", "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu", "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my", "na", "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny", "oc", "oj", "om", "or", "os", "pa", "pi", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"],
-      "labels": { "aa": "Afar", "ab": "Abkhazian", "ae": "Avestan", "af": "Afrikaans", "ak": "Akan", "am": "Amharic", "an": "Aragonese", "ar": "Arabic", "as": "Assamese", "av": "Avaric", "ay": "Aymara", "az": "Azerbaijani", "ba": "Bashkir", "be": "Belarusian", "bg": "Bulgarian", "bi": "Bislama", "bm": "Bambara", "bn": "Bangla", "bo": "Tibetan", "br": "Breton", "bs": "Bosnian", "ca": "Catalan", "ce": "Chechen", "ch": "Chamorro", "co": "Corsican", "cr": "Cree", "cs": "Czech", "cu": "Church Slavic", "cv": "Chuvash", "cy": "Welsh", "da": "Danish", "de": "German", "dv": "Divehi", "dz": "Dzongkha", "ee": "Ewe", "el": "Greek", "en": "English", "eo": "Esperanto", "es": "Spanish", "et": "Estonian", "eu": "Basque", "fa": "Persian", "ff": "Fula", "fi": "Finnish", "fj": "Fijian", "fo": "Faroese", "fr": "French", "fy": "Western Frisian", "ga": "Irish", "gd": "Scottish Gaelic", "gl": "Galician", "gn": "Guarani", "gu": "Gujarati", "gv": "Manx", "ha": "Hausa", "he": "Hebrew", "hi": "Hindi", "ho": "Hiri Motu", "hr": "Croatian", "ht": "Haitian Creole", "hu": "Hungarian", "hy": "Armenian", "hz": "Herero", "ia": "Interlingua", "id": "Indonesian", "ie": "Interlingue", "ig": "Igbo", "ii": "Sichuan Yi", "ik": "Inupiaq", "io": "Ido", "is": "Icelandic", "it": "Italian", "iu": "Inuktitut", "ja": "Japanese", "jv": "Javanese", "ka": "Georgian", "kg": "Kongo", "ki": "Kikuyu", "kj": "Kuanyama", "kk": "Kazakh", "kl": "Kalaallisut", "km": "Khmer", "kn": "Kannada", "ko": "Korean", "kr": "Kanuri", "ks": "Kashmiri", "ku": "Kurdish", "kv": "Komi", "kw": "Cornish", "ky": "Kyrgyz", "la": "Latin", "lb": "Luxembourgish", "lg": "Ganda", "li": "Limburgish", "ln": "Lingala", "lo": "Lao", "lt": "Lithuanian", "lu": "Luba-Katanga", "lv": "Latvian", "mg": "Malagasy", "mh": "Marshallese", "mi": "Māori", "mk": "Macedonian", "ml": "Malayalam", "mn": "Mongolian", "mr": "Marathi", "ms": "Malay", "mt": "Maltese", "my": "Burmese", "na": "Nauru", "nb": "Norwegian Bokmål", "nd": "North Ndebele", "ne": "Nepali", "ng": "Ndonga", "nl": "Dutch", "nn": "Norwegian Nynorsk", "no": "Norwegian", "nr": "South Ndebele", "nv": "Navajo", "ny": "Nyanja", "oc": "Occitan", "oj": "Ojibwa", "om": "Oromo", "or": "Odia", "os": "Ossetic", "pa": "Punjabi", "pi": "Pali", "pl": "Polish", "ps": "Pashto", "pt": "Portuguese", "qu": "Quechua", "rm": "Romansh", "rn": "Rundi", "ro": "Romanian", "ru": "Russian", "rw": "Kinyarwanda", "sa": "Sanskrit", "sc": "Sardinian", "sd": "Sindhi", "se": "Northern Sami", "sg": "Sango", "si": "Sinhala", "sk": "Slovak", "sl": "Slovenian", "sm": "Samoan", "sn": "Shona", "so": "Somali", "sq": "Albanian", "sr": "Serbian", "ss": "Swati", "st": "Southern Sotho", "su": "Sundanese", "sv": "Swedish", "sw": "Swahili", "ta": "Tamil", "te": "Telugu", "tg": "Tajik", "th": "Thai", "ti": "Tigrinya", "tk": "Turkmen", "tl": "Tagalog", "tn": "Tswana", "to": "Tongan", "tr": "Turkish", "ts": "Tsonga", "tt": "Tatar", "tw": "Twi", "ty": "Tahitian", "ug": "Uyghur", "uk": "Ukrainian", "ur": "Urdu", "uz": "Uzbek", "ve": "Venda", "vi": "Vietnamese", "vo": "Volapük", "wa": "Walloon", "wo": "Wolof", "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "za": "Zhuang", "zh": "Chinese", "zu": "Zulu" },
-      "many": true
+    "meals": { "piece": "choice", "values": ["breakfast", "lunch", "dinner"], "several": true, "roles": ["host"], "ask": { "label": "Meals", "question": "Which meals do guests get?" } },
+    "internet": { "piece": "choice", "values": ["yes", "no"], "roles": ["host"], "ask": { "label": "Internet", "question": "Do guests have internet?" } },
+    "guests": {
+      "piece": "number",
+      "ask": {
+        "label": "Guests",
+        "as": {
+          "host": { "question": "How many guests at once?", "hint": "Your limit, such as up to 2.", "start": { "range": true } },
+          "guest": { "question": "How many of you are travelling?" }
+        }
+      }
     },
-    "place": { "type": "place", "description": "Roughly where the stay is.", "radiusKm": 5, "roles": ["host"] },
-    "destination": {
-      "type": "place",
-      "description": "Where the guest wants to stay: a circle for each area, such as a town, a region or a country, one for each country of a wider region; a circle may reach past a border.",
-      "radiusKm": 50,
-      "many": true,
-      "roles": ["guest"]
+    "nights": {
+      "piece": "number",
+      "ask": {
+        "label": "Nights",
+        "as": {
+          "host": { "question": "How many nights can guests stay?", "hint": "Your limits, such as up to 3, or at least 14.", "start": { "range": true } },
+          "guest": { "question": "How many nights do you want to stay?", "hint": "With one host, not the whole trip." }
+        }
+      }
     },
-    "photos": { "type": "file", "description": "Photos of the place and the help.", "many": true, "roles": ["host"] }
+    "photos": { "piece": "photo", "several": true, "roles": ["host"], "ask": { "label": "Photos", "question": "Any photos of the place and the work?" } },
+    "welcomes": { "piece": "choice", "values": ["women", "men"], "roles": ["host"], "ask": { "label": "Hosts only", "question": "Do you host only women, or only men?" } },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "host": { "question": "What should guests know?" }, "guest": { "question": "What should hosts know?" } } }
+    }
   },
-  "preview": ["help", "photos", "description", "place", "destination", "dates"],
+  "preview": ["help", "pets", "area", "dates", "bed", "weeklyHours", "photos"],
   "review": {
-    "asDescribed": { "type": "choice", "description": "Whether the stay was as the host's listing said and showed, photos included, the bed, the meals and the help asked: no for any difference the writer names.", "values": ["yes", "no"], "roles": ["host"] },
-    "helped": { "type": "choice", "description": "Whether the guest gave the help agreed, for the stay agreed: no if they left early without warning.", "values": ["yes", "no"], "roles": ["guest"] },
-    "feltSafe": { "type": "choice", "description": "Whether the writer felt safe with them: no if anything made them uneasy; left out when they never met.", "values": ["yes", "no"] }
+    "asDescribed": {
+      "piece": "choice",
+      "values": ["yes", "no"],
+      "roles": ["host"],
+      "ask": { "label": "As described", "question": "Was the stay as the listing said and showed?", "hint": "The bed, the meals and the help asked, too." }
+    },
+    "helped": {
+      "piece": "choice",
+      "values": ["yes", "no"],
+      "roles": ["guest"],
+      "ask": { "label": "Helped as agreed", "question": "Did they give the help agreed?", "hint": "Leaving early without warning is no." }
+    },
+    "feltSafe": {
+      "piece": "choice",
+      "values": ["yes", "no"],
+      "ask": { "label": "Felt safe", "question": "Did you feel safe with them?", "hint": "Anything that made you uneasy is no. Leave it out if you never met." }
+    }
   }
 }

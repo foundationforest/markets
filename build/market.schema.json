@@ -2,206 +2,127 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/foundationforest/markets/main/build/market.schema.json",
   "title": "Market file",
-  "description": "One market, at markets/<name>.json: its name, the line an app shows for it, what the dealing is, whether it is live or beta, its icon, its number, its roles, the fields of its listings, which of them matter first, and the fields its reviews add. build/README.md explains each part.",
+  "description": "One market, at markets/<name>.json: its name, its summary, whether it is live or beta, its icon, its number, its roles, and the fields of its listings and its reviews. Every key of a field but ask is a rule, checked against each entry; ask holds suggestions, which no entry is checked against. build/README.md says what each key holds; build/check.sh checks the rest of the rules.",
   "type": "object",
-  "required": ["name", "summary", "description", "status", "number", "roles", "listing"],
+  "required": ["name", "summary", "status", "number", "roles", "listing"],
   "additionalProperties": false,
   "properties": {
-    "name": {
-      "description": "The market's name, the first half of each of its labels, market/role.",
-      "$ref": "#/$defs/word"
-    },
-    "summary": {
-      "description": "What the dealing is, in one plain line of at most 80 characters, which an app shows where someone picks a market.",
-      "type": "string",
-      "$ref": "#/$defs/line",
-      "maxLength": 80
-    },
-    "description": {
-      "description": "What an AI needs to know of the dealing to post here, beyond the summary, in one line: what is in and what is out, how people pay, and who it is for.",
-      "$ref": "#/$defs/line"
-    },
-    "status": {
-      "description": "live or beta. Live: needs no payment between people yet, is polished, and from now on only grows, which build/check.sh holds it to against main. Beta: works, at your own risk, and may still change in any way. A new market starts as beta; a market goes from beta to live, never back.",
-      "enum": ["live", "beta"]
-    },
-    "icon": {
-      "description": "The name of an icon from Phosphor (phosphoricons.com), such as yarn, that an app shows for the market, as where someone picks one. One of the names in build/icons.json, and no other market's; build/check.sh checks both. It may change even when the market is live: no entry holds it. Left out: an app shows the name's first letter.",
-      "$ref": "#/$defs/word"
-    },
-    "number": {
-      "description": "A whole number from 1 that no other market holds, which an app tells markets apart by, such as by cycling it through its own palette, so each app chooses how many colors it has. A new market takes the highest number on main plus one, and a live market never changes it; build/check.sh checks all three. It is not an id: the name stays the market's only id.",
-      "type": "integer",
-      "minimum": 1
-    },
-    "roles": {
-      "description": "The roles a profile here can hold, one profile each. Labels use these words.",
-      "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "#/$defs/role" }
-    },
+    "name": { "description": "The market's name, the first half of each of its labels, market/role.", "$ref": "#/$defs/word" },
+    "summary": { "description": "What the dealing is, in one plain line of at most 80 characters.", "type": "string", "$ref": "#/$defs/line", "maxLength": 80 },
+    "description": { "description": "A few plain sentences more, if wanted.", "$ref": "#/$defs/line" },
+    "status": { "description": "live or beta.", "enum": ["live", "beta"] },
+    "icon": { "description": "The name of a Phosphor icon in build/icons.json, and no other market's.", "$ref": "#/$defs/word" },
+    "number": { "description": "A whole number from 1 that no other market holds.", "type": "integer", "minimum": 1 },
+    "roles": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/role" } },
     "listing": {
-      "description": "The fields of a listing here, by name. A listing may leave out any of them, and holds a field only for the roles it names and when its when matches. The shared names keep their type: description is one text, and price is always a list of one or more money, which the format sets, so a market never writes many on it. Never contact, which every listing may hold.",
+      "description": "The fields of a listing here, by name. description is one text and price a price, when a market has them; never contact, which every listing may hold.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
-        "description": { "type": "object", "properties": { "type": { "const": "text" } }, "not": { "required": ["many"] } },
-        "price": { "type": "object", "properties": { "type": { "const": "money" } }, "not": { "required": ["many"] } }
+        "description": { "type": "object", "properties": { "piece": { "const": "text" } }, "not": { "required": ["several"] } },
+        "price": { "type": "object", "properties": { "piece": { "const": "price" } } }
       },
       "propertyNames": { "not": { "enum": ["contact"] } }
     },
     "preview": {
-      "description": "The listing fields that matter first, in order: a form asks them first, and a result shows them first, such as in a search result, a short list or a spoken summary. It names content, never a screen shape. Left out: description, price, then the fields of type place, of those the market has.",
+      "description": "The listing fields that matter first, most needed first. Left out: description, price, then the place fields, of those the market has.",
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "description": "The name of one of the market's listing fields; build/check.sh checks that it is.", "type": "string" }
+      "items": { "type": "string" }
     },
     "review": {
-      "description": "The fields a review here holds besides the ones every review holds (subject, score, text and listing), by name. A review may leave out any of them, and every shared one but subject. Left out: none.",
+      "description": "The fields a review here holds besides the ones every review holds, by name.",
       "$ref": "#/$defs/fields",
       "type": "object",
-      "propertyNames": { "not": { "enum": ["subject", "score", "text", "listing"] } }
+      "propertyNames": { "not": { "enum": ["subject", "listing", "score", "text"] } }
     }
   },
   "$defs": {
-    "word": {
-      "description": "Lowercase letters, digits and single hyphens, at most 64 characters.",
-      "type": "string",
-      "maxLength": 64,
-      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
-    },
-    "line": {
-      "description": "One line of text that is not only spaces.",
-      "type": "string",
-      "pattern": "^[^\\r\\n]*\\S[^\\r\\n]*$"
-    },
+    "word": { "description": "Lowercase letters, digits and single hyphens, at most 64 characters.", "type": "string", "maxLength": 64, "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "line": { "description": "One line of text that is not only spaces.", "type": "string", "pattern": "^[^\\r\\n]*\\S[^\\r\\n]*$" },
     "role": {
       "type": "object",
       "required": ["role", "listings"],
       "additionalProperties": false,
       "properties": {
-        "role": {
-          "description": "The role's word, the second half of its labels.",
-          "$ref": "#/$defs/word"
-        },
-        "listings": {
-          "description": "What this role's listings are: offers or requests.",
-          "enum": ["offers", "requests"]
-        }
+        "role": { "description": "The role's word, the second half of its labels.", "$ref": "#/$defs/word" },
+        "listings": { "description": "What this role's listings are.", "enum": ["offers", "requests"] }
       }
     },
     "fields": {
-      "description": "Fields by name. A name is a key in an entry's body: a lowercase letter, then letters and digits, at most 64 characters, and never files, which the standard keeps for the files an entry names.",
       "type": "object",
       "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]{0,63}$", "not": { "const": "files" } },
       "additionalProperties": { "$ref": "#/$defs/field" }
     },
     "field": {
       "type": "object",
-      "required": ["type", "description"],
+      "required": ["piece"],
       "additionalProperties": false,
       "properties": {
-        "type": {
-          "description": "One of the nine types in build/types.json.",
-          "enum": ["text", "number", "words", "choice", "place", "money", "moment", "file", "hours"]
-        },
-        "description": {
-          "description": "What the field holds, in one line.",
-          "$ref": "#/$defs/line"
-        },
-        "values": {
-          "description": "For a choice: the values to choose from.",
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": { "$ref": "#/$defs/line" }
-        },
-        "labels": {
-          "description": "For a choice: how people read a value whose words are wrong, such as XL for xl. A value's words are the value with hyphens as spaces and a capital first letter. Each key is one of the field's values; build/check.sh checks that it is. Left out: every value reads as its words.",
-          "type": "object",
-          "additionalProperties": { "$ref": "#/$defs/line" }
-        },
-        "per": {
-          "description": "For a money field: what its amount may be for, such as hour or session. An amount may always leave per out, for the whole deal. Left out: it always does.",
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": { "$ref": "#/$defs/word" }
-        },
-        "radiusKm": {
-          "description": "For a place field, and always on one: the radius, in whole kilometres, a new place starts at before the person changes it. A place may hold any whole radius.",
-          "type": "integer",
-          "minimum": 0
-        },
-        "unit": {
-          "description": "For a number field, and always on one: what the number counts or measures, from one shared list, so an app or an AI can show and convert it without reading the description. build/README.md says what each one measures.",
-          "enum": ["seconds", "minutes", "hours", "days", "years", "nights", "centimetres", "metres", "kilometres", "square-metres", "grams", "kilograms", "people", "rooms"]
-        },
-        "range": {
-          "description": "For a number field: it may hold a range, { from, to }, instead of one number, such as ages from 9 to 11; either end may be left out, for no limit that way, as from 18 alone is 18 and over. One number still fits. Never with many. Left out: one number only.",
-          "const": true
-        },
-        "many": {
-          "description": "The field holds a list of its type, each item different, such as [\"weekly\", \"monthly\"] for a choice, even for one item. Never for words, which is a list already, nor with range. Left out otherwise.",
-          "const": true
-        },
-        "roles": {
-          "description": "The market's roles the field is for: in listing, the roles whose listings hold it; in review, the roles of the profile the review is about. Left out: every role.",
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": { "$ref": "#/$defs/word" }
-        },
+        "piece": { "enum": ["text", "choice", "number", "price", "place", "date", "photo", "link"] },
+        "several": { "description": "The field takes a list of answers, each different. Left out: one answer.", "const": true },
+        "roles": { "description": "The roles the field is for: in listing, whose listings hold it; in review, whose reviews do. Left out: every role.", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/word" } },
         "when": {
-          "description": "The field applies only when each choice field named holds one of the values listed; for a many field, any of its values counts. It names choice fields of the same entry and their values; build/check.sh checks that it does. Left out: always.",
+          "description": "The field applies only when each choice field named holds one of the values listed.",
           "type": "object",
           "minProperties": 1,
-          "additionalProperties": {
-            "type": "array",
-            "minItems": 1,
-            "uniqueItems": true,
-            "items": { "$ref": "#/$defs/line" }
-          }
-        }
+          "additionalProperties": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/line" } }
+        },
+        "values": {
+          "description": "For a choice: its own list, or the name of a shared list in build/lists.json.",
+          "oneOf": [
+            { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/line" } },
+            { "$ref": "#/$defs/word" }
+          ]
+        },
+        "unit": { "description": "For a number that measures: what it measures in.", "enum": ["minutes", "hours", "days", "years", "centimetres", "square-metres"] },
+        "per": { "description": "For a price: what its amount may be for. Left out: always the whole deal.", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/word" } },
+        "ask": { "$ref": "#/$defs/ask" }
       },
       "allOf": [
-        {
-          "if": { "properties": { "type": { "const": "choice" } } },
-          "then": { "required": ["values"] },
-          "else": { "not": { "required": ["values"] } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "choice" } } },
-          "else": { "not": { "required": ["labels"] } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "words" } } },
-          "then": { "not": { "required": ["many"] } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "money" } } },
-          "else": { "not": { "required": ["per"] } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "place" } } },
-          "then": { "required": ["radiusKm"] },
-          "else": { "not": { "required": ["radiusKm"] } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "number" } } },
-          "then": { "required": ["unit"] },
-          "else": { "not": { "required": ["unit"] } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "number" } } },
-          "else": { "not": { "required": ["range"] } }
-        },
-        {
-          "if": { "required": ["range"] },
-          "then": { "not": { "required": ["many"] } }
-        }
+        { "if": { "required": ["piece"], "properties": { "piece": { "const": "choice" } } }, "then": { "required": ["values"] }, "else": { "not": { "required": ["values"] } } },
+        { "if": { "required": ["piece"], "properties": { "piece": { "const": "number" } } }, "else": { "not": { "required": ["unit"] } } },
+        { "if": { "required": ["piece"], "properties": { "piece": { "const": "price" } } }, "else": { "not": { "required": ["per"] } } },
+        { "if": { "required": ["piece"], "properties": { "piece": { "const": "price" } } }, "then": { "not": { "required": ["several"] } } }
       ]
+    },
+    "ask": {
+      "description": "Suggestions: how to ask for the field. No entry is checked against them, any program may ignore them, and they may change at any time, even in a live market.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "description": "Two or three words, for showing a value and for a filter. Left out: the field's name in words.", "$ref": "#/$defs/line" },
+        "question": { "description": "What a form asks. Left out: the label.", "$ref": "#/$defs/line" },
+        "hint": { "$ref": "#/$defs/line" },
+        "start": { "$ref": "#/$defs/start" },
+        "as": { "description": "Words for one role, by role, over the ones above; a start merges over the field's, key by key.", "type": "object", "additionalProperties": { "$ref": "#/$defs/words" } },
+        "long": { "description": "For a text: several lines, not one.", "const": true },
+        "labels": { "description": "For a choice: how a value reads, by value. Left out: its list's words, or the value's.", "type": "object", "additionalProperties": { "$ref": "#/$defs/line" } }
+      }
+    },
+    "words": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "label": { "description": "The role's own label. Left out: the field's.", "$ref": "#/$defs/line" },
+        "question": { "$ref": "#/$defs/line" },
+        "hint": { "$ref": "#/$defs/line" },
+        "start": { "$ref": "#/$defs/start" }
+      }
+    },
+    "start": {
+      "description": "Where the input opens: a place's radiusKm, a date's way and whether it asks hours, as clock times (true) or a part of the day (\"part\"), a number as a range. Each key left out: the field's, else the piece's own.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "radiusKm": { "type": "integer", "minimum": 0 },
+        "way": { "enum": ["day", "from-to", "until", "weekly"] },
+        "hours": { "enum": [true, "part"] },
+        "range": { "const": true }
+      }
     }
   }
 }

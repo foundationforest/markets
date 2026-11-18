@@ -1,98 +1,68 @@
-// The package on the test market, knitting.json, which holds every type and every key a field may
-// hold: checkEntry for each kind, with the answers it gives in words, and the rest the package
-// exports. The test market is read from a checkout of its own, with this checkout's build/types.json,
-// so these tests hold whatever markets/ holds. Each case runs on both entries and on ajv, the check
-// the package made before its own checker, as the reference: all three must agree, but on the
-// answers ajv got wrong, each with its own test. content.test.ts tests the markets in markets/.
+// The package on the test market, knitting.json, which holds every piece and every key a field may
+// hold: the four answers, checkEntry, match, read and ask, and the rest the package exports. The test
+// market is read from a checkout of its own, with this checkout's build/lists.json, so these tests hold
+// whatever markets/ holds. Every call runs on both entries, which must answer the same, and the last
+// test asks each again with code from strings disallowed.
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
-import formats from 'ajv-formats'
 import { loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
-import { SHARED, UNITS, loadMarkets, previewOf, type Directory, type Market, type Markets } from '../src/index.ts'
-import { fromFiles } from '../src/markets.ts'
+import { SHARED, loadMarkets, nameWords, previewOf, type Directory, type Field, type Market, type Markets } from '../src/index.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const json = (path: string) => JSON.parse(readFileSync(join(ROOT, path), 'utf8'))
 const knitting: Market = JSON.parse(readFileSync(new URL('knitting.json', import.meta.url), 'utf8'))
+const lists = json('build/lists.json')
 
 /** The test market's files, and a checkout of them alone, for the Node entry to read. */
 const directory: Directory = {
   markets: [{ name: knitting.name, summary: knitting.summary, description: knitting.description, status: knitting.status, icon: knitting.icon, number: knitting.number, roles: knitting.roles }],
 }
-const files: Files = { directory, types: json('build/types.json'), markets: [knitting] }
+const files: Files = { directory, lists, markets: [knitting] }
 const checkout = mkdtempSync(join(tmpdir(), 'markets-'))
 after(() => rmSync(checkout, { recursive: true, force: true }))
 for (const path of ['build', 'markets']) mkdirSync(join(checkout, path))
-copyFileSync(join(ROOT, 'build/types.json'), join(checkout, 'build/types.json'))
+writeFileSync(join(checkout, 'build/lists.json'), JSON.stringify(lists))
 writeFileSync(join(checkout, 'directory.json'), JSON.stringify(directory))
 writeFileSync(join(checkout, 'markets/knitting.json'), JSON.stringify(knitting))
 const markets = loadMarkets(checkout)
 const browser = loadGiven(files)
 
-/** The markets with each value checked by ajv, as src/index.ts compiled it before the checker. */
-const reference = (() => {
-  const types = files.types as { $id: string }
-  const ajv = new Ajv2020({ strict: true })
-  formats.default(ajv)
-  ajv.addSchema(types)
-  const compiled = new Map<string, ValidateFunction>()
-  return fromFiles(files, (field, value) => {
-    const key = JSON.stringify([field.type, field.values, field.per, field.many, field.range])
-    let validate = compiled.get(key)
-    if (!validate) {
-      const allows = field.type === 'money' ? { type: 'object', properties: { per: field.per ? { enum: field.per } : false } } : {}
-      const ref = (type: string) => ({ $ref: `${types.$id}#/$defs/${type}` })
-      const one =
-        field.type === 'choice'
-          ? { type: 'string', enum: field.values }
-          : field.type === 'number' && field.range
-            ? { oneOf: [ref('number'), ref('number/$defs/range')] }
-            : { ...ref(field.type), ...allows }
-      validate = ajv.compile(field.many ? { type: 'array', uniqueItems: true, items: one } : one)
-      compiled.set(key, validate)
-    }
-    return validate(value)
-  })
-})()
-
-/** Every case the tests ask both entries, for the last test to ask again with code from strings disallowed. */
-const cases: Parameters<Markets['checkEntry']>[] = []
-
-/** checkEntry from the Node entry and the browser entry, which must answer the same. */
-const both: Markets['checkEntry'] = (...args) => {
-  const answer = markets.checkEntry(...args)
-  const given = browser.checkEntry(...args)
-  assert.equal(given, answer, `${JSON.stringify(args)}: the browser entry answers ${given}, the Node entry ${answer}`)
-  cases.push(args)
+/** Every call the tests make on both entries, for the last test to make again with code from strings disallowed. */
+const calls: [keyof Pick<Markets, 'checkEntry' | 'ask' | 'match' | 'read'>, ...unknown[]][] = []
+/** A call on the Node entry and the browser entry, which must answer the same. */
+const both = <M extends 'checkEntry' | 'ask' | 'match' | 'read'>(method: M, ...args: Parameters<Markets[M]>): ReturnType<Markets[M]> => {
+  const call = (m: Markets) => (m[method] as (...a: unknown[]) => ReturnType<Markets[M]>)(...args)
+  const answer = call(markets)
+  assert.deepEqual(call(browser), answer, `${method} ${JSON.stringify(args)}: the entries answer differently`)
+  // JSON turns undefined into null: a call with an argument left out is not made again.
+  if (!args.includes(undefined)) calls.push([method, ...args])
   return answer
 }
-
-/** checkEntry from both entries, which ajv must answer the same too. */
-const check: Markets['checkEntry'] = (...args) => {
-  const answer = both(...args)
-  const before = reference.checkEntry(...args)
-  assert.equal(before, answer, `${JSON.stringify(args)}: ajv answers ${before}, the entries ${answer}`)
-  return answer
-}
+const check = (...args: Parameters<Markets['checkEntry']>) => both('checkEntry', ...args)
+const ask = (...args: Parameters<Markets['ask']>) => both('ask', ...args)
+const today = { today: '2026-11-17' }
+const match = (field: Field, a: unknown, b: unknown) => both('match', field, a, b, today)
+const read = (field: Field, value: unknown) => both('read', field, value, today)
 
 const K = 'knitting'
 const subject = '9bpPbLYCPwNWq9BZqnJr3EqRNqymFZ4g58Zk9K86azDC'
 const photo = { sha256: '04ea806c667cd600b86061122fb9a7192c76405d58e14d63d29c51825dc7ec86', type: 'image/jpeg', size: 48213 }
-const place = { lat: '40.42', lon: '-3.70', radiusKm: 5, area: 'Madrid' }
-const price = { amount: '30', currency: 'USD', per: 'hour' }
+const madrid = { lat: '40.4168', lon: '-3.7038', radiusKm: 5 }
+const price = { amount: '30', currency: 'EUR', per: 'hour' }
 const inPerson = { handover: ['in-person'] }
 const kids = { wearer: ['children'] }
+const listing = (role: string, body: object) => check(K, role, 'listing', body)
 
 test('the package reads a checkout: this one, by default or named, and the test market', () => {
   const here = loadMarkets()
   assert.deepEqual(here.directory, json('directory.json'))
+  assert.deepEqual(here.lists, lists)
   for (const { name } of here.directory.markets) assert.deepEqual(here.market(name), json(`markets/${name}.json`))
   assert.deepEqual(loadMarkets(ROOT).directory, here.directory)
   assert.deepEqual(markets.directory, directory)
@@ -100,27 +70,16 @@ test('the package reads a checkout: this one, by default or named, and the test 
   assert.equal(markets.market('weaving'), undefined)
 })
 
-test("a listing fits when each field is its market's, of its type", () => {
-  assert.equal(check(K, 'knitter', 'listing', { description: 'Jumpers to order', price: [price], wearer: ['women', 'men'], kind: 'jumper', size: 'm', ...inPerson, studio: place }), null)
-  assert.equal(check(K, 'client', 'listing', { description: 'A hat for my son', ...kids, age: { from: '9', to: '11' }, kind: 'hat' }), null)
-  assert.equal(check(K, 'client', 'listing', { description: 'A scarf', due: '2026-11-02T18:00:00+01:00', kind: 'scarf', handover: ['shipped'] }), null)
-  assert.equal(check(K, 'knitter', 'listing', { yarns: ['merino', 'cotton'], days: '14' }), null)
-  assert.equal(check(K, 'knitter', 'listing', { hours: { zone: 'Europe/Madrid', slots: [{ days: ['monday'], from: '09:00', to: '17:00' }] } }), null)
+test('the browser entry holds the same files, and needs each market the directory lists', () => {
+  assert.deepEqual(browser.directory, markets.directory)
+  assert.deepEqual(browser.market(K), markets.market(K))
+  assert.throws(() => loadGiven({ ...files, markets: [] }), { message: 'the directory lists knitting, but no markets/knitting.json was given' })
+  assert.equal(previewGiven, previewOf)
 })
 
-test('a listing may leave out any field', () => {
-  assert.equal(check(K, 'knitter', 'listing', {}), null)
-  assert.equal(check(K, 'knitter', 'listing', { kind: 'hat' }), null)
-})
+// Question 1: does this entry fit?
 
-test('every listing may hold contact, which no market lists', () => {
-  assert.equal(Object.hasOwn(knitting.listing, 'contact'), false)
-  for (const { role } of knitting.roles) assert.equal(check(K, role, 'listing', { contact: '+34 600 000 000' }), null)
-  assert.equal(check(K, 'knitter', 'listing', { contact: ['+34 600 000 000'] }), 'contact takes text')
-  assert.equal(check(K, 'knitter', 'review', { subject, contact: 'x' }), 'a review in knitting has no field contact')
-})
-
-test('the market, the roles, the kind and the body are named before any field', () => {
+test('the market, the role, the kind and the body are named before any field', () => {
   assert.equal(check('weaving', 'weaver', 'listing', {}), 'weaving is not a market in the directory')
   assert.equal(check(K, 'seller', 'listing', {}), 'seller is not a role in knitting: its roles are knitter, client')
   assert.equal(check(K, 'knitter', 'offer', {}), 'offer is not a kind of entry: the kinds are listing, review, vouch and report')
@@ -129,320 +88,445 @@ test('the market, the roles, the kind and the body are named before any field', 
   assert.equal(check(K, 'knitter', 'listing', ['hat']), 'a listing is an object of its fields')
 })
 
-test('a field its market does not name does not fit, nor one Object gives every object', () => {
-  assert.equal(check(K, 'knitter', 'listing', { description: 'Hats', colour: 'red' }), 'a listing in knitting has no field colour')
-  assert.equal(check(K, 'knitter', 'listing', { constructor: 'x' }), 'a listing in knitting has no field constructor')
-  assert.equal(check(K, 'knitter', 'listing', JSON.parse('{ "__proto__": "x" }')), 'a listing in knitting has no field __proto__')
+test('a listing may leave out any field, and holds only its market\'s and contact', () => {
+  assert.equal(listing('knitter', {}), null)
+  assert.equal(listing('knitter', { description: 'Hats', colour: 'red' }), 'a listing in knitting has no field colour')
+  assert.equal(listing('knitter', { constructor: 'x' }), 'a listing in knitting has no field constructor')
+  assert.equal(listing('knitter', JSON.parse('{ "__proto__": "x" }')), 'a listing in knitting has no field __proto__')
+  for (const { role } of knitting.roles) assert.equal(listing(role, { contact: '+34 600 000 000' }), null)
+  assert.equal(listing('knitter', { contact: ['+34 600 000 000'] }), 'contact takes text')
+  assert.equal(check(K, 'knitter', 'review', { subject, contact: 'x' }), 'a review in knitting has no field contact')
 })
 
-test('each value is of its type: a choice among its values, many a list of distinct values', () => {
-  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: 30, currency: 'USD' } }), 'deposit takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per or count')
-  assert.equal(check(K, 'knitter', 'listing', { wearer: ['dogs'] }), 'wearer takes a list, each different, each one of women, men, children')
-  assert.match(check(K, 'knitter', 'listing', { wearer: ['women', 'women'] })!, /^wearer takes a list, each different/)
-  assert.match(check(K, 'knitter', 'listing', { wearer: 'women' })!, /^wearer takes a list/)
-  assert.equal(check(K, 'knitter', 'listing', { kind: 'shawl' }), 'kind takes one of jumper, cardigan, scarf, hat, socks')
-  assert.equal(check(K, 'knitter', 'listing', { days: 14 }), 'days takes a number as decimal text, such as "2.5"')
-  assert.equal(check(K, 'knitter', 'listing', { yarns: ['merino', 'merino'] }), 'yarns takes a list of short words, each different')
-  assert.match(check(K, 'client', 'listing', { due: '2026-11-02 18:00' })!, /^due takes a time in RFC 3339/)
+test('the first field that does not fit is the one answered', () => {
+  assert.equal(listing('knitter', { colour: 'red', wearer: ['dogs'] }), 'a listing in knitting has no field colour')
 })
 
-test('money takes a per its field lists, or none for the whole deal, and a count only with a per; with no list, neither', () => {
-  for (const per of ['item', 'hour']) assert.equal(check(K, 'knitter', 'listing', { price: [{ ...price, per }] }), null)
-  assert.equal(check(K, 'knitter', 'listing', { price: [{ amount: '300', currency: 'USD' }] }), null)
-  assert.equal(check(K, 'knitter', 'listing', { price: [{ ...price, count: 1 }] }), null)
-  const each = 'price takes a list of one or more, each different, each { amount, currency, per, count }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, and count, only with a per, how many of it the amount buys, a whole number'
-  for (const wrong of [{ ...price, per: 'night' }, { amount: '300', currency: 'USD', count: 2 }, { ...price, count: 0 }, { ...price, count: 1.5 }, { ...price, count: '5' }]) {
-    assert.equal(check(K, 'knitter', 'listing', { price: [wrong] }), each)
+test('text: your own words; several, a list of different ones', () => {
+  assert.equal(listing('knitter', { description: 'Warm jumpers, knitted to your chest.', yarns: ['merino', 'alpaca'] }), null)
+  assert.equal(listing('knitter', { description: 7 }), 'description takes text')
+  for (const yarns of ['merino', [], ['merino', 'merino'], [7]]) assert.equal(listing('knitter', { yarns }), 'yarns takes a list of one or more, each different, each text')
+})
+
+test("choice: one value from the field's own list, or from the shared list it names", () => {
+  assert.equal(listing('knitter', { kind: ['hat', 'socks'], languages: ['es', 'en'], handover: ['shipped'], shipsTo: ['PT', 'XK'] }), null)
+  const kind = 'kind takes a list of one or more, each different, each one of jumper, cardigan, scarf, hat, socks'
+  for (const value of ['hat', ['shawl'], ['HAT'], ['hat', 'hat'], []]) assert.equal(listing('knitter', { kind: value }), kind)
+  assert.equal(listing('knitter', { languages: ['spanish'] }), 'languages takes a list of one or more, each different, each one of the values in the languages list')
+  assert.equal(check(K, 'client', 'review', { subject, again: 'maybe' }), 'again takes one of yes, no')
+})
+
+test('number: one number, or from one to another with either end open, whole or decimal', () => {
+  for (const days of ['10', '0.5', { from: '9', to: '11' }, { from: '9', to: '9' }, { from: '13' }, { to: '6' }, { from: '-1', to: '1' }]) {
+    assert.equal(listing('knitter', { days }), null)
   }
-  const noPer = 'deposit takes { amount, currency }: amount as decimal text, currency a code such as USD, and no per or count'
-  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR' } }), null)
-  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR', per: 'item' } }), noPer)
-  assert.equal(check(K, 'knitter', 'listing', { deposit: { amount: '40', currency: 'EUR', count: 2 } }), noPer)
+  const takes = 'days takes a number as decimal text, such as "2.5", or { from, to }: two such numbers, from no more than to, either left out for no limit that way'
+  for (const days of [10, '1e3', '01', '2.', {}, { from: '11', to: '9' }, { from: 9 }, { from: '9', to: '11', step: '1' }, ['9', '11'], '9-11']) {
+    assert.equal(listing('knitter', { days }), takes)
+  }
+  // Several numbers: two age bands.
+  assert.equal(listing('knitter', { ...kids, age: [{ to: '1' }, { from: '2', to: '10' }] }), null)
+  assert.match(listing('knitter', { ...kids, age: { from: '2', to: '10' } })!, /^age takes a list of one or more, each different, each a number/)
 })
 
-test("a listing's price is always a list of one or more, each different, a pack with its count, though no market writes many", () => {
-  assert.equal(knitting.listing.price!.many, undefined)
-  // A pair of socks for 35, 3 pairs for 90, and 300 for the whole order.
+test('price: always several, each with a per its field lists or none, and a count only with a per', () => {
   const socks = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }, { amount: '300', currency: 'EUR' }]
-  assert.equal(check(K, 'knitter', 'listing', { price: socks }), null)
-  assert.equal(check(K, 'client', 'listing', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: 3 }] }), null)
-  const each = /^price takes a list of one or more, each different, each \{ amount, currency, per, count \}/
-  for (const wrong of [price, [], [price, { ...price }], null]) assert.match(check(K, 'knitter', 'listing', { price: wrong })!, each)
-  // Only price, of a listing: another money field holds one amount, unless its market makes it many.
-  assert.match(check(K, 'knitter', 'listing', { deposit: [{ amount: '40', currency: 'EUR' }] })!, /^deposit takes \{ amount, currency \}/)
+  assert.equal(listing('knitter', { price: socks }), null)
+  assert.equal(listing('client', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: 3 }] }), null)
+  const each = "price takes a list of one or more, each different, each { amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, any few of the person's words to read with that price, one line of at most 80 characters"
+  // A note: any few of the person's words to read with one price, one line of at most 80 characters, counted as characters.
+  const noted = [{ ...price, note: 'Mending, not new work' }, { amount: '120', currency: 'EUR', note: 'from, for a simple jumper' }]
+  assert.equal(listing('knitter', { price: noted }), null)
+  assert.equal(listing('knitter', { price: [{ ...price, note: 'é'.repeat(80) }] }), null)
+  for (const wrong of [price, [], [price, { ...price }], [{ ...price, per: 'night' }], [{ amount: '90', currency: 'EUR', count: 3 }], [{ ...price, count: 0 }], [{ ...price, count: 1.5 }], [{ ...price, amount: '-1' }], [{ ...price, currency: 'eur' }], [{ ...price, amount: 30 }], [{ ...price, note: '' }], [{ ...price, note: ' ' }], [{ ...price, note: 'two\nlines' }], [{ ...price, note: 'x'.repeat(81) }], [{ ...price, note: 3 }]]) {
+    assert.equal(listing('knitter', { price: wrong }), each)
+  }
+  // A price field with no per list: the whole deal, always.
+  assert.equal(listing('knitter', { deposit: [{ amount: '40', currency: 'EUR' }] }), null)
+  const noPer = "deposit takes a list of one or more, each different, each { amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, any few of the person's words to read with that price, one line of at most 80 characters"
+  for (const wrong of [{ amount: '40', currency: 'EUR' }, [{ amount: '40', currency: 'EUR', per: 'item' }]]) assert.equal(listing('knitter', { deposit: wrong }), noPer)
 })
 
-test('a number that allows a range takes one number, or from and to, either left out for no limit that way', () => {
-  for (const age of ['10', { from: '9', to: '11' }, { from: '9', to: '9' }, { from: '13' }, { to: '6' }, { from: '0.5', to: '2' }, { from: '-1', to: '1' }]) {
-    assert.equal(check(K, 'client', 'listing', { ...kids, age }), null)
+test('place: a circle, its centre and its radius, and nothing else', () => {
+  const { radiusKm: _r, ...noRadius } = madrid
+  for (const area of [madrid, { ...madrid, radiusKm: 0 }]) assert.equal(listing('client', { ...inPerson, area }), null)
+  const takes = 'area takes { lat, lon, radiusKm }: lat and lon as decimal text, and radiusKm in whole kilometres'
+  for (const area of [noRadius, { ...madrid, name: 'Madrid' }, { ...madrid, country: 'ES' }, { country: 'ES' }, { ...madrid, radiusKm: 1.5 }, { ...madrid, radiusKm: -1 }, { ...madrid, lat: '90.1' }, { ...madrid, lat: 40.4 }, 'Madrid']) {
+    assert.equal(listing('client', { ...inPerson, area }), takes)
   }
-  const takes = 'age takes a number as decimal text, such as "2.5", or { from, to }: two such numbers, from no more than to, either left out for no limit that way'
-  for (const age of [{}, { from: '11', to: '9' }, { from: '10', to: '9.5' }, { from: 9, to: 11 }, { from: '9', to: '11', step: '1' }, { low: '9', high: '11' }, ['9', '11'], '9-11', 10]) {
-    assert.equal(check(K, 'client', 'listing', { ...kids, age }), takes)
-  }
-  assert.equal(check(K, 'knitter', 'listing', { days: { from: '10', to: '14' } }), 'days takes a number as decimal text, such as "2.5"')
-  assert.equal(check(K, 'client', 'listing', { wearer: ['women'], age: '30' }), 'age is only for a listing whose wearer is children')
 })
 
-test('a span runs from no later than to, each in its own zone', () => {
-  const span = (from: string, to: string) => check(K, 'client', 'listing', { due: { from, to } })
-  const takes = 'due takes a time in RFC 3339 with its zone, such as 2026-11-02T18:00:00+01:00, or { from, to }, from no later than to'
-  assert.equal(span('2026-11-02T18:00:00Z', '2026-11-02T20:00:00Z'), null)
-  assert.equal(span('2026-11-02T18:00:00Z', '2026-11-02T18:00:00Z'), null)
-  assert.equal(span('2026-11-02T19:00:00+01:00', '2026-11-02T18:00:00Z'), null)
-  assert.equal(span('2026-11-02T18:30:00+01:00', '2026-11-02T18:00:00Z'), null)
-  assert.equal(span('2026-11-02T20:00:00Z', '2026-11-02T18:00:00Z'), takes)
-  assert.equal(span('2026-11-02T18:00:00Z', '2026-11-02T18:30:00+01:00'), takes)
-  assert.equal(span('2026-11-02T18:00:00.5Z', '2026-11-02T18:00:00.25Z'), takes)
-  // A leap second ends where the next minute starts; a year below 100 is that year.
-  assert.equal(span('2026-12-31T23:59:60Z', '2027-01-01T00:00:00Z'), null)
-  assert.equal(span('2027-01-01T00:00:00.5Z', '2026-12-31T23:59:60Z'), takes)
-  assert.equal(span('0099-01-01T00:00:00Z', '0100-01-01T00:00:00Z'), null)
-  assert.equal(span('0100-01-01T00:00:00Z', '0099-01-01T00:00:00Z'), takes)
+test('date: days, and hours or a part of the day with their zone if wanted', () => {
+  const due = (value: unknown) => listing('client', { due: value })
+  const fine = [
+    { on: '2026-11-24' }, { from: '2027-06-01', to: '2027-08-31' }, { from: '2027-06-01' }, { to: '2027-01-15' }, { on: '2028-02-29' },
+    { every: ['saturday'] }, { every: ['saturday'], from: '2027-05-01', to: '2027-09-30', start: '10:00', zone: 'Europe/Lisbon' },
+    { on: '2026-12-06', start: '15:00', end: '18:00', zone: 'Europe/Madrid' }, { every: ['friday'], start: '22:00', end: '02:00', zone: 'Europe/Madrid' },
+    { on: '2026-11-24', start: '09:00', zone: 'America/Argentina/Buenos_Aires' }, { on: '2026-11-24', start: '09:00', zone: 'UTC' },
+    { every: ['thursday'], part: 'morning', zone: 'Europe/London' }, { on: '2026-11-28', part: 'evening', zone: 'Europe/Madrid' },
+    { from: '2026-12-05', to: '2026-12-07', part: 'afternoon', zone: 'Europe/Madrid' },
+  ]
+  for (const value of fine) assert.equal(due(value), null, JSON.stringify(value))
+  const takes = 'due takes { on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday, all seven for hours on any day; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
+  const wrong = [
+    {}, { on: '2026-02-29' }, { on: '2026-11-31' }, { on: '2026-11-24T10:00:00Z' }, { on: '24/11/2026' }, { on: '2026-11-24', to: '2026-11-25' },
+    { from: '2026-12-02', to: '2026-12-01' }, { every: [] }, { every: ['Saturday'] }, { every: ['saturday', 'saturday'] }, { every: 'saturday' },
+    { on: '2026-11-24', start: '10:00' }, { on: '2026-11-24', zone: 'Europe/Madrid' }, { on: '2026-11-24', start: '10:00', end: '10:00', zone: 'Europe/Madrid' },
+    { on: '2026-11-24', end: '10:00', zone: 'Europe/Madrid' }, { on: '2026-11-24', start: '24:00', zone: 'Europe/Madrid' }, { on: '2026-11-24', start: '9:00', zone: 'Europe/Madrid' },
+    { on: '2026-11-24', start: '10:00', zone: '+01:00' }, { on: '2026-11-24', start: '10:00', zone: 'Europe/Atlantis' }, { on: '2026-11-24', at: '10:00' }, '2026-11-24',
+    { on: '2026-11-24', part: 'morning' }, { on: '2026-11-24', part: 'night', zone: 'Europe/Madrid' }, { on: '2026-11-24', part: 'Morning', zone: 'Europe/Madrid' },
+    { on: '2026-11-24', part: 'morning', start: '09:00', zone: 'Europe/Madrid' }, { on: '2026-11-24', part: 'morning', end: '12:00', zone: 'Europe/Madrid' },
+  ]
+  for (const value of wrong) assert.equal(due(value), takes, JSON.stringify(value))
+  // Weekly hours are several date answers.
+  const week = [{ every: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'], start: '09:00', end: '17:00', zone: 'Europe/Madrid' }, { every: ['saturday'], start: '10:00', end: '14:00', zone: 'Europe/Madrid' }]
+  assert.equal(listing('knitter', { ...inPerson, meet: week }), null)
+  assert.match(listing('knitter', { ...inPerson, meet: week[0] })!, /^meet takes a list of one or more, each different/)
 })
 
-test('each span in a list runs forward too', () => {
-  const listing = { ...knitting.listing, free: { type: 'moment', description: 'When the knitter can take an order.', many: true } } as const
-  const free = loadGiven({ ...files, markets: [{ ...knitting, listing }] })
-  const forward = { from: '2026-11-02T18:00:00Z', to: '2026-11-03T18:00:00Z' }
-  assert.equal(free.checkEntry(K, 'knitter', 'listing', { free: [forward, '2026-12-01T09:00:00Z'] }), null)
-  assert.match(free.checkEntry(K, 'knitter', 'listing', { free: [forward, { from: forward.to, to: forward.from }] })!, /^free takes a list, each different, each a time in RFC 3339 .* from no later than to$/)
+test("photo: one of the entry's files, by its SHA-256; link: a web address", () => {
+  assert.equal(listing('knitter', { photos: [photo.sha256], files: [photo] }), null)
+  assert.equal(listing('knitter', { photos: [photo.sha256] }), "photos names a file the body's files do not list")
+  assert.match(listing('knitter', { photos: [photo], files: [photo] })!, /^photos takes a list of one or more, each different, each the SHA-256/)
+  assert.equal(listing('client', { description: 'A hat like this', files: [photo] }), null)
+  for (const shop of ['https://example.com', 'http://example.com/shop?page=2#top', 'https://knit.example/']) assert.equal(listing('knitter', { shop }), null)
+  for (const shop of ['example.com', 'https://', 'https://exa mple.com', 'ftp://example.com', 'https:// example.com']) {
+    assert.equal(listing('knitter', { shop }), 'shop takes a web address, starting with https:// or http://')
+  }
 })
 
-test('a place is a point and a radius, with an area name if wanted', () => {
-  const { area, ...point } = place
-  for (const at of [place, point, { ...place, radiusKm: 0 }]) {
-    assert.equal(check(K, 'knitter', 'listing', { ...inPerson, studio: at }), null)
-    assert.equal(check(K, 'client', 'listing', { ...inPerson, home: at }), null)
+test('a field kept for some roles fits only a listing by one of them', () => {
+  assert.equal(listing('client', { photos: [photo.sha256], files: [photo] }), 'photos is for listings by knitter')
+  assert.equal(listing('knitter', { due: { on: '2026-12-01' } }), 'due is for listings by client')
+})
+
+test('a field with when is held only where the fields it names hold one of its values; several match when any does', () => {
+  assert.equal(listing('client', { kind: ['socks'], footLength: '24.5' }), null)
+  assert.equal(listing('client', { kind: ['hat'], footLength: '24.5' }), 'footLength is only for a listing whose kind is socks')
+  assert.equal(listing('client', { footLength: '24.5' }), 'footLength is only for a listing whose kind is socks')
+  const sized = 'size is only for a listing whose wearer is women or men, and whose kind is jumper or cardigan'
+  assert.equal(listing('knitter', { kind: ['jumper'], wearer: ['men', 'children'], size: ['m'] }), null)
+  assert.equal(listing('knitter', { kind: ['jumper'], wearer: ['children'], size: ['m'] }), sized)
+  assert.equal(listing('knitter', { kind: ['scarf'], wearer: ['women'], size: ['m'] }), sized)
+  assert.equal(listing('knitter', { handover: ['shipped'], area: madrid }), 'area is only for a listing whose handover is in-person')
+  assert.equal(listing('knitter', { handover: ['shipped', 'in-person'], area: madrid }), null)
+})
+
+test('a review holds the fields every review holds, and its market adds others, kept to the role reviewed', () => {
+  const address = `${subject}/listing/jumper`
+  assert.equal(check(K, 'client', 'review', { subject, score: '8.5', text: 'Warm and well made.', listing: address, onTime: 'no', daysLate: '3' }, 'knitter'), null)
+  for (const score of ['1', '10', '10.0', '9.5']) assert.equal(check(K, 'client', 'review', { subject, score }), null)
+  for (const score of ['0', '11', '8.55', '-1', { from: '7', to: '8' }]) {
+    assert.match(check(K, 'client', 'review', { subject, score })!, /^score takes (one number from "1" to "10"|a number as decimal text)/)
   }
-  const takes = 'studio takes { lat, lon, radiusKm, area }: lat and lon as decimal text, radiusKm in whole kilometres, and area a name if wanted'
-  const before = [{ area }, { area, reachKm: 10 }, { area, lat: '40.42', lon: '-3.70' }, { area, lat: '40.42', lon: '-3.70', reachKm: 10 }]
-  for (const at of [...before, { ...place, radiusKm: 1.5 }, { ...place, radiusKm: -1 }, { ...place, online: true }, { lat: '40.42', radiusKm: 5 }]) {
-    assert.equal(check(K, 'knitter', 'listing', { ...inPerson, studio: at }), takes)
-  }
+  assert.equal(check(K, 'client', 'review', { subject, listing: `${subject}/offer/jumper` }), "listing takes a listing's address, <profile address>/listing/<id>")
+  assert.equal(check(K, 'knitter', 'review', { subject, onTime: 'yes' }, 'client'), 'onTime is for reviews of knitter')
+  assert.equal(check(K, 'knitter', 'review', { subject, onTime: 'yes' }), null)
+  assert.equal(check(K, 'client', 'review', { subject, onTime: 'yes', daysLate: '2' }, 'knitter'), 'daysLate is only for a review whose onTime is no')
+  for (const kind of ['review', 'vouch', 'report']) assert.equal(check(K, 'client', kind, { text: 'x' }), `a ${kind} names its subject: the address of the profile it is about`)
+  assert.equal(check(K, 'knitter', 'vouch', { subject, text: 'Real and honest.' }), null)
+  assert.equal(check(K, 'client', 'report', { subject, score: '1' }), 'a report in knitting has no field score')
+})
+
+// Question 2: do these two answers match?
+
+const date: Field = { piece: 'date' }
+const dates: Field = { piece: 'date', several: true }
+const Z = 'Europe/Madrid'
+const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+
+test('a cleaner free Monday to Friday 9 to 17 and Saturday 10 to 14', () => {
+  const cleaner = [{ every: weekdays, start: '09:00', end: '17:00', zone: Z }, { every: ['saturday'], start: '10:00', end: '14:00', zone: Z }]
+  const client = (answer: object) => match(dates, cleaner, [answer])
+  assert.equal(client({ on: '2026-11-24' }), true, 'Tuesday 24 November')
+  assert.equal(client({ on: '2026-11-22' }), false, 'Sunday 22 November')
+  assert.equal(client({ on: '2026-11-21', start: '16:00', zone: Z }), false, 'Saturday 21 November at 16:00')
+  assert.equal(client({ on: '2026-11-21', start: '11:00', zone: Z }), true, 'Saturday 21 November at 11:00')
+  assert.equal(client({ from: '2026-11-24', to: '2026-11-28' }), true, 'between 24 and 28 November')
+  assert.equal(client({ every: ['tuesday'], start: '09:00', end: '12:00', zone: Z }), true, 'every Tuesday 9 to 12')
+  assert.equal(client({ every: ['sunday'] }), false, 'every Sunday')
+})
+
+test('a tutor in Madrid and a student in Monterrey meet where their real hours overlap', () => {
+  const student = { every: ['monday'], start: '09:00', end: '12:00', zone: 'America/Monterrey' }
+  assert.equal(match(date, { every: ['monday'], start: '16:00', end: '20:00', zone: Z }, student), true)
+  assert.equal(match(date, { every: ['monday'], start: '09:00', end: '12:00', zone: Z }, student), false)
+})
+
+test('spans of days overlap, an end left out limiting nothing', () => {
+  const host = { from: '2027-06-01', to: '2027-08-31' }
+  assert.equal(match(date, host, { from: '2027-08-20', to: '2027-09-10' }), true)
+  assert.equal(match(date, host, { from: '2027-10-01', to: '2027-10-31' }), false)
+  assert.equal(match(date, { from: '2027-06-01' }, { from: '2027-10-01', to: '2027-10-31' }), true)
+})
+
+test('a weekly tour meets the days a guest is there', () => {
+  const tour = { every: ['saturday'], from: '2027-05-01', to: '2027-09-30', start: '10:00', zone: 'Europe/Lisbon' }
+  assert.equal(match(date, tour, { from: '2027-07-03', to: '2027-07-09' }), true)
+  assert.equal(match(date, tour, { from: '2027-11-01', to: '2027-11-30' }), false)
+})
+
+test('several answers match when any pair does', () => {
+  const guide = [{ on: '2027-04-02' }, { on: '2027-04-09' }, { on: '2027-04-16' }]
+  assert.equal(match(dates, guide, [{ on: '2027-04-09' }]), true)
+  assert.equal(match(dates, guide, [{ on: '2027-04-10' }]), false)
+})
+
+test("hours apply to each day of a span, and an end before the start runs past midnight", () => {
+  const event = { from: '2026-12-05', to: '2026-12-07', start: '09:00', end: '14:00', zone: Z }
+  assert.equal(match(date, event, { on: '2026-12-06', start: '15:00', end: '18:00', zone: Z }), false)
+  assert.equal(match(date, event, { on: '2026-12-06', start: '08:00', end: '11:00', zone: Z }), true)
+  const friday = { every: ['friday'], start: '22:00', end: '02:00', zone: Z }
+  assert.equal(match(date, friday, { on: '2026-11-21', start: '01:00', zone: Z }), true)
+  assert.equal(match(date, friday, { every: ['saturday'], start: '01:00', zone: Z }), true)
+  assert.equal(match(date, friday, { on: '2026-11-21', start: '03:00', zone: Z }), false)
+})
+
+test('a deadline is from-to with the start open', () => {
+  const by = { to: '2027-01-15' }
+  assert.equal(match(date, by, { from: '2026-12-01' }), true)
+  assert.equal(match(date, by, { from: '2026-12-01', to: '2026-12-20' }), true)
+  assert.equal(match(date, by, { from: '2027-02-01' }), false)
+})
+
+test('days with no hours are whole days, read in the zone of the answer they meet', () => {
+  assert.equal(match(date, { every: weekdays }, { every: ['wednesday'], start: '17:00', end: '19:00', zone: Z }), true)
+  assert.equal(match(date, { every: weekdays }, { on: '2026-11-18', start: '17:00', end: '19:00', zone: Z }), true)
+  // Late on Saturday in Tokyo is still Saturday there: a Sunday with no hours of its own does not meet it.
+  assert.equal(match(date, { on: '2026-11-22' }, { on: '2026-11-21', start: '23:00', zone: 'Asia/Tokyo' }), false)
+  assert.equal(match(date, { on: '2026-11-21' }, { on: '2026-11-21', start: '23:00', zone: 'Asia/Tokyo' }), true)
+})
+
+test("a New York tutor's Mondays at 16:00 read as 16:00 in New York, in January and in July", () => {
+  const tutor = { every: ['monday'], start: '16:00', zone: 'America/New_York' }
+  assert.equal(match(date, tutor, { on: '2027-01-04', start: '21:00', zone: 'UTC' }), true)
+  assert.equal(match(date, tutor, { on: '2027-01-04', start: '20:00', zone: 'UTC' }), false)
+  assert.equal(match(date, tutor, { on: '2027-07-05', start: '20:00', zone: 'UTC' }), true)
+  assert.equal(match(date, tutor, { on: '2027-07-05', start: '21:00', zone: 'UTC' }), false)
+})
+
+test('two weekly answers are compared in the week of a given day', () => {
+  // Madrid moves its clocks on 28 March 2027, New York on 14 March: in between, 15:00 in Madrid is 10:00 in New York, not 9:00.
+  const madrid15 = { every: ['monday'], start: '15:00', zone: Z }
+  const ny9 = { every: ['monday'], start: '09:00', end: '09:30', zone: 'America/New_York' }
+  assert.equal(markets.match(date, madrid15, ny9, { today: '2026-11-17' }), true)
+  assert.equal(markets.match(date, madrid15, ny9, { today: '2027-03-17' }), false)
+  assert.throws(() => markets.match(date, madrid15, ny9, { today: '17/11/2026' }), { message: 'today is "17/11/2026", and takes a day as YYYY-MM-DD' })
+})
+
+test('a part of the day matches as 6:00 to 12:00, 12:00 to 18:00 and 18:00 to 24:00 in its zone', () => {
+  const thursdayMornings = { every: ['thursday'], part: 'morning', zone: Z }
+  assert.equal(match(date, { every: weekdays, start: '09:00', end: '17:00', zone: Z }, thursdayMornings), true)
+  assert.equal(match(date, { every: weekdays, start: '18:00', end: '22:00', zone: Z }, thursdayMornings), false)
+  assert.equal(match(date, thursdayMornings, { every: ['thursday'], part: 'morning', zone: Z }), true)
+  // Evenings with no days named are every day, any of them: a Tuesday evening fits, a Tuesday morning does not.
+  const evenings = { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }
+  assert.equal(match(date, { every: ['tuesday'], start: '19:00', end: '21:00', zone: Z }, evenings), true)
+  assert.equal(match(date, { every: ['tuesday'], start: '09:00', end: '11:00', zone: Z }, evenings), false)
+  // Each part ends where the next begins, and they share no moment.
+  assert.equal(match(date, thursdayMornings, { every: ['thursday'], part: 'afternoon', zone: Z }), false)
+  const saturdayMorning = { on: '2026-11-28', part: 'morning', zone: Z }
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '06:00', zone: Z }), true)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '11:59', zone: Z }), true)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '12:00', zone: Z }), false)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28', start: '05:00', end: '06:30', zone: Z }), true)
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-28' }), true, 'the whole of that day')
+  assert.equal(match(date, saturdayMorning, { on: '2026-11-29' }), false)
+  // The evening runs to midnight, and no further.
+  const fridayEvening = { on: '2026-11-27', part: 'evening', zone: Z }
+  assert.equal(match(date, fridayEvening, { on: '2026-11-27', start: '23:30', zone: Z }), true)
+  assert.equal(match(date, fridayEvening, { on: '2026-11-28', start: '00:00', zone: Z }), false)
+  // A morning in London is 7:00 to 13:00 in Madrid in November.
+  const londonMorning = { on: '2026-11-26', part: 'morning', zone: 'Europe/London' }
+  assert.equal(match(date, londonMorning, { on: '2026-11-26', start: '12:30', end: '13:30', zone: Z }), true)
+  assert.equal(match(date, londonMorning, { on: '2026-11-26', start: '13:00', zone: Z }), false)
+})
+
+test('places match when their circles touch', () => {
+  const place: Field = { piece: 'place' }
+  const getafe = { lat: '40.3083', lon: '-3.7327', radiusKm: 10 }
+  const toledo = { lat: '39.8628', lon: '-4.0273', radiusKm: 5 }
+  const retiro = { lat: '40.4153', lon: '-3.6845', radiusKm: 0 }
+  assert.equal(match(place, madrid, getafe), true)
+  assert.equal(match(place, madrid, toledo), false)
+  assert.equal(match(place, retiro, madrid), true)
+})
+
+test('numbers match when they overlap, choices when the same, and an answer left out matches anything', () => {
+  const age: Field = { piece: 'number', unit: 'years' }
+  assert.equal(match(age, { from: '9', to: '11' }, '10'), true)
+  assert.equal(match(age, { from: '18' }, { from: '30', to: '40' }), true)
+  assert.equal(match(age, { to: '6' }, '7'), false)
+  assert.equal(match({ ...age, several: true }, [{ from: '3', to: '5' }, { from: '9', to: '11' }], [{ from: '6', to: '8' }]), false)
+  assert.equal(match({ ...age, several: true }, [{ from: '3', to: '5' }, { from: '9', to: '11' }], ['10']), true)
+  const kind: Field = { piece: 'choice', values: ['hat', 'socks'] }
+  assert.equal(match(kind, 'hat', 'hat'), true)
+  assert.equal(match(kind, 'hat', 'socks'), false)
+  assert.equal(match({ ...kind, several: true }, ['hat', 'socks'], ['socks']), true)
+  for (const field of [age, kind, date, { ...kind, several: true as const }]) assert.equal(match(field, undefined, ['10']), true)
+  assert.equal(match({ piece: 'place', several: true }, [{ lat: '40.4168', lon: '-3.7038', radiusKm: 5 }], undefined), true)
+})
+
+test("prices: the offer's costs no more than the request's, per the same thing in the same currency", () => {
+  const field: Field = { piece: 'price', per: ['item'] }
+  const offer = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }]
+  assert.equal(match(field, offer, [{ amount: '30', currency: 'EUR', per: 'item' }]), true)
+  assert.equal(match(field, offer, [{ amount: '29', currency: 'EUR', per: 'item' }]), false)
+  // Prices that cannot be compared never block.
+  assert.equal(match(field, offer, [{ amount: '10', currency: 'USD', per: 'item' }]), true)
+  assert.equal(match(field, offer, [{ amount: '10', currency: 'EUR' }]), true)
+  // A note is read, never matched.
+  assert.equal(match(field, [{ ...offer[0]!, note: 'Mending only' }], [{ amount: '30', currency: 'EUR', per: 'item', note: 'A new jumper' }]), false)
+  assert.equal(match(field, [{ ...offer[0]!, note: 'Mending only' }], [{ amount: '40', currency: 'EUR', per: 'item' }]), true)
+})
+
+test('text, a photo and a link are read, not matched', () => {
+  for (const piece of ['text', 'photo', 'link'] as const) assert.equal(match({ piece }, 'a', 'b'), true)
+})
+
+// Question 3: how does this answer read, in plain English?
+
+test('a date reads as people say it, the year left out when it is this one', () => {
+  assert.equal(read(date, { every: weekdays, start: '09:00', end: '17:00', zone: Z }), 'Monday to Friday, 9:00 to 17:00')
+  assert.equal(read(date, { every: ['saturday'], start: '10:00', from: '2026-11-21', zone: Z }), 'Saturdays, 10:00, from 21 November')
+  assert.equal(read(date, { from: '2027-06-01', to: '2027-08-31' }), '1 June to 31 August 2027')
+  assert.equal(read(date, { on: '2026-11-24' }), 'Tuesday 24 November')
+  assert.equal(read(date, { on: '2027-01-04', start: '16:00', zone: Z }), 'Monday 4 January 2027, 16:00')
+  assert.equal(read(date, { to: '2027-01-15' }), 'Until 15 January 2027')
+  assert.equal(read(date, { from: '2026-12-01' }), 'From 1 December')
+  assert.equal(read(date, { from: '2026-12-05', to: '2026-12-07', start: '09:00', end: '14:00', zone: Z }), '5 to 7 December, 9:00 to 14:00')
+  assert.equal(read(date, { from: '2026-12-20', to: '2027-01-10' }), '20 December 2026 to 10 January 2027')
+  assert.equal(read(date, { every: ['saturday', 'sunday', 'wednesday'] }), 'Wednesdays, Saturdays and Sundays')
+  assert.equal(read(date, { every: ['friday', 'monday', 'tuesday', 'wednesday', 'thursday', 'sunday'] }), 'Monday to Friday and Sundays')
+  // All seven days mean any of them, as hours with no days named are written, and each answer reads whole.
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'] }), 'Any day')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '18:00', end: '22:00', zone: Z }), 'Every day, 18:00 to 22:00')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '07:00', from: '2026-12-01', zone: Z }), 'Every day, 7:00, from 1 December')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], to: '2027-01-15' }), 'Any day, until 15 January 2027')
+  assert.equal(read(date, { every: ['friday'], start: '22:00', end: '02:00', to: '2027-05-01', zone: Z }), 'Fridays, 22:00 to 2:00, until 1 May 2027')
+  assert.equal(read(dates, [{ every: weekdays, start: '09:00', end: '17:00', zone: Z }, { every: ['saturday'], start: '10:00', end: '14:00', zone: Z }]), 'Monday to Friday, 9:00 to 17:00; Saturdays, 10:00 to 14:00')
+  // Several answers are joined in a list, so each reads whole: the 10:00 is not a weekend hour.
+  const tours = [{ every: ['saturday', 'sunday'], start: '09:00', zone: Z }, { every: [...weekdays, 'saturday', 'sunday'], start: '10:00', zone: Z }]
+  assert.equal(read(dates, tours), 'Saturdays and Sundays, 9:00; Every day, 10:00')
+  assert.equal(read(dates, [{ every: ['monday'], start: '09:00', zone: Z }, { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }, { every: [...weekdays, 'saturday', 'sunday'] }]), 'Mondays, 9:00; Evenings; Any day')
+  // A part of the day keeps the person's word.
+  assert.equal(read(date, { every: ['thursday'], part: 'morning', zone: Z }), 'Thursday mornings')
+  assert.equal(read(date, { every: ['friday', 'tuesday'], part: 'afternoon', zone: Z }), 'Tuesday and Friday afternoons')
+  assert.equal(read(date, { every: weekdays, part: 'evening', zone: Z }), 'Monday to Friday evenings')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }), 'Evenings')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], part: 'morning', from: '2026-12-01', zone: Z }), 'Mornings, from 1 December')
+  assert.equal(read(date, { every: ['thursday'], part: 'morning', from: '2026-12-01', zone: Z }), 'Thursday mornings, from 1 December')
+  assert.equal(read(date, { on: '2026-11-28', part: 'morning', zone: Z }), 'Saturday 28 November, in the morning')
+  assert.equal(read(date, { from: '2026-12-05', to: '2026-12-07', part: 'afternoon', zone: Z }), '5 to 7 December, afternoons')
+})
+
+test('the other pieces read in plain words', () => {
+  assert.equal(read({ piece: 'number', unit: 'years' }, { from: '9', to: '11' }), '9 to 11 years')
+  assert.equal(read({ piece: 'number', unit: 'years' }, { from: '18' }), '18 years or more')
+  assert.equal(read({ piece: 'number', unit: 'hours' }, '1'), '1 hour')
+  assert.equal(read({ piece: 'number', unit: 'square-metres' }, '1300'), '1,300 square metres')
+  assert.equal(read({ piece: 'number' }, { to: '4' }), 'Up to 4')
+  assert.equal(read({ piece: 'number', several: true }, [{ from: '3', to: '5' }, { from: '9', to: '11' }]), '3 to 5 and 9 to 11')
+  assert.equal(read(knitting.listing.age!, [{ from: '2', to: '10' }, { to: '1' }]), '2 to 10 years and up to 1 year')
+  assert.equal(read(knitting.listing.age!, [{ to: '1' }, { from: '1' }]), 'Up to 1 year and 1 year or more')
+  const prices = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '1300', currency: 'MXN', per: 'lesson', count: 5 }, { amount: '300', currency: 'EUR' }, { amount: '50', currency: 'EUR', per: 'person', count: 2 }]
+  assert.equal(read({ piece: 'price', per: ['item', 'lesson', 'person'] }, prices), '35 EUR per item; 1,300 MXN for 5 lessons; 300 EUR; 50 EUR for 2 people')
+  const noted = [{ amount: '45', currency: 'EUR', per: 'hour' }, { amount: '30', currency: 'EUR', note: 'call-out, on top' }, { amount: '20', currency: 'EUR', per: 'lesson', count: 4, note: 'per child, in a group' }]
+  assert.equal(read({ piece: 'price', per: ['hour', 'lesson'] }, noted), '45 EUR per hour; 30 EUR (call-out, on top); 20 EUR for 4 lessons (per child, in a group)')
+  // A place reads as its numbers.
+  assert.equal(read({ piece: 'place', several: true }, [{ ...madrid, radiusKm: 1 }, { ...madrid, radiusKm: 0 }]), 'Around 40.4168, -3.7038, 1 km; 40.4168, -3.7038')
+  assert.equal(read(knitting.listing.languages!, ['es', 'en', 'pt']), 'Spanish, English and Portuguese')
+  assert.equal(read(knitting.listing.size!, ['xl']), 'XL')
+  assert.equal(read(knitting.listing.handover!, ['in-person']), 'In person')
+  // A value's words and a label read as inside a sentence, with a capital first or alone; a name or an abbreviation keeps its own.
+  assert.equal(read({ piece: 'choice', values: ['weekly', 'every-two-weeks'], several: true }, ['weekly', 'every-two-weeks']), 'Weekly and every two weeks')
+  assert.equal(read(knitting.listing.handover!, ['shipped', 'in-person']), 'Shipped and in person')
+  assert.equal(read(knitting.listing.size!, ['m', 'xl']), 'M and XL')
+  assert.equal(read({ piece: 'text', several: true }, ['merino', 'alpaca']), 'merino and alpaca')
+  const help = { piece: 'choice' as const, several: true as const, values: ['food', 'events', 'farm', 'building'], ask: { labels: { food: 'food banks', events: 'community events', farm: 'farm work, crops and land', building: 'building and repairs' } } }
+  assert.equal(read(help, ['food']), 'Food banks')
+  assert.equal(read(help, ['events', 'food']), 'Community events and food banks')
+  // When any answer's words hold a comma or "and", the list joins with semicolons, so each answer stays whole.
+  assert.equal(read(help, ['building', 'farm']), 'Building and repairs; farm work, crops and land')
+  assert.equal(read(help, ['food', 'building']), 'Food banks; building and repairs')
+  assert.equal(read({ piece: 'text', several: true }, ['Gas Safe, level 2', 'Part P']), 'Gas Safe, level 2; Part P')
+  assert.equal(read({ piece: 'number', several: true, unit: 'square-metres' }, ['1300', '2000']), '1,300 square metres and 2,000 square metres')
+  assert.equal(read({ piece: 'photo', several: true }, [photo.sha256]), '1 photo')
+  assert.equal(read({ piece: 'link' }, 'https://example.com'), 'https://example.com')
+})
+
+// Question 4: what does this market ask this role?
+
+test("a market asks a role its fields in order: the preview first, each after the fields its when names, then contact", () => {
+  assert.deepEqual(ask(K, 'knitter').map((f) => f.name), ['kind', 'photos', 'description', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'deposit', 'days', 'handover', 'area', 'meet', 'shipsTo', 'languages', 'shop', 'contact'])
+  assert.deepEqual(ask(K, 'client').map((f) => f.name), ['kind', 'description', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'due', 'handover', 'area', 'meet', 'languages', 'contact'])
+  assert.deepEqual(ask(K, 'client', 'review', 'knitter').map((f) => f.name), ['subject', 'listing', 'score', 'text', 'onTime', 'daysLate', 'again'])
+  assert.deepEqual(ask(K, 'knitter', 'review', 'client').map((f) => f.name), ['subject', 'listing', 'score', 'text', 'paid', 'again'])
+  assert.deepEqual(ask(K, 'knitter', 'vouch').map((f) => f.name), ['subject', 'text'])
+  assert.throws(() => markets.ask(K, 'seller'), { message: 'seller is not a role in knitting: its roles are knitter, client' })
+})
+
+test("each field comes with its words: the role's, or else the field's, or else its label, or else its name in words", () => {
+  const by = (role: string, kind = 'listing', about?: string) => Object.fromEntries(ask(K, role, kind, about).map((f) => [f.name, f]))
+  const knitter = by('knitter')
+  const client = by('client')
+  assert.equal(knitter.area!.question, 'Where can you hand work over?')
+  assert.deepEqual(knitter.area!.start, { radiusKm: 10 })
+  assert.equal(client.area!.question, 'Where do you live?')
+  assert.equal(client.area!.hint, 'Your neighbourhood and town, never your door.')
+  assert.deepEqual(client.area!.start, { radiusKm: 1 })
+  assert.equal(knitter.shipsTo!.label, 'Ships to')
+  assert.equal(client.footLength!.label, 'Foot length')
+  assert.equal(client.footLength!.question, 'Foot length')
+  assert.deepEqual(client.footLength!.start, { range: false })
+  assert.deepEqual(knitter.age!.start, { range: true })
+  assert.deepEqual(client.age!.start, { range: false })
+  assert.equal(client.chest!.hint, 'Round its widest part, in centimetres.')
+  assert.deepEqual(client.due!.start, { way: 'until', hours: false })
+  // A start merges, key by key: the role's over the field's, the field's over the piece's own.
+  assert.deepEqual(knitter.meet!.start, { way: 'weekly', hours: true })
+  assert.deepEqual(client.meet!.start, { way: 'weekly', hours: 'part' })
+  // A role may have its own label; the field's is the fallback.
+  assert.equal(client.price!.label, 'Budget')
+  assert.equal(knitter.price!.label, 'Price')
+  assert.equal(client.yarns!.question, 'Yarns')
+  assert.equal(knitter.description!.question, 'What do you knit, and how?')
+  assert.equal(knitter.description!.ask!.long, true)
+  assert.equal(knitter.contact!.question, 'How can people reach you outside Forest?')
+  assert.deepEqual(client.size!.choices!.slice(0, 2), [{ value: 'xs', label: 'XS' }, { value: 's', label: 'S' }])
+  assert.deepEqual(client.handover!.choices, [{ value: 'in-person', label: 'In person' }, { value: 'shipped', label: 'Shipped' }])
+  // A picker never shows a lower-case label: each choice reads as if it stood alone.
+  assert.deepEqual(client.wearer!.choices!.at(-1), { value: 'children', label: 'Children and babies' })
+  assert.deepEqual(client.languages!.choices!.find((c) => c.value === 'es'), { value: 'es', label: 'Spanish' })
+  assert.equal(client.languages!.choices!.length, Object.keys(lists.languages).length)
+  assert.equal(client.kind!.takes, 'a list of one or more, each different, each one of jumper, cardigan, scarf, hat, socks')
+  assert.equal(client.kind!.several, true)
+  assert.deepEqual(client.size!.when, knitting.listing.size!.when)
+  assert.equal(by('client', 'review', 'knitter').again!.label, 'Again')
+  assert.equal(by('knitter', 'review', 'client').paid!.question, 'Did they pay as agreed?')
 })
 
 test("previewOf gives a market's preview, or else description, price, then its place fields, of those it has", () => {
   assert.deepEqual(previewOf(knitting), knitting.preview)
   const { preview: _preview, ...none } = knitting
-  assert.deepEqual(previewOf(none), ['description', 'price', 'studio', 'home'])
-  const { price: _price, ...unpriced } = knitting.listing
-  assert.deepEqual(previewOf({ ...none, listing: unpriced }), ['description', 'studio', 'home'])
-  assert.equal(previewGiven, previewOf)
+  assert.deepEqual(previewOf(none), ['description', 'price', 'area'])
 })
 
-test('a field kept for some roles fits only a listing by one of them: a place split by role', () => {
-  assert.equal(check(K, 'client', 'listing', { ...inPerson, studio: place }), 'studio is for listings by knitter')
-  assert.equal(check(K, 'knitter', 'listing', { ...inPerson, home: place }), 'home is for listings by client')
-  assert.equal(check(K, 'client', 'listing', { photos: [] }), 'photos is for listings by knitter')
-  assert.equal(check(K, 'knitter', 'listing', { photos: [] }), null)
-  assert.equal(check(K, 'knitter', 'listing', { due: '2026-11-02T18:00:00+01:00' }), 'due is for listings by client')
+test('the shared fields are pieces, a name in words reads as people write it, and every shared field has a label', () => {
+  for (const fields of Object.values(SHARED)) for (const field of Object.values(fields)) assert.ok(field.ask?.label)
+  assert.equal(nameWords('footLength'), 'Foot length')
+  assert.equal(nameWords('taughtIn'), 'Taught in')
+  assert.equal(nameWords('size2'), 'Size 2')
 })
 
-test('a field with when is held only where the fields it names hold one of its values', () => {
-  const socks = 'footLength is only for a listing whose kind is socks'
-  assert.equal(check(K, 'knitter', 'listing', { kind: 'socks', footLength: '24.5' }), null)
-  assert.equal(check(K, 'knitter', 'listing', { kind: 'hat', footLength: '24.5' }), socks)
-  assert.equal(check(K, 'knitter', 'listing', { footLength: '24.5' }), socks)
-  assert.equal(check(K, 'knitter', 'listing', { footLength: '24.5', kind: 'socks' }), null)
-})
-
-test('with several fields named, all must match; a many field matches when any of its values does', () => {
-  const adult = { kind: 'jumper', size: 'm' }
-  const sized = 'size is only for a listing whose wearer is women or men, and whose kind is jumper or cardigan'
-  assert.equal(check(K, 'knitter', 'listing', { ...adult, wearer: ['women', 'men'] }), null)
-  assert.equal(check(K, 'knitter', 'listing', { ...adult, wearer: ['men', 'children'] }), null)
-  assert.equal(check(K, 'knitter', 'listing', { ...adult, wearer: ['children'] }), sized)
-  assert.equal(check(K, 'knitter', 'listing', { wearer: ['women'], kind: 'scarf', size: 'm' }), sized)
-  assert.equal(check(K, 'knitter', 'listing', { wearer: 'women', kind: 'jumper', size: 'm' }), 'wearer takes a list, each different, each one of women, men, children')
-})
-
-test('a place asked only in person: shipped alone holds no place', () => {
-  for (const [role, key] of [['knitter', 'studio'], ['client', 'home']] as const) {
-    assert.equal(check(K, role, 'listing', { ...inPerson, [key]: place }), null)
-    assert.equal(check(K, role, 'listing', { handover: ['shipped', 'in-person'], [key]: place }), null)
-    assert.equal(check(K, role, 'listing', { handover: ['shipped'] }), null)
-    assert.equal(check(K, role, 'listing', { handover: ['shipped'], [key]: place }), `${key} is only for a listing whose handover is in-person`)
-    assert.equal(check(K, role, 'listing', { [key]: place }), `${key} is only for a listing whose handover is in-person`)
-  }
-})
-
-test('a field with roles and when holds only where both match, in a listing and in a review', () => {
-  assert.equal(check(K, 'client', 'listing', { ...inPerson, home: place }), null)
-  assert.equal(check(K, 'client', 'listing', { handover: ['shipped'], home: place }), 'home is only for a listing whose handover is in-person')
-  assert.equal(check(K, 'client', 'review', { subject, onTime: 'no', daysLate: '2' }, 'knitter'), null)
-  assert.equal(check(K, 'client', 'review', { subject, onTime: 'yes', daysLate: '2' }, 'knitter'), 'daysLate is only for a review whose onTime is no')
-  assert.equal(check(K, 'knitter', 'review', { subject, daysLate: '2' }, 'client'), 'daysLate is for reviews of knitter')
-})
-
-test('the first field that does not fit is the one answered', () => {
-  assert.equal(check(K, 'knitter', 'listing', { colour: 'red', wearer: ['dogs'] }), 'a listing in knitting has no field colour')
-})
-
-test("a file field names one of the body's files", () => {
-  assert.equal(check(K, 'knitter', 'listing', { description: 'A wool jumper.', photos: [photo.sha256], files: [photo] }), null)
-  assert.equal(check(K, 'knitter', 'listing', { photos: [photo.sha256] }), "photos names a file the body's files do not list")
-  assert.match(check(K, 'knitter', 'listing', { photos: [photo], files: [photo] })!, /^photos takes a list, each different, each the SHA-256/)
-  assert.equal(check(K, 'client', 'listing', { description: 'A hat like this', files: [photo] }), null)
-})
-
-test('a review holds the fields every review holds, and its market adds others', () => {
-  const listing = `${subject}/listing/jumper`
-  assert.equal(check(K, 'client', 'review', { subject, score: '8.5', text: 'Warm and well made.', listing }), null)
-  assert.equal(check(K, 'client', 'review', { subject }), null)
-  for (const score of ['1', '10', '10.0', '9.5']) assert.equal(check(K, 'client', 'review', { subject, score }), null)
-  for (const score of ['0', '11', '8.55', '0.5', '-1']) {
-    assert.equal(check(K, 'client', 'review', { subject, score }), 'score takes a number from "1" to "10" with at most one decimal, such as "8.5"')
-  }
-  assert.equal(check(K, 'client', 'review', { subject, score: 8 }), 'score takes a number as decimal text, such as "2.5"')
-  for (const wrong of ['jumper', `${subject}/offer/jumper`, `${subject}/post/jumper`, `${subject}/listing/`, `${subject}/listing/a/b`]) {
-    assert.equal(check(K, 'client', 'review', { subject, listing: wrong }), "listing takes a listing's address, <profile address>/listing/<id>")
-  }
-  assert.equal(check(K, 'client', 'review', { subject, post: listing }), 'a review in knitting has no field post')
-  assert.equal(check(K, 'client', 'review', { subject, evidence: 'x' }), 'a review in knitting has no field evidence')
-  assert.equal(check(K, 'client', 'review', { subject, kind: 'hat' }), 'a review in knitting has no field kind')
-  for (const { role } of knitting.roles) assert.equal(check(K, role, 'review', { subject, again: 'yes' }, role), null)
-})
-
-test('subject is the one field enforced: a review, a vouch and a report name it', () => {
-  for (const kind of ['review', 'vouch', 'report']) {
-    assert.equal(check(K, 'client', kind, { text: 'x' }), `a ${kind} names its subject: the address of the profile it is about`)
-  }
-  assert.equal(check(K, 'client', 'review', { subject: 7 }), 'subject takes text')
-})
-
-test('a review field kept for some roles fits only a review of one of them, when that role is known', () => {
-  assert.equal(check(K, 'knitter', 'review', { subject, onTime: 'yes' }, 'client'), 'onTime is for reviews of knitter')
-  assert.equal(check(K, 'client', 'review', { subject, onTime: 'yes', again: 'no' }, 'knitter'), null)
-  assert.equal(check(K, 'knitter', 'review', { subject, onTime: 'yes' }), null)
-  assert.equal(check(K, 'client', 'review', { subject, onTime: 'late' }, 'knitter'), 'onTime takes one of yes, no')
-})
-
-test('a vouch and a report hold subject and text, the same in every market', () => {
-  assert.equal(check(K, 'knitter', 'vouch', { subject, text: 'Real and honest.' }), null)
-  assert.equal(check(K, 'client', 'report', { subject }, 'knitter'), null)
-  assert.equal(check(K, 'knitter', 'vouch', { subject, score: '9' }), 'a vouch in knitting has no field score')
-  assert.equal(check(K, 'client', 'report', { subject, onTime: 'no' }), 'a report in knitting has no field onTime')
-})
-
-test("the shared fields are of types.json's types, and the schema keeps a listing's and a review's names for them and lists the package's units", () => {
-  const types = Object.keys(json('build/types.json').$defs)
-  for (const fields of Object.values(SHARED)) for (const field of Object.values(fields)) assert.ok(types.includes(field.type))
-  const schema = json('build/market.schema.json')
-  for (const kind of ['listing', 'review'] as const) assert.deepEqual(schema.properties[kind].propertyNames.not.enum, Object.keys(SHARED[kind]))
-  assert.deepEqual(schema.$defs.field.properties.unit.enum, [...UNITS])
-})
-
-test('values at the edges of each type answer as ajv answers them', () => {
-  const hash = photo.sha256
-  const at = (time: string) => `2026-11-02T${time}`
-  const hours = (slot: object, zone = 'Europe/Madrid') => ({ zone, slots: [{ days: ['monday'], from: '09:00', to: '17:00', ...slot }] })
-  const places = [
-    place, { ...place, radiusKm: 0 }, { lat: '40.42', lon: '-3.70', radiusKm: 5 }, { ...place, radiusKm: 20000 }, { ...place, online: true },
-    { area: 'Madrid' }, { area: 'Madrid', reachKm: 5 }, { area: 'Madrid', lat: '40.42', lon: '-3.70' }, { ...place, reachKm: 5 },
-    { lat: '40.42', radiusKm: 5 }, { lon: '-3.70', radiusKm: 5 }, { lat: '40.42', lon: '-3.70' }, { radiusKm: 5 }, { ...place, radiusKm: null },
-    { ...place, radiusKm: -1 }, { ...place, radiusKm: 0.5 }, { ...place, radiusKm: 1.0 }, { ...place, radiusKm: '5' }, { ...place, precisionKm: 1 },
-    { ...place, lat: '90', lon: '180' }, { ...place, lat: '90.1', lon: '0' }, { ...place, lat: '-90.0', lon: '-180.00' }, { ...place, lon: '180.5' },
-    { ...place, lat: '+40' }, { ...place, lat: 40.42 }, { ...place, area: '' }, { ...place, area: '😀' }, { ...place, area: 7 },
-    { ...place, extra: 1 }, {}, [], 'Madrid',
-  ]
-  const prices = [
-    { amount: '0', currency: 'EUR' }, { amount: '12.50', currency: 'USD', per: 'hour' }, { amount: '12.50', currency: 'USD', per: 'item' },
-    { amount: '12.50', currency: 'USD', per: 'night' }, { amount: '01', currency: 'USD' },
-    { amount: '-1', currency: 'USD' }, { amount: '1.', currency: 'USD' }, { amount: '1', currency: 'usd' }, { amount: '1', currency: 'USDT' },
-    { amount: '1', currency: 'USD', per: '' }, { amount: '1', currency: 'USD', per: 7 }, { currency: 'USD' }, { amount: '1' },
-    { amount: '1', currency: 'USD', each: 'x' }, '30 USD',
-    { amount: '90', currency: 'USD', per: 'item', count: 3 }, { amount: '90', currency: 'USD', per: 'item', count: 1 },
-    { amount: '90', currency: 'USD', count: 3 }, { amount: '90', currency: 'USD', per: 'item', count: 0 },
-    { amount: '90', currency: 'USD', per: 'item', count: -1 }, { amount: '90', currency: 'USD', per: 'item', count: 1.5 },
-    { amount: '90', currency: 'USD', per: 'item', count: 1.0 }, { amount: '90', currency: 'USD', per: 'item', count: '3' },
-    { amount: '90', currency: 'USD', per: 'item', count: null },
-  ]
-  const lists = [...prices.map((one) => [one]), [], [prices[0], prices[0]], [prices[0], prices[1], prices[15]], prices[1]]
-  const ages = [
-    '10', '-1', '1.5', 10, { from: '9', to: '11' }, { from: '9', to: '9' }, { from: '11', to: '9' }, { from: '9' }, { to: '6' }, {},
-    { from: '9', to: null }, { from: 9 }, { from: '09' }, { from: '9', to: '11', step: '1' }, { from: '9', to: '1e1' }, ['9', '11'], '9-11', null,
-  ]
-  const edges: [role: string, field: string, context: object, values: unknown[]][] = [
-    ['knitter', 'contact', {}, ['', 'x', 7, null, ['x'], {}]],
-    ['knitter', 'days', {}, ['0', '-0', '01', '2.', '-2.5', '1e3', ' 1', '١٢', 2]],
-    ['knitter', 'yarns', {}, [
-      [], ['a'], [''], ['__proto__'], ['a'.repeat(64)], ['a'.repeat(65)], ['😀'.repeat(64)], ['😀'.repeat(65)], ['a\nb'],
-      ['toString', 'toString'], ['constructor', 'constructor'], ['a', 'b', 'a'], [1, 1], [['a'], ['a']], 'a',
-    ]],
-    ['knitter', 'wearer', {}, [['women', 'women'], ['women', 'men'], [], 'women', ['Women'], [null]]],
-    ['knitter', 'kind', {}, ['hat', 'HAT', ['hat'], 1]],
-    ['knitter', 'studio', inPerson, places],
-    ['client', 'home', inPerson, places],
-    ['knitter', 'price', {}, lists],
-    ['knitter', 'deposit', {}, prices],
-    ['client', 'age', kids, ages],
-    ['client', 'due', {}, [
-      '2024-02-29T00:00:00Z', '2026-02-29T00:00:00Z', '2000-02-29T12:00:00Z', '1900-02-29T12:00:00Z', '2026-04-31T00:00:00Z',
-      '2026-04-30T00:00:00Z', '2026-13-01T00:00:00Z', '2026-00-10T00:00:00Z', '2026-01-00T00:00:00Z', '0000-01-01T00:00:00Z',
-      '2026-12-31T23:59:60Z', '2026-12-31T23:59:60.5Z', '2026-12-31T23:59:61Z', '2027-01-01T00:59:60+01:00', '2026-12-31T22:59:60-01:00',
-      '2027-01-01T00:00:60+00:01', '2026-12-31T23:30:60-00:29', at('12:00:60Z'), at('23:59:60+00:00'), at('23:59:60-00:01'),
-      at('00:00:00Z'), at('23:59:59Z'), at('23:00:00+23:59'), at('23:00:00+24:00'), at('23:00:00-00:60'), at('18:00:00.123+01:00'),
-      at('18:00:00.+01:00'), '2026-11-02t18:00:00z', '2026-11-02 18:00:00Z', at('18:00:00'), at('18:00Z'), at('18:00:00+0100'),
-      { from: at('18:00:00Z'), to: at('20:00:00Z') }, { from: at('18:00:00Z') }, { from: at('18:00:00Z'), to: at('20:00:00Z'), at: 'x' },
-      { from: at('18:00:00Z'), to: at('24:00:00Z') }, 1762106400,
-      { from: at('20:00:00Z'), to: at('18:00:00Z') }, { from: at('19:00:00+01:00'), to: at('18:00:00Z') },
-      { from: at('18:00:00.5Z'), to: at('18:00:00Z') }, { from: '2026-12-31T23:59:60Z', to: '2027-01-01T00:00:00Z' },
-    ]],
-    ['knitter', 'hours', {}, [
-      hours({}), hours({}, 'UTC'), hours({}, 'Etc/GMT+1'), hours({}, 'America/Argentina/Buenos_Aires'), hours({}, '/Madrid'),
-      hours({}, 'Europe//Madrid'), hours({}, ''), hours({ days: ['monday', 'monday'] }), hours({ days: [] }), hours({ days: ['Monday'] }),
-      hours({ days: ['monday', 'sunday'] }), hours({ from: '24:00' }), hours({ from: '9:00' }), hours({ to: '23:59' }), hours({ to: '23:60' }),
-      hours({ extra: 1 }), { zone: 'Europe/Madrid', slots: [] }, { zone: 'Europe/Madrid', slots: [{ days: ['monday'], from: '09:00' }] },
-      { zone: 'Europe/Madrid' }, { slots: [] }, { ...hours({}), extra: 1 },
-    ]],
-    ['knitter', 'photos', {}, [
-      [hash], [hash.toUpperCase()], [hash.slice(1)], [`${hash}0`], [hash, hash], [], hash,
-      [{ valueOf: 1 }, { valueOf: 1 }], [{ toString: 1 }, { toString: 1 }], [{ constructor: {} }, { constructor: {} }],
-    ]],
-  ]
-  for (const [role, field, context, values] of edges) for (const value of values) check(K, role, 'listing', { ...context, [field]: value })
-})
-
-test('a word twice in a list is not distinct, __proto__ too: ajv let __proto__ twice pass', () => {
-  const body = { yarns: ['__proto__', '__proto__'] }
-  assert.equal(reference.checkEntry(K, 'knitter', 'listing', body), null)
-  assert.equal(both(K, 'knitter', 'listing', body), 'yarns takes a list of short words, each different')
-})
-
-test('a time has hours to 23 and minutes to 59, also when its zone puts it at 23:59 UTC: ajv let those pass', () => {
-  for (const time of ['2026-11-02T24:59:30+01:00', '2026-11-02T23:60:30+00:01']) {
-    assert.equal(reference.checkEntry(K, 'client', 'listing', { due: time }), null)
-    assert.match(both(K, 'client', 'listing', { due: time })!, /^due takes a time in RFC 3339/)
-    assert.match(both(K, 'client', 'listing', { due: { from: '2026-11-02T18:00:00Z', to: time } })!, /^due takes a time in RFC 3339/)
-  }
-})
-
-test('the browser entry holds the same directory and market files, and needs each one the directory lists', () => {
-  assert.deepEqual(browser.directory, markets.directory)
-  assert.deepEqual(browser.market(K), markets.market(K))
-  assert.equal(browser.market('weaving'), undefined)
-  assert.throws(() => loadGiven({ ...files, markets: [] }), { message: 'the directory lists knitting, but no markets/knitting.json was given' })
-  assert.equal(loadGiven({ ...files, markets: [knitting, { ...knitting, name: 'weaving' }] }).market('weaving'), undefined)
-})
-
-test('a keyword the checker does not know, in build/types.json, throws when the markets load', () => {
-  const types = files.types as { $defs: { [type: string]: object } }
-  const using = (text: object) => () => loadGiven({ ...files, types: { ...types, $defs: { ...types.$defs, text } } })
-  assert.throws(using({ type: 'string', multipleOf: 2 }), { message: 'build/types.json: #/$defs/text has multipleOf: 2, which the checker does not know' })
-  assert.throws(using({ type: 'string', format: 'email' }), /format: "email"/)
-  assert.throws(using({ type: ['string', 'null'] }), /type: \["string","null"\]/)
-  assert.throws(using({ type: 'object', additionalProperties: { type: 'string' } }), /additionalProperties/)
-  assert.throws(using({ $ref: '#/$defs/colour' }), { message: 'build/types.json has no #/$defs/colour' })
-})
-
-// Last: it asks again every case the tests above asked.
-test('the browser entry answers every case with code from strings disallowed, as a strict content security policy does', () => {
+// Last: it makes again every call the tests above made.
+test('the browser entry answers every call with code from strings disallowed, as a strict content security policy does', () => {
   const run = spawnSync(process.execPath, ['--disallow-code-generation-from-strings', fileURLToPath(new URL('browser.ts', import.meta.url))], {
-    input: JSON.stringify({ files, cases }),
+    input: JSON.stringify({ files, cases: calls }),
     encoding: 'utf8',
   })
   assert.equal(run.status, 0, run.stderr)
-  assert.ok(cases.length > 200)
-  assert.deepEqual(JSON.parse(run.stdout), cases.map((args) => markets.checkEntry(...args)))
+  assert.ok(calls.length > 200)
+  const expected = calls.map(([method, ...args]) => (markets[method] as (...a: unknown[]) => unknown)(...args))
+  assert.deepEqual(JSON.parse(run.stdout), JSON.parse(JSON.stringify(expected)))
 })
