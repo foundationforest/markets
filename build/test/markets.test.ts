@@ -12,7 +12,8 @@ import { join } from 'node:path'
 import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
-import { SHARED, loadMarkets, nameWords, previewOf, type Directory, type Field, type Market, type Markets } from '../src/index.ts'
+import { labelOf as labelGiven, valuesOf as valuesGiven } from '../src/browser.ts'
+import { SHARED, labelOf, loadMarkets, nameWords, previewOf, valuesOf, type Directory, type Field, type Market, type Markets } from '../src/index.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const json = (path: string) => JSON.parse(readFileSync(join(ROOT, path), 'utf8'))
@@ -130,17 +131,20 @@ test('number: one number, or from one to another with either end open, whole or 
 })
 
 test('price: always several, each with a per its field lists or none, and a count only with a per', () => {
-  const socks = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }, { amount: '300', currency: 'EUR' }]
+  const socks = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: '3' }, { amount: '300', currency: 'EUR' }]
   assert.equal(listing('knitter', { price: socks }), null)
-  assert.equal(listing('client', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: 3 }] }), null)
-  const each = "price takes a list of one or more, each different, each { amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, any few of the person's words to read with that price, one line of at most 80 characters"
+  assert.equal(listing('client', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: '3' }] }), null)
+  const each = "price takes a list of one or more, each different, each { amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, count, only with a per, how many of it the amount buys, as decimal text, a whole number such as \"3\", or per hour any length in hours, such as \"0.75\" for 45 minutes, and note if wanted, any few of the person's words to read with that price, one line of at most 80 characters"
   // A note: any few of the person's words to read with one price, one line of at most 80 characters, counted as characters.
   const noted = [{ ...price, note: 'Mending, not new work' }, { amount: '120', currency: 'EUR', note: 'from, for a simple jumper' }]
   assert.equal(listing('knitter', { price: noted }), null)
   assert.equal(listing('knitter', { price: [{ ...price, note: 'é'.repeat(80) }] }), null)
-  for (const wrong of [price, [], [price, { ...price }], [{ ...price, per: 'night' }], [{ amount: '90', currency: 'EUR', count: 3 }], [{ ...price, count: 0 }], [{ ...price, count: 1.5 }], [{ ...price, amount: '-1' }], [{ ...price, currency: 'eur' }], [{ ...price, amount: 30 }], [{ ...price, note: '' }], [{ ...price, note: ' ' }], [{ ...price, note: 'two\nlines' }], [{ ...price, note: 'x'.repeat(81) }], [{ ...price, note: 3 }]]) {
+  const item = { amount: '35', currency: 'EUR', per: 'item' }
+  for (const wrong of [price, [], [price, { ...price }], [{ ...price, per: 'night' }], [{ amount: '90', currency: 'EUR', count: '3' }], [{ ...item, count: 3 }], [{ ...item, count: '0' }], [{ ...item, count: '1.5' }], [{ ...item, count: '03' }], [{ ...price, count: 0.75 }], [{ ...price, count: '0' }], [{ ...price, count: '0.0' }], [{ ...price, count: '-1' }], [{ ...price, count: '.75' }], [{ ...price, amount: '-1' }], [{ ...price, currency: 'eur' }], [{ ...price, amount: 30 }], [{ ...price, note: '' }], [{ ...price, note: ' ' }], [{ ...price, note: 'two\nlines' }], [{ ...price, note: 'x'.repeat(81) }], [{ ...price, note: 3 }]]) {
     assert.equal(listing('knitter', { price: wrong }), each)
   }
+  // A price for time is an amount for a length in hours: an hour, 45 minutes, 90 minutes, 3 hours.
+  for (const count of ['1', '0.75', '1.5', '3', '0.33']) assert.equal(listing('knitter', { price: [{ ...price, count }] }), null, count)
   // A price field with no per list: the whole deal, always.
   assert.equal(listing('knitter', { deposit: [{ amount: '40', currency: 'EUR' }] }), null)
   const noPer = "deposit takes a list of one or more, each different, each { amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, any few of the person's words to read with that price, one line of at most 80 characters"
@@ -216,9 +220,11 @@ test('a review holds the fields every review holds, and its market adds others, 
   const address = `${subject}/listing/jumper`
   assert.equal(check(K, 'client', 'review', { subject, score: '8.5', text: 'Warm and well made.', listing: address, onTime: 'no', daysLate: '3' }, 'knitter'), null)
   for (const score of ['1', '10', '10.0', '9.5']) assert.equal(check(K, 'client', 'review', { subject, score }), null)
-  for (const score of ['0', '11', '8.55', '-1', { from: '7', to: '8' }]) {
-    assert.match(check(K, 'client', 'review', { subject, score })!, /^score takes (one number from "1" to "10"|a number as decimal text)/)
-  }
+  // Score takes what ask says it takes, and nothing else: one number, never a range.
+  const score = 'score takes one number from "1" to "10" with at most one decimal, such as "8.5"'
+  for (const wrong of ['0', '11', '8.55', '-1', 8, { from: '7', to: '8' }, ['8']]) assert.equal(check(K, 'client', 'review', { subject, score: wrong }), score)
+  assert.equal(`score takes ${ask(K, 'client', 'review', 'knitter').find((f) => f.name === 'score')!.takes}`, score)
+  assert.equal(ask(K, 'client', 'review', 'knitter').find((f) => f.name === 'listing')!.takes, "a listing's address, <profile address>/listing/<id>")
   assert.equal(check(K, 'client', 'review', { subject, listing: `${subject}/offer/jumper` }), "listing takes a listing's address, <profile address>/listing/<id>")
   assert.equal(check(K, 'knitter', 'review', { subject, onTime: 'yes' }, 'client'), 'onTime is for reviews of knitter')
   assert.equal(check(K, 'knitter', 'review', { subject, onTime: 'yes' }), null)
@@ -369,7 +375,7 @@ test('numbers match when they overlap, choices when the same, and an answer left
 
 test("prices: the offer's costs no more than the request's, per the same thing in the same currency", () => {
   const field: Field = { piece: 'price', per: ['item'] }
-  const offer = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }]
+  const offer = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: '3' }]
   assert.equal(match(field, offer, [{ amount: '30', currency: 'EUR', per: 'item' }]), true)
   assert.equal(match(field, offer, [{ amount: '29', currency: 'EUR', per: 'item' }]), false)
   // Prices that cannot be compared never block.
@@ -378,6 +384,19 @@ test("prices: the offer's costs no more than the request's, per the same thing i
   // A note is read, never matched.
   assert.equal(match(field, [{ ...offer[0]!, note: 'Mending only' }], [{ amount: '30', currency: 'EUR', per: 'item', note: 'A new jumper' }]), false)
   assert.equal(match(field, [{ ...offer[0]!, note: 'Mending only' }], [{ amount: '40', currency: 'EUR', per: 'item' }]), true)
+})
+
+test('prices for time compare by the hour, at any length', () => {
+  const field: Field = { piece: 'price', per: ['hour'] }
+  // 25 for 45 minutes is 33.33 an hour.
+  const lesson = [{ amount: '25', currency: 'EUR', per: 'hour', count: '0.75' }]
+  assert.equal(match(field, lesson, [{ amount: '35', currency: 'EUR', per: 'hour' }]), true)
+  assert.equal(match(field, lesson, [{ amount: '30', currency: 'EUR', per: 'hour' }]), false)
+  // At most 60 for 3 hours is 20 an hour, and says the job takes 3 hours.
+  const job = [{ amount: '60', currency: 'EUR', per: 'hour', count: '3' }]
+  assert.equal(match(field, [{ amount: '15', currency: 'EUR', per: 'hour', note: 'at least 2 hours' }], job), true)
+  assert.equal(match(field, [{ amount: '22', currency: 'EUR', per: 'hour' }], job), false)
+  assert.equal(match(field, lesson, [{ amount: '50', currency: 'EUR', per: 'hour', count: '1.5' }]), true)
 })
 
 test('text, a photo and a link are read, not matched', () => {
@@ -429,10 +448,19 @@ test('the other pieces read in plain words', () => {
   assert.equal(read({ piece: 'number', several: true }, [{ from: '3', to: '5' }, { from: '9', to: '11' }]), '3 to 5 and 9 to 11')
   assert.equal(read(knitting.listing.age!, [{ from: '2', to: '10' }, { to: '1' }]), '2 to 10 years and up to 1 year')
   assert.equal(read(knitting.listing.age!, [{ to: '1' }, { from: '1' }]), 'Up to 1 year and 1 year or more')
-  const prices = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '1300', currency: 'MXN', per: 'lesson', count: 5 }, { amount: '300', currency: 'EUR' }, { amount: '50', currency: 'EUR', per: 'person', count: 2 }]
-  assert.equal(read({ piece: 'price', per: ['item', 'lesson', 'person'] }, prices), '35 EUR per item; 1,300 MXN for 5 lessons; 300 EUR; 50 EUR for 2 people')
-  const noted = [{ amount: '45', currency: 'EUR', per: 'hour' }, { amount: '30', currency: 'EUR', note: 'call-out, on top' }, { amount: '20', currency: 'EUR', per: 'lesson', count: 4, note: 'per child, in a group' }]
-  assert.equal(read({ piece: 'price', per: ['hour', 'lesson'] }, noted), '45 EUR per hour; 30 EUR (call-out, on top); 20 EUR for 4 lessons (per child, in a group)')
+  const prices = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '1300', currency: 'MXN', per: 'month' }, { amount: '300', currency: 'EUR' }, { amount: '50', currency: 'EUR', per: 'person', count: '2' }, { amount: '2000', currency: 'EUR', per: 'item', count: '1000' }]
+  assert.equal(read({ piece: 'price', per: ['item', 'month', 'person'] }, prices), '35 EUR an item; 1,300 MXN a month; 300 EUR; 50 EUR for 2 people; 2,000 EUR for 1,000 items')
+  const noted = [{ amount: '45', currency: 'EUR', per: 'hour' }, { amount: '30', currency: 'EUR', note: 'call-out, on top' }, { amount: '80', currency: 'EUR', per: 'day', count: '1', note: 'tools included' }]
+  assert.equal(read({ piece: 'price', per: ['hour', 'day'] }, noted), '45 EUR an hour; 30 EUR (call-out, on top); 80 EUR a day (tools included)')
+  // A price for time reads as a length, as people say it.
+  const hours = (count: string) => read({ piece: 'price', per: ['hour'] }, [{ amount: '25', currency: 'EUR', per: 'hour', count }])
+  assert.equal(hours('0.75'), '25 EUR for 45 minutes')
+  assert.equal(hours('1.5'), '25 EUR for 90 minutes')
+  assert.equal(hours('0.33'), '25 EUR for 20 minutes')
+  assert.equal(hours('3'), '25 EUR for 3 hours')
+  assert.equal(hours('2.5'), '25 EUR for 2.5 hours')
+  assert.equal(hours('1.0'), '25 EUR an hour')
+  assert.equal(read({ piece: 'price', per: ['hour'] }, [{ amount: '15', currency: 'EUR', per: 'hour', note: 'at least 2 hours' }]), '15 EUR an hour (at least 2 hours)')
   // A place reads as its numbers.
   assert.equal(read({ piece: 'place', several: true }, [{ ...madrid, radiusKm: 1 }, { ...madrid, radiusKm: 0 }]), 'Around 40.4168, -3.7038, 1 km; 40.4168, -3.7038')
   assert.equal(read(knitting.listing.languages!, ['es', 'en', 'pt']), 'Spanish, English and Portuguese')
@@ -510,6 +538,20 @@ test("previewOf gives a market's preview, or else description, price, then its p
   assert.deepEqual(previewOf(knitting), knitting.preview)
   const { preview: _preview, ...none } = knitting
   assert.deepEqual(previewOf(none), ['description', 'price', 'area'])
+})
+
+test("labelOf and valuesOf give a choice's values and how each reads, as ask's choices do", () => {
+  assert.equal(labelGiven, labelOf)
+  assert.equal(valuesGiven, valuesOf)
+  const client = Object.fromEntries(ask(K, 'client').map((f) => [f.name, f]))
+  for (const name of ['kind', 'size', 'wearer', 'languages']) {
+    const field = knitting.listing[name]!
+    assert.deepEqual(valuesOf(field, lists).map((value) => ({ value, label: labelOf(field, value, lists) })), client[name]!.choices)
+  }
+  assert.equal(labelOf(knitting.listing.wearer!, 'children', lists), 'Children and babies')
+  assert.equal(labelOf(knitting.listing.wearer!, 'children', lists, false), 'children and babies')
+  assert.equal(labelOf(knitting.listing.languages!, 'es', lists), 'Spanish')
+  assert.deepEqual(valuesOf({ piece: 'text' }, lists), [])
 })
 
 test('the shared fields are pieces, a name in words reads as people write it, and every shared field has a label', () => {

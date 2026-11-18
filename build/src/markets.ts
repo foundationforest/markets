@@ -88,7 +88,10 @@ export type Kind = (typeof KINDS)[number]
 // How each piece is written, for programs that type their answers.
 /** One number as decimal text, or from one to another, either end left out for no limit. */
 export type NumberValue = string | { from?: string; to?: string }
-export type PriceValue = { amount: string; currency: string; per?: string; count?: number; note?: string }
+/** A price: an amount for a whole deal, or for `count` of its `per`, 1 when left out; per hour, `count` is the length, such as "0.75" for 45 minutes. */
+export type PriceValue = { amount: string; currency: string; per?: string; count?: string; note?: string }
+/** The one per whose count may be a fraction: a price for time is an amount for a length in hours. */
+const HOUR = 'hour'
 export type PlaceValue = { lat: string; lon: string; radiusKm: number }
 export type DateValue = ({ on: string } | { from?: string; to?: string } | { every: Weekday[]; from?: string; to?: string }) & {
   start?: string
@@ -222,6 +225,7 @@ const distinct = (items: unknown[]): boolean => items.every((item, i) => items.f
 
 const DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/
 const AMOUNT = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/
+const WHOLE = /^[1-9][0-9]*$/
 const CURRENCY = /^[A-Z]{3}$/
 const LAT = /^-?(90(\.0+)?|[1-8]?[0-9](\.[0-9]+)?)$/
 const LON = /^-?(180(\.0+)?|(1[0-7][0-9]|[1-9]?[0-9])(\.[0-9]+)?)$/
@@ -322,7 +326,7 @@ const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
         typeof v.currency === 'string' &&
         CURRENCY.test(v.currency) &&
         (!has(v, 'per') || (typeof v.per === 'string' && (field.per ?? []).includes(v.per))) &&
-        (!has(v, 'count') || (has(v, 'per') && Number.isInteger(v.count) && (v.count as number) >= 1)) &&
+        (!has(v, 'count') || (has(v, 'per') && isCount(v.per as string, v.count))) &&
         (!has(v, 'note') || isNote(v.note))
       )
     case 'place':
@@ -335,6 +339,8 @@ const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
       return typeof v === 'string' && LINK.test(v)
   }
 }
+/** A price's count: decimal text, whole and from 1, or per hour any length above 0, such as "0.75" for 45 minutes. */
+const isCount = (per: string, v: unknown): boolean => typeof v === 'string' && (per === HOUR ? AMOUNT.test(v) && Number(v) > 0 : WHOLE.test(v))
 /** A price's note: one line of the person's words, at most NOTE characters, counted as characters, not code units. */
 const NOTE = 80
 const isNote = (v: unknown): boolean => typeof v === 'string' && LINE.test(v) && [...v].length <= NOTE
@@ -371,20 +377,23 @@ const isDate = (v: unknown): boolean => {
   return !has(v, 'end') || (typeof v.end === 'string' && TIME.test(v.end) && v.end !== v.start)
 }
 
-/** A choice's values: its own list, or the shared list it names. */
-const valuesOf = (field: Field, lists: Lists): string[] =>
+/** A choice's values: its own list, or the shared list it names, in `lists`, build/lists.json. */
+export const valuesOf = (field: Field, lists: Lists): string[] =>
   typeof field.values === 'string' ? Object.keys(Object.hasOwn(lists, field.values) ? lists[field.values]! : {}) : (field.values ?? [])
 /**
  * How a choice's value reads: the field's label for it, or else its list's, or else its words, each
  * written as it reads inside a sentence, such as food banks, Spanish or XL; with a capital when it is
  * `first` in a list or alone, so a picker never shows a lower-case label.
  */
-const labelOf = (field: Field, value: string, lists: Lists, first = true): string => {
+export const labelOf = (field: Field, value: string, lists: Lists, first = true): string => {
   const labels = field.ask?.labels
   const list = typeof field.values === 'string' && Object.hasOwn(lists, field.values) ? lists[field.values]! : undefined
   const words = labels && Object.hasOwn(labels, value) ? labels[value]! : list && Object.hasOwn(list, value) ? list[value]! : value.replaceAll('-', ' ')
   return first ? capital(words) : words
 }
+
+/** How a field's answer is written: a shared name's own words when it has them, such as score's, or else its piece's. */
+const takesOf = (kind: Kind, key: string, field: Field): string => (has(SHARED[kind], key) && has(MEANS, key) ? MEANS[key]!.takes : takes(field))
 
 const NOTE_TAKES = `any few of the person's words to read with that price, one line of at most ${NOTE} characters`
 /** How a field's answer is written, in words. */
@@ -399,7 +408,7 @@ const takes = (field: Field): string => {
         return 'a number as decimal text, such as "2.5", or { from, to }: two such numbers, from no more than to, either left out for no limit that way'
       case 'price':
         return field.per
-          ? `{ amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, ${NOTE_TAKES}`
+          ? `{ amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, count, only with a per, how many of it the amount buys, as decimal text, a whole number such as "3"${field.per.includes(HOUR) ? `, or per ${HOUR} any length in hours, such as "0.75" for 45 minutes` : ''}, and note if wanted, ${NOTE_TAKES}`
           : `{ amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, ${NOTE_TAKES}`
       case 'place':
         return '{ lat, lon, radiusKm }: lat and lon as decimal text, and radiusKm in whole kilometres'
@@ -487,7 +496,7 @@ const datesMeet = (a: DateValue, b: DateValue, today: number): boolean => {
   return spansOf(a, first, last, zoneA).some((span) => spansB.some((other) => overlap(span, other)))
 }
 /** What one of a price's `per` costs, in its currency. */
-const each = (p: PriceValue) => Number(p.amount) / (p.count ?? 1)
+const each = (p: PriceValue) => Number(p.amount) / Number(p.count ?? '1')
 
 // Question 3: how does an answer read?
 
@@ -511,10 +520,25 @@ const readNumber = (v: NumberValue, unit?: Unit): string => {
   if (v.from !== undefined && v.to !== undefined) return v.from === v.to ? withUnit(v.from, Number(v.from) !== 1) : `${figure(v.from)} to ${withUnit(v.to)}`
   return v.from !== undefined ? `${withUnit(v.from, Number(v.from) !== 1)} or more` : `up to ${withUnit(v.to!, Number(v.to) !== 1)}`
 }
+/** A length in hours as people say it: 45 minutes, 90 minutes, 3 hours, 2.5 hours. */
+const readHours = (count: number): string => {
+  if (Number.isInteger(count)) return `${figure(String(count))} ${count === 1 ? 'hour' : 'hours'}`
+  const minutes = Math.round(count * 60)
+  return count < 2 ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}` : `${figure(String(count))} hours`
+}
 const readPrice = (p: PriceValue): string => {
   const cost = `${figure(p.amount)} ${p.currency}`
   const per = p.per?.replaceAll('-', ' ')
-  const said = per === undefined ? cost : p.count !== undefined && p.count !== 1 ? `${cost} for ${p.count} ${per.replace(/\S+$/, plural)}` : `${cost} per ${per}`
+  const count = Number(p.count ?? '1')
+  // One of a per reads as people say it, 15 an hour, 300 a month; more, as how many it buys, 60 for 3 hours.
+  const said =
+    per === undefined
+      ? cost
+      : count === 1
+        ? `${cost} ${/^(hour|[aeio])/.test(per) ? 'an' : 'a'} ${per}`
+        : p.per === HOUR
+          ? `${cost} for ${readHours(count)}`
+          : `${cost} for ${figure(String(count))} ${per.replace(/\S+$/, plural)}`
   // A note is any few of the person's words to read with the price, read after it and never matched.
   return p.note === undefined ? said : `${said} (${p.note})`
 }
@@ -620,11 +644,15 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
           return (fields[other]?.several && Array.isArray(held) ? held : [held]).some((v) => values.includes(v as string))
         })
         if (!applies) return `${key} is only for a ${kind} whose ${when.map(([other, values]) => `${other} is ${or(values)}`).join(', and whose ')}`
+        // A shared name with a meaning of its own, such as score, takes only what it says.
+        const means = has(shared, key) && has(MEANS, key) ? MEANS[key]! : undefined
+        if (means) {
+          if (typeof value !== 'string' || !means.fits.test(value)) return `${key} takes ${means.takes}`
+          continue
+        }
         const answers = isSeveral(field) ? value : [value]
         if (!Array.isArray(answers) || answers.length === 0 || !distinct(answers) || !answers.every((v) => fitsOne(field, v, lists))) return `${key} takes ${takes(field)}`
         if (field.piece === 'photo' && !answers.every((sha256) => files.includes(sha256))) return `${key} names a file the body's files do not list`
-        const means = has(shared, key) ? MEANS[key] : undefined
-        if (means && !means.fits.test(value as string)) return `${key} takes ${means.takes}`
       }
       return null
     },
@@ -660,7 +688,7 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
           // Each key merges: the role's over the field's, the field's over the piece's own.
           ...(own ? { start: { ...own, ...field.ask?.start, ...words?.start } } : {}),
           ...(field.piece === 'choice' ? { choices: valuesOf(field, lists).map((value) => ({ value, label: labelOf(field, value, lists) })) } : {}),
-          takes: takes(field),
+          takes: takesOf(kind as Kind, key, field),
         }
       })
     },

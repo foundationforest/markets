@@ -119,6 +119,12 @@ test('each field is one of the eight pieces, and each rule is kept to the pieces
   )
 })
 
+test('a price is never per visit, session or lesson, whose length is unknown', () => {
+  const container = 'must not be visit, session or lesson: its length is unknown, so a price per one compares with no price per hour; a price for time is per hour, for a length'
+  assert.equal(said((m) => m.listing.price.per.push('session')), of(`/listing/price/per/2 ${container}`))
+  assert.equal(said((m) => (m.listing.deposit.per = ['visit', 'lesson'])), of(`/listing/deposit/per/0 ${container}`, `/listing/deposit/per/1 ${container}`))
+})
+
 test("a choice's values are its own list, or the name of a shared list in build/lists.json", () => {
   assert.equal(said((m) => (m.listing.languages.values = 'tongues')), of('/listing/languages/values: "tongues" is not a list in build/lists.json'))
   assert.equal(said((m) => (m.listing.languages.values = [])), of('/listing/languages/values must be a list of values, or the name of a list in build/lists.json'))

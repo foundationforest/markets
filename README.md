@@ -47,6 +47,13 @@ field, which can apply only `when` another answer calls for it. Each market need
 before anyone finds a deal, which argues for few markets, never for merging two that fail a
 question.
 
+## What earns a field
+
+A field stays when nearly everyone in its role can answer it, and the other side would filter on
+it, match on it, or need to see it, as a photo or a link. Anything else is words in `description`,
+whose hint may name it, such as "how often, pets at home": each question costs the person filling
+the form, and one nobody filters on buys nothing.
+
 ## What this repo takes now
 
 Which markets this repo takes is the Forest Foundation's call, by this line, never whether a market

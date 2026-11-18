@@ -49,15 +49,6 @@
         }
       }
     },
-    "weeklyHours": {
-      "piece": "number",
-      "unit": "hours",
-      "ask": {
-        "label": "Hours a week",
-        "hint": "Such as 20 for 4 hours a day, 5 days a week.",
-        "as": { "organizer": { "question": "How many hours of help a week?" }, "volunteer": { "question": "How many hours a week can you help?", "hint": "Your limit, such as up to 20 for 4 hours a day, 5 days a week.", "start": { "range": true } } }
-      }
-    },
     "volunteers": {
       "piece": "number",
       "ask": {
@@ -72,16 +63,20 @@
       "piece": "choice",
       "values": "languages",
       "several": true,
-      "ask": {
-        "label": "Languages",
-        "question": "Which languages do you speak?",
-        "as": { "organizer": { "question": "Which languages should volunteers speak?", "hint": "For a translation, the languages it is from and into." } }
-      }
+      "when": { "help": ["translation"] },
+      "ask": { "label": "Languages", "as": { "organizer": { "question": "Which languages is it from and into?" }, "volunteer": { "question": "Which languages can you translate?" } } }
     },
     "photos": { "piece": "photo", "several": true, "roles": ["organizer"], "ask": { "label": "Photos", "question": "Any photos of the place or past help?" } },
     "description": {
       "piece": "text",
-      "ask": { "label": "About", "long": true, "as": { "organizer": { "question": "What should volunteers know?" }, "volunteer": { "question": "What should organizers know?" } } }
+      "ask": {
+        "label": "About",
+        "long": true,
+        "as": {
+          "organizer": { "question": "What should volunteers know?", "hint": "Such as how many hours a week, for help that goes on, and the languages volunteers should speak." },
+          "volunteer": { "question": "What should organizers know?", "hint": "Such as how many hours a week you can give, and the languages you speak." }
+        }
+      }
     }
   },
   "preview": ["help", "mode", "area", "days", "photos"],

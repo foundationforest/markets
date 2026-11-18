@@ -77,7 +77,13 @@
           ]
         },
         "unit": { "description": "For a number that measures: what it measures in.", "enum": ["minutes", "hours", "days", "years", "centimetres", "square-metres"] },
-        "per": { "description": "For a price: what its amount may be for. Left out: always the whole deal.", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/word" } },
+        "per": {
+          "description": "For a price: what its amount may be for. Left out: always the whole deal. Never visit, session or lesson, whose length is unknown: a price for time is per hour, for a length.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/word", "not": { "enum": ["visit", "session", "lesson"] } }
+        },
         "ask": { "$ref": "#/$defs/ask" }
       },
       "allOf": [

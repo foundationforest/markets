@@ -5,7 +5,7 @@
 import { fromFiles, type Files, type Markets } from './markets.ts'
 
 export {
-  PARTS, PIECES, SHARED, UNITS, WAYS, WEEKDAYS, nameWords, previewOf, wordsOf,
+  PARTS, PIECES, SHARED, UNITS, WAYS, WEEKDAYS, labelOf, nameWords, previewOf, valuesOf, wordsOf,
   type Ask, type Asked, type DateValue, type Directory, type Field, type Fields, type Files, type Kind, type Lists, type Market, type Markets,
   type NumberValue, type Options, type Part, type Piece, type PlaceValue, type PriceValue, type Role, type Start, type Status, type Unit, type Way, type Weekday, type Words,
 } from './markets.ts'
