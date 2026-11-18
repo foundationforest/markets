@@ -352,7 +352,7 @@ test('places match when their circles touch', () => {
   assert.equal(match(place, retiro, madrid), true)
 })
 
-test('numbers match when they overlap, and choices when the same', () => {
+test('numbers match when they overlap, choices when the same, and an answer left out matches anything', () => {
   const age: Field = { piece: 'number', unit: 'years' }
   assert.equal(match(age, { from: '9', to: '11' }, '10'), true)
   assert.equal(match(age, { from: '18' }, { from: '30', to: '40' }), true)
@@ -363,6 +363,8 @@ test('numbers match when they overlap, and choices when the same', () => {
   assert.equal(match(kind, 'hat', 'hat'), true)
   assert.equal(match(kind, 'hat', 'socks'), false)
   assert.equal(match({ ...kind, several: true }, ['hat', 'socks'], ['socks']), true)
+  for (const field of [age, kind, date, { ...kind, several: true as const }]) assert.equal(match(field, undefined, ['10']), true)
+  assert.equal(match({ piece: 'place', several: true }, [{ lat: '40.4168', lon: '-3.7038', radiusKm: 5 }], undefined), true)
 })
 
 test("prices: the offer's costs no more than the request's, per the same thing in the same currency", () => {

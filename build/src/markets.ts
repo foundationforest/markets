@@ -179,8 +179,8 @@ export type Markets = {
   ask(market: string, role: string, kind?: string, aboutRole?: string): Asked[]
   /**
    * Whether two answers of `field`, ones that fit, match, as build/README.md says for each piece. For a price, `a` is
-   * the offer's and `b` the request's, and a note is never matched. It compares one field: how fields combine is
-   * each index's choice.
+   * the offer's and `b` the request's, and a note is never matched. An answer left out matches anything. It compares
+   * one field: how fields combine is each index's choice.
    */
   match(field: Field, a: unknown, b: unknown, options?: Options): boolean
   /**
@@ -666,6 +666,7 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
     },
 
     match(field, a, b, options) {
+      if (a === undefined || b === undefined) return true
       const [xs, ys] = isSeveral(field) ? [a as unknown[], b as unknown[]] : [[a], [b]]
       if (field.piece === 'price') {
         // Prices in different currencies, or per different things, cannot be compared: they never block.

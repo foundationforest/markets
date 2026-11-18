@@ -8,8 +8,9 @@ The standard for what entries hold in every Forest market.
 - Anything that can be worked out from it is a view, and belongs to the program that shows it.
 - A view must be an exact conversion. Where it is not, store what the person said.
 
-The test for any key or line: would two different apps need to agree on it to read each other's
-listings? If not, it stays out.
+The test for anything an entry holds: would two different apps need to agree on it to read each
+other's listings? If not, it stays out. A market file also holds its own words, how to ask, its
+summary, its icon and which fields come first, because no app knows a market by name.
 
 A **rule** is checked, by [`check.sh`](check.sh) on a market file or by `checkEntry` on an entry,
 which refuses an entry that breaks one. A **suggestion**, under a field's `ask`, says how to ask for
@@ -23,8 +24,9 @@ up: Lisbon from 12 to 15 May and Porto from 16 to 19 May are two listings. Numbe
 coordinates are decimal text, such as `"2.5"`. Only `radiusKm` and a price's `count` are JSON
 numbers, both whole.
 
-`match` compares two answers of one field. Several answers match when any pair does. How fields
-combine is each index's choice.
+`match` compares two answers of one field. An answer left out matches anything. Several answers
+match when any pair does. How fields combine is each index's choice: an index that hides a listing
+with no answer checks for that itself.
 
 **text**: the person's own words. Never matched.
 
