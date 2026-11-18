@@ -1,0 +1,78 @@
+{
+  "name": "stays-free",
+  "summary": "Hosts give guests a couch or a room for free.",
+  "description": "For adults only, staying for free; a bed for help is stays-work.",
+  "status": "beta",
+  "icon": "couch",
+  "number": 9,
+  "roles": [
+    { "role": "host", "listings": "offers" },
+    { "role": "guest", "listings": "requests" }
+  ],
+  "listing": {
+    "area": {
+      "piece": "place",
+      "several": true,
+      "ask": {
+        "label": "Area",
+        "as": {
+          "host": { "question": "Where is your home?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 1 } },
+          "guest": { "question": "Where do you want to stay?", "hint": "Each place you would stay on the same dates, or a whole country.", "start": { "radiusKm": 10 } }
+        }
+      }
+    },
+    "dates": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Dates",
+        "start": { "way": "from-to" },
+        "as": { "host": { "question": "When can you host?" }, "guest": { "question": "When do you need a place?" } }
+      }
+    },
+    "bed": {
+      "piece": "choice",
+      "values": ["couch", "shared-room", "private-room"],
+      "several": true,
+      "ask": { "label": "Bed", "as": { "host": { "question": "Where would guests sleep?" }, "guest": { "question": "Where are you happy to sleep?" } } }
+    },
+    "guests": {
+      "piece": "number",
+      "ask": {
+        "label": "Guests",
+        "as": {
+          "host": { "question": "How many guests at once?", "hint": "Your limit, such as up to 2.", "start": { "range": true } },
+          "guest": { "question": "How many of you are travelling?" }
+        }
+      }
+    },
+    "nights": {
+      "piece": "number",
+      "ask": {
+        "label": "Nights",
+        "as": {
+          "host": { "question": "How many nights can guests stay?", "hint": "Your limits, such as up to 3, or at least 14.", "start": { "range": true } },
+          "guest": { "question": "How many nights do you want to stay?", "hint": "With one host, not the whole trip." }
+        }
+      }
+    },
+    "photos": { "piece": "photo", "several": true, "roles": ["host"], "ask": { "label": "Photos", "question": "Any photos of where guests sleep?" } },
+    "welcomes": { "piece": "choice", "values": ["women", "men"], "roles": ["host"], "ask": { "label": "Hosts only", "question": "Do you host only women, or only men?" } },
+    "pets": { "piece": "choice", "values": ["dogs", "cats", "others"], "several": true, "roles": ["host"], "ask": { "label": "Pets", "question": "Which pets are at home?" } },
+    "fineWithPets": { "piece": "choice", "values": ["yes", "no"], "roles": ["guest"], "ask": { "label": "Fine with pets", "question": "Are you fine with pets at home?" } },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "host": { "question": "What should guests know?" }, "guest": { "question": "What should hosts know?" } } }
+    }
+  },
+  "preview": ["area", "dates", "bed", "guests", "nights", "photos"],
+  "review": {
+    "asDescribed": { "piece": "choice", "values": ["yes", "no"], "roles": ["host"], "ask": { "label": "As described", "question": "Was the stay as the listing said and showed?" } },
+    "feltSafe": {
+      "piece": "choice",
+      "values": ["yes", "no"],
+      "ask": { "label": "Felt safe", "question": "Did you feel safe with them?", "hint": "Anything that made you uneasy is no. Leave it out if you never met." }
+    }
+  }
+}

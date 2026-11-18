@@ -16,7 +16,7 @@
       "several": true,
       "ask": {
         "label": "Sports",
-        "labels": { "football": "Football (soccer)", "hockey": "Field hockey", "fitness": "Fitness and strength" },
+        "labels": { "football": "football (soccer)", "hockey": "field hockey", "fitness": "fitness and strength" },
         "as": { "coach": { "question": "Which sports do you coach?" }, "student": { "question": "Which sports?" } }
       }
     },

@@ -20,7 +20,7 @@
       "several": true,
       "ask": { "label": "Kind", "as": { "knitter": { "question": "What do you knit?" }, "client": { "question": "What would you like knitted?" } } }
     },
-    "wearer": { "piece": "choice", "values": ["women", "men", "children"], "several": true, "ask": { "label": "For", "question": "Who is it for?" } },
+    "wearer": { "piece": "choice", "values": ["women", "men", "children"], "several": true, "ask": { "label": "For", "question": "Who is it for?", "labels": { "children": "children and babies" } } },
     "size": {
       "piece": "choice",
       "values": ["xs", "s", "m", "l", "xl"],

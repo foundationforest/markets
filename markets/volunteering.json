@@ -1,0 +1,102 @@
+{
+  "name": "volunteering",
+  "summary": "Volunteers give their time to cleanups, food banks, events and good causes.",
+  "description": "For adults only, online too, and never caring for children or for people who need care. A bed for help is stays-work.",
+  "status": "beta",
+  "icon": "hand-heart",
+  "number": 14,
+  "roles": [
+    { "role": "organizer", "listings": "offers" },
+    { "role": "volunteer", "listings": "requests" }
+  ],
+  "listing": {
+    "help": {
+      "piece": "choice",
+      "values": ["cleanup", "food", "events", "nature", "animals", "translation", "writing", "design", "digital-work"],
+      "several": true,
+      "ask": {
+        "label": "Help",
+        "labels": { "cleanup": "litter cleanups", "food": "food banks and meals", "events": "community events", "nature": "trees, land and wildlife", "animals": "animal shelters and rescues", "digital-work": "websites, social media and data" },
+        "as": { "organizer": { "question": "What help do you need?" }, "volunteer": { "question": "What help can you give?" } }
+      }
+    },
+    "mode": {
+      "piece": "choice",
+      "values": ["in-person", "online"],
+      "several": true,
+      "ask": { "label": "Online or in person", "as": { "organizer": { "question": "Is it online or in person?" }, "volunteer": { "question": "Online or in person?" } } }
+    },
+    "area": {
+      "piece": "place",
+      "several": true,
+      "when": { "mode": ["in-person"] },
+      "ask": {
+        "label": "Area",
+        "as": {
+          "organizer": { "label": "Meeting point", "question": "Where do volunteers meet?", "hint": "A public spot, such as a park gate or a food bank.", "start": { "radiusKm": 0 } },
+          "volunteer": { "question": "Where can you help?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 5 } }
+        }
+      }
+    },
+    "days": {
+      "piece": "date",
+      "several": true,
+      "ask": {
+        "label": "Days and times",
+        "as": {
+          "organizer": { "question": "When is it?", "start": { "way": "day", "hours": true } },
+          "volunteer": { "question": "When are you free?", "start": { "way": "weekly", "hours": "part" } }
+        }
+      }
+    },
+    "weeklyHours": {
+      "piece": "number",
+      "unit": "hours",
+      "ask": {
+        "label": "Hours a week",
+        "hint": "Such as 20 for 4 hours a day, 5 days a week.",
+        "as": { "organizer": { "question": "How many hours of help a week?" }, "volunteer": { "question": "How many hours a week can you help?", "hint": "Your limit, such as up to 20 for 4 hours a day, 5 days a week.", "start": { "range": true } } }
+      }
+    },
+    "volunteers": {
+      "piece": "number",
+      "ask": {
+        "label": "Volunteers",
+        "as": {
+          "organizer": { "question": "How many volunteers can come?", "hint": "Your limit, such as up to 30.", "start": { "range": true } },
+          "volunteer": { "question": "How many of you are coming?" }
+        }
+      }
+    },
+    "languages": {
+      "piece": "choice",
+      "values": "languages",
+      "several": true,
+      "ask": {
+        "label": "Languages",
+        "question": "Which languages do you speak?",
+        "as": { "organizer": { "question": "Which languages should volunteers speak?", "hint": "For a translation, the languages it is from and into." } }
+      }
+    },
+    "photos": { "piece": "photo", "several": true, "roles": ["organizer"], "ask": { "label": "Photos", "question": "Any photos of the place or past help?" } },
+    "description": {
+      "piece": "text",
+      "ask": { "label": "About", "long": true, "as": { "organizer": { "question": "What should volunteers know?" }, "volunteer": { "question": "What should organizers know?" } } }
+    }
+  },
+  "preview": ["help", "mode", "area", "days", "photos"],
+  "review": {
+    "asDescribed": { "piece": "choice", "values": ["yes", "no"], "roles": ["organizer"], "ask": { "label": "As described", "question": "Was the help as the listing said?", "hint": "The tasks, the place and the times." } },
+    "showedUp": {
+      "piece": "choice",
+      "values": ["yes", "no"],
+      "roles": ["volunteer"],
+      "ask": { "label": "Showed up", "question": "Did they do their part as agreed?", "hint": "A shift missed, or cancelled too late to plan around, is no." }
+    },
+    "feltSafe": {
+      "piece": "choice",
+      "values": ["yes", "no"],
+      "ask": { "label": "Felt safe", "question": "Did you feel safe with them?", "hint": "Anything that made you uneasy is no. Leave it out if you never met." }
+    }
+  }
+}

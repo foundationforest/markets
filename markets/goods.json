@@ -1,0 +1,165 @@
+{
+  "name": "goods",
+  "summary": "People sell everyday things, new or used.",
+  "description": "Not motor vehicles or homes. If it has to be shipped, keep to things you could afford to lose.",
+  "status": "beta",
+  "icon": "tag",
+  "number": 4,
+  "roles": [
+    { "role": "seller", "listings": "offers" },
+    { "role": "buyer", "listings": "requests" }
+  ],
+  "listing": {
+    "photos": { "piece": "photo", "several": true, "roles": ["seller"], "ask": { "label": "Photos", "question": "Any photos of it?" } },
+    "category": {
+      "piece": "choice",
+      "values": ["clothes", "shoes", "accessories", "electronics", "appliances", "furniture", "home", "garden", "tools", "books", "music", "games", "toys", "baby", "sports", "bikes"],
+      "ask": {
+        "label": "Category",
+        "labels": { "accessories": "bags and accessories", "home": "home and kitchen", "music": "music and instruments", "games": "games and consoles", "baby": "baby gear", "sports": "sports gear" },
+        "as": { "seller": { "question": "What is it?" }, "buyer": { "question": "What are you looking for?" } }
+      }
+    },
+    "brand": {
+      "piece": "text",
+      "ask": {
+        "label": "Brand and model",
+        "hint": "Such as Levi's 501 or iPhone 13 128 GB.",
+        "as": { "seller": { "question": "What brand and model is it?" }, "buyer": { "question": "Which brand or model?" } }
+      }
+    },
+    "condition": {
+      "piece": "choice",
+      "values": ["new", "like-new", "good", "fair", "for-parts"],
+      "several": true,
+      "ask": {
+        "label": "Condition",
+        "hint": "Good shows light wear, fair shows clear wear, and for parts does not work.",
+        "as": { "seller": { "question": "What condition is it in?" }, "buyer": { "question": "Which conditions would you take?" } }
+      }
+    },
+    "price": {
+      "piece": "price",
+      "ask": {
+        "label": "Price",
+        "as": { "seller": { "question": "What is your price?", "hint": "The item alone, without shipping." }, "buyer": { "label": "Budget", "question": "What would you pay at most?", "hint": "The item alone, without shipping." } }
+      }
+    },
+    "wearer": {
+      "piece": "choice",
+      "values": ["women", "men", "children"],
+      "several": true,
+      "when": { "category": ["clothes", "shoes"] },
+      "ask": { "label": "Made for", "as": { "seller": { "question": "Who is it made for?" }, "buyer": { "question": "Who is it for?" } } }
+    },
+    "size": {
+      "piece": "choice",
+      "values": ["xxs", "xs", "s", "m", "l", "xl", "xxl", "3xl", "4xl", "one-size"],
+      "several": true,
+      "when": { "category": ["clothes", "bikes"] },
+      "ask": {
+        "label": "Size",
+        "labels": { "xxs": "XXS", "xs": "XS", "s": "S", "m": "M", "l": "L", "xl": "XL", "xxl": "XXL", "3xl": "3XL", "4xl": "4XL" },
+        "as": { "seller": { "question": "What size is it?" }, "buyer": { "question": "Which sizes?" } }
+      }
+    },
+    "waist": {
+      "piece": "choice",
+      "values": ["w24", "w25", "w26", "w27", "w28", "w29", "w30", "w31", "w32", "w33", "w34", "w35", "w36", "w38", "w40", "w42", "w44"],
+      "several": true,
+      "when": { "category": ["clothes"] },
+      "ask": {
+        "label": "Waist",
+        "labels": { "w24": "W24", "w25": "W25", "w26": "W26", "w27": "W27", "w28": "W28", "w29": "W29", "w30": "W30", "w31": "W31", "w32": "W32", "w33": "W33", "w34": "W34", "w35": "W35", "w36": "W36", "w38": "W38", "w40": "W40", "w42": "W42", "w44": "W44" },
+        "as": { "seller": { "question": "What waist size is it?" }, "buyer": { "question": "Which waist sizes?" } }
+      }
+    },
+    "leg": {
+      "piece": "choice",
+      "values": ["l26", "l28", "l30", "l32", "l34", "l36", "l38"],
+      "several": true,
+      "when": { "category": ["clothes"] },
+      "ask": {
+        "label": "Leg",
+        "labels": { "l26": "L26", "l28": "L28", "l30": "L30", "l32": "L32", "l34": "L34", "l36": "L36", "l38": "L38" },
+        "as": { "seller": { "question": "What leg length is it?" }, "buyer": { "question": "Which leg lengths?" } }
+      }
+    },
+    "age": {
+      "piece": "choice",
+      "values": ["0-3m", "3-6m", "6-9m", "9-12m", "12-18m", "18-24m", "2-3y", "3-4y", "4-5y", "5-6y", "6-7y", "7-8y", "8-9y", "9-10y", "10-11y", "11-12y", "12-13y", "13-14y", "14-15y", "15-16y"],
+      "several": true,
+      "when": { "category": ["clothes"], "wearer": ["children"] },
+      "ask": {
+        "label": "Child's age",
+        "labels": {
+          "0-3m": "0-3 months",
+          "3-6m": "3-6 months",
+          "6-9m": "6-9 months",
+          "9-12m": "9-12 months",
+          "12-18m": "12-18 months",
+          "18-24m": "18-24 months",
+          "2-3y": "2-3 years",
+          "3-4y": "3-4 years",
+          "4-5y": "4-5 years",
+          "5-6y": "5-6 years",
+          "6-7y": "6-7 years",
+          "7-8y": "7-8 years",
+          "8-9y": "8-9 years",
+          "9-10y": "9-10 years",
+          "10-11y": "10-11 years",
+          "11-12y": "11-12 years",
+          "12-13y": "12-13 years",
+          "13-14y": "13-14 years",
+          "14-15y": "14-15 years",
+          "15-16y": "15-16 years"
+        },
+        "as": { "seller": { "question": "What age is it for?" }, "buyer": { "question": "Which ages?" } }
+      }
+    },
+    "footLength": {
+      "piece": "number",
+      "unit": "centimetres",
+      "when": { "category": ["shoes"] },
+      "ask": {
+        "label": "Foot length",
+        "hint": "The CM size on the label, such as 26.5.",
+        "usual": { "from": "9", "to": "33" },
+        "as": { "seller": { "question": "What foot length is it for?" }, "buyer": { "question": "Which foot lengths?", "start": { "range": true } } }
+      }
+    },
+    "labelSize": {
+      "piece": "text",
+      "when": { "category": ["clothes", "shoes"] },
+      "ask": {
+        "label": "Size on label",
+        "hint": "Only when none of the sizes above fits, such as EU 38 or UK 10.",
+        "as": { "seller": { "question": "What size is on the label?" }, "buyer": { "question": "Which sizes on the label?" } }
+      }
+    },
+    "handover": { "piece": "choice", "values": ["in-person", "shipped"], "several": true, "ask": { "label": "In person or shipped", "question": "In person or shipped?" } },
+    "area": {
+      "piece": "place",
+      "several": true,
+      "when": { "handover": ["in-person"] },
+      "ask": {
+        "label": "Area",
+        "hint": "Your neighbourhood and town, not your address.",
+        "as": { "seller": { "question": "Where is it?", "start": { "radiusKm": 2 } }, "buyer": { "question": "Where can you pick it up?", "start": { "radiusKm": 5 } } }
+      }
+    },
+    "shipTo": {
+      "piece": "choice",
+      "values": "countries",
+      "several": true,
+      "when": { "handover": ["shipped"] },
+      "ask": { "label": "Ships to", "as": { "seller": { "question": "Which countries do you ship to?", "hint": "Leave it empty to ship anywhere." }, "buyer": { "label": "Ship to", "question": "Where should it be shipped?" } } }
+    },
+    "description": { "piece": "text", "ask": { "label": "About", "long": true, "as": { "seller": { "question": "What should buyers know?" }, "buyer": { "question": "What should sellers know?" } } } }
+  },
+  "preview": ["photos", "category", "brand", "condition", "price", "wearer", "size", "waist", "leg", "age", "footLength", "labelSize", "area"],
+  "review": {
+    "asDescribed": { "piece": "choice", "values": ["yes", "no"], "roles": ["seller"], "ask": { "label": "As described", "question": "Was the item as the listing said and showed?" } },
+    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["buyer"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
+  }
+}

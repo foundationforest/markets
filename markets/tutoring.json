@@ -29,7 +29,7 @@
       "several": true,
       "ask": {
         "label": "Level",
-        "labels": { "primary": "Primary school", "secondary": "Secondary school", "adult": "Adults" },
+        "labels": { "primary": "primary school", "secondary": "secondary school", "adult": "adults" },
         "as": { "tutor": { "question": "Which levels do you teach?" }, "student": { "question": "What level is it for?" } }
       }
     },

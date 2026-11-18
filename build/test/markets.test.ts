@@ -134,8 +134,8 @@ test('price: always several, each with a per its field lists or none, and a coun
   const socks = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: 3 }, { amount: '300', currency: 'EUR' }]
   assert.equal(listing('knitter', { price: socks }), null)
   assert.equal(listing('client', { price: [{ amount: '100', currency: 'EUR', per: 'item', count: 3 }] }), null)
-  const each = "price takes a list of one or more, each different, each { amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, what that price is for in the person's words, one line of at most 80 characters"
-  // A note: the person's words on what one price is for, one line of at most 80 characters, counted as characters.
+  const each = "price takes a list of one or more, each different, each { amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of item, hour if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, any few of the person's words to read with that price, one line of at most 80 characters"
+  // A note: any few of the person's words to read with one price, one line of at most 80 characters, counted as characters.
   const noted = [{ ...price, note: 'Mending, not new work' }, { amount: '120', currency: 'EUR', note: 'from, for a simple jumper' }]
   assert.equal(listing('knitter', { price: noted }), null)
   assert.equal(listing('knitter', { price: [{ ...price, note: 'é'.repeat(80) }] }), null)
@@ -144,7 +144,7 @@ test('price: always several, each with a per its field lists or none, and a coun
   }
   // A price field with no per list: the whole deal, always.
   assert.equal(listing('knitter', { deposit: [{ amount: '40', currency: 'EUR' }] }), null)
-  const noPer = "deposit takes a list of one or more, each different, each { amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, what that price is for in the person's words, one line of at most 80 characters"
+  const noPer = "deposit takes a list of one or more, each different, each { amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, any few of the person's words to read with that price, one line of at most 80 characters"
   for (const wrong of [{ amount: '40', currency: 'EUR' }, [{ amount: '40', currency: 'EUR', per: 'item' }]]) assert.equal(listing('knitter', { deposit: wrong }), noPer)
 })
 
@@ -407,13 +407,17 @@ test('a date reads as people say it, the year left out when it is this one', () 
   assert.equal(read(date, { from: '2026-12-20', to: '2027-01-10' }), '20 December 2026 to 10 January 2027')
   assert.equal(read(date, { every: ['saturday', 'sunday', 'wednesday'] }), 'Wednesdays, Saturdays and Sundays')
   assert.equal(read(date, { every: ['friday', 'monday', 'tuesday', 'wednesday', 'thursday', 'sunday'] }), 'Monday to Friday and Sundays')
-  // Every day means any of them, as hours with no days named are written, and reads as the hours alone.
+  // All seven days mean any of them, as hours with no days named are written, and each answer reads whole.
   assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'] }), 'Any day')
-  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '18:00', end: '22:00', zone: Z }), '18:00 to 22:00')
-  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '07:00', from: '2026-12-01', zone: Z }), '7:00, from 1 December')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '18:00', end: '22:00', zone: Z }), 'Every day, 18:00 to 22:00')
+  assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '07:00', from: '2026-12-01', zone: Z }), 'Every day, 7:00, from 1 December')
   assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], to: '2027-01-15' }), 'Any day, until 15 January 2027')
   assert.equal(read(date, { every: ['friday'], start: '22:00', end: '02:00', to: '2027-05-01', zone: Z }), 'Fridays, 22:00 to 2:00, until 1 May 2027')
   assert.equal(read(dates, [{ every: weekdays, start: '09:00', end: '17:00', zone: Z }, { every: ['saturday'], start: '10:00', end: '14:00', zone: Z }]), 'Monday to Friday, 9:00 to 17:00; Saturdays, 10:00 to 14:00')
+  // Several answers are joined in a list, so each reads whole: the 10:00 is not a weekend hour.
+  const tours = [{ every: ['saturday', 'sunday'], start: '09:00', zone: Z }, { every: [...weekdays, 'saturday', 'sunday'], start: '10:00', zone: Z }]
+  assert.equal(read(dates, tours), 'Saturdays and Sundays, 9:00; Every day, 10:00')
+  assert.equal(read(dates, [{ every: ['monday'], start: '09:00', zone: Z }, { every: [...weekdays, 'saturday', 'sunday'], part: 'evening', zone: Z }, { every: [...weekdays, 'saturday', 'sunday'] }]), 'Mondays, 9:00; Evenings; Any day')
   // A part of the day keeps the person's word.
   assert.equal(read(date, { every: ['thursday'], part: 'morning', zone: Z }), 'Thursday mornings')
   assert.equal(read(date, { every: ['friday', 'tuesday'], part: 'afternoon', zone: Z }), 'Tuesday and Friday afternoons')
@@ -444,11 +448,19 @@ test('the other pieces read in plain words', () => {
   assert.equal(read(knitting.listing.languages!, ['es', 'en', 'pt']), 'Spanish, English and Portuguese')
   assert.equal(read(knitting.listing.size!, ['xl']), 'XL')
   assert.equal(read(knitting.listing.handover!, ['in-person']), 'In person')
-  // A value's own words are lower case after the first; a label keeps its case, as it may be a name.
+  // A value's words and a label read as inside a sentence, with a capital first or alone; a name or an abbreviation keeps its own.
   assert.equal(read({ piece: 'choice', values: ['weekly', 'every-two-weeks'], several: true }, ['weekly', 'every-two-weeks']), 'Weekly and every two weeks')
   assert.equal(read(knitting.listing.handover!, ['shipped', 'in-person']), 'Shipped and in person')
   assert.equal(read(knitting.listing.size!, ['m', 'xl']), 'M and XL')
   assert.equal(read({ piece: 'text', several: true }, ['merino', 'alpaca']), 'merino and alpaca')
+  const help = { piece: 'choice' as const, several: true as const, values: ['food', 'events', 'farm', 'building'], ask: { labels: { food: 'food banks', events: 'community events', farm: 'farm work, crops and land', building: 'building and repairs' } } }
+  assert.equal(read(help, ['food']), 'Food banks')
+  assert.equal(read(help, ['events', 'food']), 'Community events and food banks')
+  // When any answer's words hold a comma or "and", the list joins with semicolons, so each answer stays whole.
+  assert.equal(read(help, ['building', 'farm']), 'Building and repairs; farm work, crops and land')
+  assert.equal(read(help, ['food', 'building']), 'Food banks; building and repairs')
+  assert.equal(read({ piece: 'text', several: true }, ['Gas Safe, level 2', 'Part P']), 'Gas Safe, level 2; Part P')
+  assert.equal(read({ piece: 'number', several: true, unit: 'square-metres' }, ['1300', '2000']), '1,300 square metres and 2,000 square metres')
   assert.equal(read({ piece: 'photo', several: true }, [photo.sha256]), '1 photo')
   assert.equal(read({ piece: 'link' }, 'https://example.com'), 'https://example.com')
 })
@@ -494,6 +506,8 @@ test("each field comes with its words: the role's, or else the field's, or else 
   assert.equal(knitter.contact!.question, 'How can people reach you outside Forest?')
   assert.deepEqual(client.size!.choices!.slice(0, 2), [{ value: 'xs', label: 'XS' }, { value: 's', label: 'S' }])
   assert.deepEqual(client.handover!.choices, [{ value: 'in-person', label: 'In person' }, { value: 'shipped', label: 'Shipped' }])
+  // A picker never shows a lower-case label: each choice reads as if it stood alone.
+  assert.deepEqual(client.wearer!.choices!.at(-1), { value: 'children', label: 'Children and babies' })
   assert.deepEqual(client.languages!.choices!.find((c) => c.value === 'es'), { value: 'es', label: 'Spanish' })
   assert.equal(client.languages!.choices!.length, Object.keys(lists.languages).length)
   assert.equal(client.kind!.takes, 'a list of one or more, each different, each one of jumper, cardigan, scarf, hat, socks')

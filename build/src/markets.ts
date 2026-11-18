@@ -380,18 +380,18 @@ const isDate = (v: unknown): boolean => {
 const valuesOf = (field: Field, lists: Lists): string[] =>
   typeof field.values === 'string' ? Object.keys(Object.hasOwn(lists, field.values) ? lists[field.values]! : {}) : (field.values ?? [])
 /**
- * How a choice's value reads: the field's label for it, or else its list's, as written, since either
- * may be a name such as Spanish or XL; or else its words, in lower case when not `first` in a list.
+ * How a choice's value reads: the field's label for it, or else its list's, or else its words, each
+ * written as it reads inside a sentence, such as food banks, Spanish or XL; with a capital when it is
+ * `first` in a list or alone, so a picker never shows a lower-case label.
  */
 const labelOf = (field: Field, value: string, lists: Lists, first = true): string => {
   const labels = field.ask?.labels
-  if (labels && Object.hasOwn(labels, value)) return labels[value]!
   const list = typeof field.values === 'string' && Object.hasOwn(lists, field.values) ? lists[field.values]! : undefined
-  if (list && Object.hasOwn(list, value)) return list[value]!
-  return first ? wordsOf(value) : value.replaceAll('-', ' ')
+  const words = labels && Object.hasOwn(labels, value) ? labels[value]! : list && Object.hasOwn(list, value) ? list[value]! : value.replaceAll('-', ' ')
+  return first ? capital(words) : words
 }
 
-const NOTE_TAKES = `what that price is for in the person's words, one line of at most ${NOTE} characters`
+const NOTE_TAKES = `any few of the person's words to read with that price, one line of at most ${NOTE} characters`
 /** How a field's answer is written, in words. */
 const takes = (field: Field): string => {
   const one = (() => {
@@ -526,7 +526,7 @@ const readPrice = (p: PriceValue): string => {
   const cost = `${figure(p.amount)} ${p.currency}`
   const per = p.per?.replaceAll('-', ' ')
   const said = per === undefined ? cost : p.count !== undefined && p.count !== 1 ? `${cost} for ${p.count} ${per.replace(/\S+$/, plural)}` : `${cost} per ${per}`
-  // A note is the person's words on what the price is for, read after it and never matched.
+  // A note is any few of the person's words to read with the price, read after it and never matched.
   return p.note === undefined ? said : `${said} (${p.note})`
 }
 const readPlace = (p: PlaceValue, lists: Lists): string => {
@@ -567,8 +567,9 @@ const readDate = (v: DateValue, today: number): string => {
     // With a part, each weekday is singular and the part plural: Tuesday and Friday afternoons.
     const each = (d: number) => (part === undefined ? `${name(d)}s` : name(d))
     const named = or(groups.flatMap((g) => (g.length >= 3 ? [`${name(g[0]!)} to ${name(g.at(-1)!)}`] : g.map(each))), 'and')
-    // Every day means any of them, as hours with no days named are written, so it reads as the hours alone.
-    if (days.length === 7) parts.push(part !== undefined ? `${part}s` : v.start === undefined ? 'any day' : '')
+    // All seven days mean any of them, as hours with no days named are written. Several answers are
+    // joined in a list, so each reads whole: evenings, any day, and with clock times every day.
+    if (days.length === 7) parts.push(part !== undefined ? `${part}s` : v.start === undefined ? 'any day' : 'every day')
     else parts.push(part === undefined ? named : `${named} ${part}s`)
   } else parts.push(span(v.from, v.to))
   if (v.start !== undefined) parts.push(v.end === undefined ? readTime(v.start) : `${readTime(v.start)} to ${readTime(v.end)}`)
@@ -726,7 +727,8 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
             return v as string
         }
       })
-      const said = ['price', 'place', 'date'].includes(field.piece) ? parts.join('; ') : or(parts, 'and')
+      // Answers join as words do, a, b and c, unless one's words hold a comma or "and": then semicolons.
+      const said = ['price', 'place', 'date'].includes(field.piece) || parts.some((part) => /, | and /.test(part)) ? parts.join('; ') : or(parts, 'and')
       return field.piece === 'number' ? capital(said) : said
     },
   }
