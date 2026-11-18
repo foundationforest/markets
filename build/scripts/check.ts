@@ -58,8 +58,7 @@ const validateMarket = ajv.compile(schema)
 const iconNames = new Set<unknown>(Array.isArray(icons.icons) ? icons.icons : [])
 if (iconNames.size === 0) report('build/icons.json', 'holds no list of icons')
 
-// build/lists.json: each list by a name, each value with its words, and countries among them, since a
-// place's country is checked against it.
+// build/lists.json: each list by a name, each value with its words, and each country a two-letter code.
 if (!isObject(lists)) report('build/lists.json', 'must be an object of lists, by name')
 for (const [name, values] of Object.entries(isObject(lists) ? lists : {})) {
   if (!WORD.test(name)) report('build/lists.json', `"${name}" is not a list name: lowercase letters, digits and single hyphens`)
@@ -68,7 +67,6 @@ for (const [name, values] of Object.entries(isObject(lists) ? lists : {})) {
     if (!LINE.test(value) || typeof words !== 'string' || !LINE.test(words)) report('build/lists.json', `/${name}/${value}: a value and its words are each one line of text`)
   }
 }
-if (isObject(lists) && !isObject(lists.countries)) report('build/lists.json', 'holds no countries list: a place\'s country is checked against it')
 for (const code of Object.keys(isObject(lists?.countries) ? lists.countries : {})) {
   if (!/^[A-Z]{2}$/.test(code)) report('build/lists.json', `/countries/${code} is not a two-letter code, as ISO 3166-1 writes one`)
 }
@@ -93,8 +91,6 @@ agree('names a review field may not take', schema.properties?.review?.propertyNa
 const PLAIN: { [schemaPath: string]: string } = {
   '#/$defs/word/pattern': 'must be lowercase letters, digits and single hyphens',
   '#/$defs/line/pattern': 'must be one line of text, not only spaces',
-  '#/$defs/decimal/pattern': 'must be a number as decimal text, such as "2.5"',
-  '#/$defs/decimal/type': 'must be a number as decimal text, such as "2.5"',
   '#/properties/number/type': 'must be a whole number from 1',
   '#/properties/number/minimum': 'must be a whole number from 1',
   '#/properties/summary/maxLength': 'must be at most 80 characters: an app shows it where someone picks a market',
@@ -180,10 +176,9 @@ for (const file of files) {
 
       // ask: each key for the piece it opens, each role one of the market's, each label for a value.
       const ask = isObject(field.ask) ? field.ask : {}
-      for (const [key, piece] of [['usual', 'number'], ['long', 'text'], ['labels', 'choice']] as const) {
+      for (const [key, piece] of [['long', 'text'], ['labels', 'choice']] as const) {
         if (Object.hasOwn(ask, key) && field.piece !== piece) report(where, `${here}/ask: "${key}" is only for a ${piece} field`)
       }
-      if (field.piece === 'number' && isObject(ask.usual) && Number(ask.usual.from) > Number(ask.usual.to)) report(where, `${here}/ask/usual: from must be no more than to`)
       if (field.piece === 'choice' && isObject(ask.labels)) {
         for (const value of Object.keys(ask.labels)) if (!values.includes(value)) report(where, `${here}/ask/labels: ${JSON.stringify(value)} is not one of ${name}'s values`)
       }

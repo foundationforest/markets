@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks the markets and writes the directory:
-#   1. build/lists.json: each shared list by name, each value with its words, and a countries list of
-#      two-letter codes; the schema's pieces, units, ways and shared names the same as the package's
+#   1. build/lists.json: each shared list by name, each value with its words, and each country a
+#      two-letter code; the schema's pieces, units, ways and shared names the same as the package's
 #      (src/markets.ts);
 #   2. every markets/*.json against build/market.schema.json; each role's word once per market; each
 #      field's roles among the market's roles; each choice that names a shared list naming one in

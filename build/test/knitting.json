@@ -33,7 +33,7 @@
       "unit": "years",
       "several": true,
       "when": { "wearer": ["children"] },
-      "ask": { "label": "Age", "question": "How old is the child?", "usual": { "from": "0", "to": "16" }, "as": { "knitter": { "question": "Which ages do you knit for?", "start": { "range": true } } } }
+      "ask": { "label": "Age", "question": "How old is the child?", "as": { "knitter": { "question": "Which ages do you knit for?", "start": { "range": true } } } }
     },
     "chest": { "piece": "number", "unit": "centimetres", "when": { "kind": ["jumper", "cardigan"] }, "ask": { "label": "Chest", "question": "How big is the wearer's chest?", "hint": "Round its widest part, in centimetres." } },
     "footLength": { "piece": "number", "unit": "centimetres", "when": { "kind": ["socks"] } },
@@ -70,7 +70,7 @@
       "when": { "handover": ["in-person"] },
       "ask": { "label": "Free to meet", "question": "When are you free to meet?", "start": { "way": "weekly", "hours": true }, "as": { "client": { "start": { "hours": "part" } } } }
     },
-    "shipsTo": { "piece": "place", "several": true, "roles": ["knitter"], "when": { "handover": ["shipped"] }, "ask": { "label": "Ships to", "question": "Where do you ship to?" } },
+    "shipsTo": { "piece": "choice", "values": "countries", "several": true, "roles": ["knitter"], "when": { "handover": ["shipped"] }, "ask": { "label": "Ships to", "question": "Where do you ship to?" } },
     "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "photos": { "piece": "photo", "several": true, "roles": ["knitter"], "ask": { "label": "Photos", "question": "Photos of work you have done" } },
     "shop": { "piece": "link", "roles": ["knitter"], "ask": { "label": "Shop", "question": "Where can people see more of your work?" } }
