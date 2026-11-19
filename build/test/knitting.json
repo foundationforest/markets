@@ -68,7 +68,7 @@
       "piece": "date",
       "several": true,
       "when": { "handover": ["in-person"] },
-      "ask": { "label": "Free to meet", "question": "When are you free to meet?", "start": { "way": "weekly", "hours": true }, "as": { "client": { "start": { "hours": "part" } } } }
+      "ask": { "label": "Free to meet", "question": "When are you free to meet?", "start": { "way": "weekly", "hours": true }, "as": { "client": { "start": { "way": "day" } } } }
     },
     "shipsTo": { "piece": "choice", "values": "countries", "several": true, "roles": ["knitter"], "when": { "handover": ["shipped"] }, "ask": { "label": "Ships to", "question": "Where do you ship to?" } },
     "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },

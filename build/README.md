@@ -61,24 +61,24 @@ their circles touch.
 included and either left out, `{ "from": "2027-06-01", "to": "2027-08-31" }`, so a deadline is
 `{ "to": "2027-01-15" }`; or weekdays every week, `{ "every": ["monday", "thursday"] }`, `monday` to
 `sunday`, with a `from` and a `to` if wanted. Hours are a `start`, or a `start` and an `end`, as
-`HH:MM`, on each of those days. An end before the start runs past midnight. Or hours are a `part` of
-the day: `morning`, `afternoon` or `evening`. A part keeps the person's word. Hours on any day are
-`every` with all seven days. An answer with hours or a part names its `zone` by its IANA time zone
-name, such as `Europe/Madrid`, never by offset. One without hours has no zone.
+`HH:MM`, on each of those days. An end before the start runs past midnight. "Mornings" is not a
+time, so a writer asks the person for the hours. Hours on any day are `every` with all seven days. An
+answer with hours names its `zone` by its IANA time zone name, such as `Europe/Madrid`, never by
+offset. One without hours has no zone.
 
 ```json
 { "every": ["saturday"], "from": "2027-05-01", "to": "2027-09-30", "start": "10:00", "zone": "Europe/Lisbon" }
-{ "every": ["thursday"], "part": "morning", "zone": "Europe/London" }
+{ "every": ["thursday"], "start": "09:00", "end": "12:00", "zone": "Europe/London" }
 ```
 
 Weekly hours are several answers: Monday to Friday 9 to 17 and Saturday 10 to 14 are two. Clock
 times at both ends of a span, taken slots, exceptions and "every two weeks" stay in words.
 
 Two dates match when their real moments overlap, each read in its zone. A start alone is that
-moment. A part counts as 6:00 to 12:00, 12:00 to 18:00 or 18:00 to 24:00. With no hours, an answer
-is the whole day, in the zone of the answer it meets. Two weekly answers compare in the week of a
-given day, today by default, since summer time moves one zone against another. An app takes a date's
-zone from the listing's place when it has one: the hours are where the deal is.
+moment. With no hours, an answer is the whole day, in the zone of the answer it meets. Two weekly
+answers compare in the week of a given day, today by default, since summer time moves one zone
+against another. An app takes a date's zone from the listing's place when it has one: the hours are
+where the deal is.
 
 **photo**: one of the entry's files, by the SHA-256 of its bytes in lowercase hex, listed in `files`
 as [the standard names a file](https://github.com/foundationforest/standard/blob/main/folders/README.md#files).
@@ -122,7 +122,7 @@ Its **suggestions**, under `ask`, are checked only for being well formed:
 - `label`: two or three words, for a value or a filter. Left out: the name in words.
 - `question`, and a `hint`. Left out, the question is the label.
 - `start`: where the input opens. A place's `radiusKm`; a date's `way` (`day`, `from-to`, `until` or
-  `weekly`) and `hours` (`true` or `"part"`); a number's `range: true`.
+  `weekly`) and `hours: true`; a number's `range: true`.
 - `as`: by role, its own `label`, `question`, `hint` and `start`, over the field's, a `start` key by
   key. In a review, the role is the one reviewed.
 - `long: true`: text of several lines.

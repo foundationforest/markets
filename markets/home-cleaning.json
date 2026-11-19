@@ -32,7 +32,7 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "cleaner": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": "part" } } }
+        "as": { "cleaner": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": true } } }
       }
     },
     "price": {

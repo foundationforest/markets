@@ -67,7 +67,7 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "coach": { "question": "When do you coach?" }, "student": { "question": "When can the sessions be?", "start": { "hours": "part" } } }
+        "as": { "coach": { "question": "When do you coach?" }, "student": { "question": "When can the sessions be?" } }
       }
     },
     "groupSize": {

@@ -68,7 +68,7 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "tutor": { "question": "When do you teach?" }, "student": { "question": "When can the lessons be?", "start": { "hours": "part" } } }
+        "as": { "tutor": { "question": "When do you teach?" }, "student": { "question": "When can the lessons be?" } }
       }
     },
     "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },

@@ -119,14 +119,14 @@
       }
     },
     "start": {
-      "description": "Where the input opens: a place's radiusKm, a date's way and whether it asks hours, as clock times (true) or a part of the day (\"part\"), a number as a range. Each key left out: the field's, else the piece's own.",
+      "description": "Where the input opens: a place's radiusKm, a date's way and whether it asks clock times, a number as a range. Each key left out: the field's, else the piece's own.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": false,
       "properties": {
         "radiusKm": { "type": "integer", "minimum": 0 },
         "way": { "enum": ["day", "from-to", "until", "weekly"] },
-        "hours": { "enum": [true, "part"] },
+        "hours": { "const": true },
         "range": { "const": true }
       }
     }

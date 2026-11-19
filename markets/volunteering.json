@@ -45,7 +45,7 @@
         "label": "Days and times",
         "as": {
           "organizer": { "question": "When is it?", "start": { "way": "day", "hours": true } },
-          "volunteer": { "question": "When are you free?", "start": { "way": "weekly", "hours": "part" } }
+          "volunteer": { "question": "When are you free?", "start": { "way": "weekly", "hours": true } }
         }
       }
     },
