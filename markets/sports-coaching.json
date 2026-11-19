@@ -52,10 +52,13 @@
     },
     "price": {
       "piece": "price",
-      "per": ["hour", "session", "week", "month"],
+      "per": ["hour", "week", "month"],
       "ask": {
         "label": "Price per learner",
-        "as": { "coach": { "question": "What do you charge?" }, "student": { "label": "Budget per learner", "question": "What would you pay at most?" } }
+        "as": {
+          "coach": { "question": "What do you charge?", "hint": "Such as 30 an hour, or 25 for 45 minutes. For a week or a month, say in its note how many sessions." },
+          "student": { "label": "Budget per learner", "question": "What would you pay at most?", "hint": "Such as 25 for 45 minutes, which also says how long a session is." }
+        }
       }
     },
     "days": {
@@ -64,7 +67,7 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "coach": { "question": "When do you coach?" }, "student": { "question": "When can the sessions be?", "start": { "hours": "part" } } }
+        "as": { "coach": { "question": "When do you coach?" }, "student": { "question": "When can the sessions be?" } }
       }
     },
     "groupSize": {
@@ -76,16 +79,16 @@
         "as": { "coach": { "question": "How many learners in a session?" }, "student": { "question": "How big a group would you join?" } }
       }
     },
-    "sessionMinutes": {
-      "piece": "number",
-      "unit": "minutes",
-      "several": true,
-      "ask": { "label": "Session length", "as": { "coach": { "question": "How long is a session?" }, "student": { "question": "How long should a session be?" } } }
-    },
-    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "description": {
       "piece": "text",
-      "ask": { "label": "About", "long": true, "as": { "coach": { "question": "What should students know?" }, "student": { "question": "What should the coach know?" } } }
+      "ask": {
+        "label": "About",
+        "long": true,
+        "as": {
+          "coach": { "question": "What should students know?", "hint": "Such as the languages you coach in." },
+          "student": { "question": "What should the coach know?", "hint": "Such as how often, and the languages you speak." }
+        }
+      }
     }
   },
   "preview": ["sports", "levels", "ages", "mode", "area", "price"],

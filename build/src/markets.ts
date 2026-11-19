@@ -22,17 +22,8 @@ export type Weekday = (typeof WEEKDAYS)[number]
 export const WAYS = ['day', 'from-to', 'until', 'weekly'] as const
 export type Way = (typeof WAYS)[number]
 
-/** The parts of a day a date's hours may be, kept as the person's word. */
-export const PARTS = ['morning', 'afternoon', 'evening'] as const
-export type Part = (typeof PARTS)[number]
-/** The hours each part counts as, for matching only: from, to. */
-const PART_HOURS: { [part in Part]: [number, number] } = { morning: [6, 12], afternoon: [12, 18], evening: [18, 24] }
-
-/**
- * Where an input opens: a place's size, a date's way and whether it asks hours, as clock times (true)
- * or a part of the day, and a number as a range.
- */
-export type Start = { radiusKm?: number; way?: Way; hours?: boolean | 'part'; range?: boolean }
+/** Where an input opens: a place's size, a date's way and whether it asks clock times, and a number as a range. */
+export type Start = { radiusKm?: number; way?: Way; hours?: boolean; range?: boolean }
 /** The words a field asks with, for every role or for one. */
 export type Words = { label?: string; question?: string; hint?: string; start?: Start }
 /** A field's suggestions: how to ask for it. Never checked against an entry; any program may ignore them. */
@@ -88,12 +79,14 @@ export type Kind = (typeof KINDS)[number]
 // How each piece is written, for programs that type their answers.
 /** One number as decimal text, or from one to another, either end left out for no limit. */
 export type NumberValue = string | { from?: string; to?: string }
-export type PriceValue = { amount: string; currency: string; per?: string; count?: number; note?: string }
+/** A price: an amount for a whole deal, or for `count` of its `per`, 1 when left out; per hour, `count` is the length, such as "0.75" for 45 minutes. */
+export type PriceValue = { amount: string; currency: string; per?: string; count?: string; note?: string }
+/** The one per whose count may be a fraction: a price for time is an amount for a length in hours. */
+const HOUR = 'hour'
 export type PlaceValue = { lat: string; lon: string; radiusKm: number }
 export type DateValue = ({ on: string } | { from?: string; to?: string } | { every: Weekday[]; from?: string; to?: string }) & {
   start?: string
   end?: string
-  part?: Part
   zone?: string
 }
 
@@ -222,6 +215,7 @@ const distinct = (items: unknown[]): boolean => items.every((item, i) => items.f
 
 const DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/
 const AMOUNT = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/
+const WHOLE = /^[1-9][0-9]*$/
 const CURRENCY = /^[A-Z]{3}$/
 const LAT = /^-?(90(\.0+)?|[1-8]?[0-9](\.[0-9]+)?)$/
 const LON = /^-?(180(\.0+)?|(1[0-7][0-9]|[1-9]?[0-9])(\.[0-9]+)?)$/
@@ -322,7 +316,7 @@ const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
         typeof v.currency === 'string' &&
         CURRENCY.test(v.currency) &&
         (!has(v, 'per') || (typeof v.per === 'string' && (field.per ?? []).includes(v.per))) &&
-        (!has(v, 'count') || (has(v, 'per') && Number.isInteger(v.count) && (v.count as number) >= 1)) &&
+        (!has(v, 'count') || (has(v, 'per') && isCount(v.per as string, v.count))) &&
         (!has(v, 'note') || isNote(v.note))
       )
     case 'place':
@@ -335,6 +329,8 @@ const fitsOne = (field: Field, v: unknown, lists: Lists): boolean => {
       return typeof v === 'string' && LINK.test(v)
   }
 }
+/** A price's count: decimal text, whole and from 1, or per hour any length above 0, such as "0.75" for 45 minutes. */
+const isCount = (per: string, v: unknown): boolean => typeof v === 'string' && (per === HOUR ? AMOUNT.test(v) && Number(v) > 0 : WHOLE.test(v))
 /** A price's note: one line of the person's words, at most NOTE characters, counted as characters, not code units. */
 const NOTE = 80
 const isNote = (v: unknown): boolean => typeof v === 'string' && LINE.test(v) && [...v].length <= NOTE
@@ -354,7 +350,7 @@ const isPlace = (v: unknown): boolean =>
   Number.isInteger(v.radiusKm) &&
   (v.radiusKm as number) >= 0
 const isDate = (v: unknown): boolean => {
-  if (!isObject(v) || !only(v, ['on', 'from', 'to', 'every', 'start', 'end', 'part', 'zone'])) return false
+  if (!isObject(v) || !only(v, ['on', 'from', 'to', 'every', 'start', 'end', 'zone'])) return false
   // The days: one day, from one day to another with either end left out, or weekdays every week.
   if (has(v, 'on')) {
     if (has(v, 'from') || has(v, 'to') || has(v, 'every') || Number.isNaN(dayNumber(v.on))) return false
@@ -364,27 +360,29 @@ const isDate = (v: unknown): boolean => {
     const [from, to] = [has(v, 'from') ? dayNumber(v.from) : -Infinity, has(v, 'to') ? dayNumber(v.to) : Infinity]
     if (Number.isNaN(from) || Number.isNaN(to) || from > to) return false
   }
-  // The hours: a start, or a start and an end, or a part of the day, with the zone they are in; or none.
-  if (has(v, 'part')) return !has(v, 'start') && !has(v, 'end') && (PARTS as readonly unknown[]).includes(v.part) && isZone(v.zone)
+  // The hours: a start, or a start and an end, with the zone they are in; or none.
   if (!has(v, 'start')) return !has(v, 'end') && !has(v, 'zone')
   if (typeof v.start !== 'string' || !TIME.test(v.start) || !isZone(v.zone)) return false
   return !has(v, 'end') || (typeof v.end === 'string' && TIME.test(v.end) && v.end !== v.start)
 }
 
-/** A choice's values: its own list, or the shared list it names. */
-const valuesOf = (field: Field, lists: Lists): string[] =>
+/** A choice's values: its own list, or the shared list it names, in `lists`, build/lists.json. */
+export const valuesOf = (field: Field, lists: Lists): string[] =>
   typeof field.values === 'string' ? Object.keys(Object.hasOwn(lists, field.values) ? lists[field.values]! : {}) : (field.values ?? [])
 /**
  * How a choice's value reads: the field's label for it, or else its list's, or else its words, each
  * written as it reads inside a sentence, such as food banks, Spanish or XL; with a capital when it is
  * `first` in a list or alone, so a picker never shows a lower-case label.
  */
-const labelOf = (field: Field, value: string, lists: Lists, first = true): string => {
+export const labelOf = (field: Field, value: string, lists: Lists, first = true): string => {
   const labels = field.ask?.labels
   const list = typeof field.values === 'string' && Object.hasOwn(lists, field.values) ? lists[field.values]! : undefined
   const words = labels && Object.hasOwn(labels, value) ? labels[value]! : list && Object.hasOwn(list, value) ? list[value]! : value.replaceAll('-', ' ')
   return first ? capital(words) : words
 }
+
+/** How a field's answer is written: a shared name's own words when it has them, such as score's, or else its piece's. */
+const takesOf = (kind: Kind, key: string, field: Field): string => (has(SHARED[kind], key) && has(MEANS, key) ? MEANS[key]!.takes : takes(field))
 
 const NOTE_TAKES = `any few of the person's words to read with that price, one line of at most ${NOTE} characters`
 /** How a field's answer is written, in words. */
@@ -399,12 +397,12 @@ const takes = (field: Field): string => {
         return 'a number as decimal text, such as "2.5", or { from, to }: two such numbers, from no more than to, either left out for no limit that way'
       case 'price':
         return field.per
-          ? `{ amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, count, only with a per, how many of it the amount buys, a whole number, and note if wanted, ${NOTE_TAKES}`
+          ? `{ amount, currency, per, count, note }: amount as decimal text, currency a code such as USD, per one of ${field.per.join(', ')} if wanted, count, only with a per, how many of it the amount buys, as decimal text, a whole number such as "3"${field.per.includes(HOUR) ? `, or per ${HOUR} any length in hours, such as "0.75" for 45 minutes` : ''}, and note if wanted, ${NOTE_TAKES}`
           : `{ amount, currency, note }: amount as decimal text, currency a code such as USD, no per or count, and note if wanted, ${NOTE_TAKES}`
       case 'place':
         return '{ lat, lon, radiusKm }: lat and lon as decimal text, and radiusKm in whole kilometres'
       case 'date':
-        return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday, all seven for hours on any day; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, or part, one of morning, afternoon, evening, with zone, a time zone by name such as Europe/Madrid'
+        return '{ on }, { from, to } with either left out, or { every, from, to } with from and to if wanted: days as YYYY-MM-DD, from no later than to, every a list of weekdays, monday to sunday, all seven for hours on any day; and, if wanted, start, and end if wanted, as HH:MM, end not the same as start, with zone, a time zone by name such as Europe/Madrid'
       case 'photo':
         return 'the SHA-256 of one of the files the body lists in files, in lowercase hex'
       case 'link':
@@ -439,7 +437,7 @@ type Span = [number, number]
 /**
  * An answer's spans of real time on each of its days from day `first` to day `last`. With hours, each
  * day from its start, to its end, the next day when the end is before the start, or that moment alone;
- * with a part, the hours it counts as; with none, the whole day, in `zone` when given, else as plain days.
+ * with none, the whole day, in `zone` when given, else as plain days.
  */
 const spansOf = (v: DateValue, first: number, last: number, zone: string | undefined): Span[] => {
   const [lo, hi] = daysOf(v)
@@ -450,9 +448,6 @@ const spansOf = (v: DateValue, first: number, last: number, zone: string | undef
       const start = moment(v.zone!, n, minutesOf(v.start))
       const end = v.end === undefined ? start : moment(v.zone!, v.end < v.start ? n + 1 : n, minutesOf(v.end))
       spans.push([start, end])
-    } else if (v.part !== undefined) {
-      const [from, to] = PART_HOURS[v.part]
-      spans.push([moment(v.zone!, n, from * 60), moment(v.zone!, n, to * 60)])
     } else {
       spans.push(zone === undefined ? [n * DAY_MS, (n + 1) * DAY_MS] : [moment(zone, n, 0), moment(zone, n + 1, 0)])
     }
@@ -487,7 +482,7 @@ const datesMeet = (a: DateValue, b: DateValue, today: number): boolean => {
   return spansOf(a, first, last, zoneA).some((span) => spansB.some((other) => overlap(span, other)))
 }
 /** What one of a price's `per` costs, in its currency. */
-const each = (p: PriceValue) => Number(p.amount) / (p.count ?? 1)
+const each = (p: PriceValue) => Number(p.amount) / Number(p.count ?? '1')
 
 // Question 3: how does an answer read?
 
@@ -511,10 +506,25 @@ const readNumber = (v: NumberValue, unit?: Unit): string => {
   if (v.from !== undefined && v.to !== undefined) return v.from === v.to ? withUnit(v.from, Number(v.from) !== 1) : `${figure(v.from)} to ${withUnit(v.to)}`
   return v.from !== undefined ? `${withUnit(v.from, Number(v.from) !== 1)} or more` : `up to ${withUnit(v.to!, Number(v.to) !== 1)}`
 }
+/** A length in hours as people say it: 45 minutes, 90 minutes, 3 hours, 2.5 hours. */
+const readHours = (count: number): string => {
+  if (Number.isInteger(count)) return `${figure(String(count))} ${count === 1 ? 'hour' : 'hours'}`
+  const minutes = Math.round(count * 60)
+  return count < 2 ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}` : `${figure(String(count))} hours`
+}
 const readPrice = (p: PriceValue): string => {
   const cost = `${figure(p.amount)} ${p.currency}`
   const per = p.per?.replaceAll('-', ' ')
-  const said = per === undefined ? cost : p.count !== undefined && p.count !== 1 ? `${cost} for ${p.count} ${per.replace(/\S+$/, plural)}` : `${cost} per ${per}`
+  const count = Number(p.count ?? '1')
+  // One of a per reads as people say it, 15 an hour, 300 a month; more, as how many it buys, 60 for 3 hours.
+  const said =
+    per === undefined
+      ? cost
+      : count === 1
+        ? `${cost} ${/^(hour|[aeio])/.test(per) ? 'an' : 'a'} ${per}`
+        : p.per === HOUR
+          ? `${cost} for ${readHours(count)}`
+          : `${cost} for ${figure(String(count))} ${per.replace(/\S+$/, plural)}`
   // A note is any few of the person's words to read with the price, read after it and never matched.
   return p.note === undefined ? said : `${said} (${p.note})`
 }
@@ -537,8 +547,6 @@ const readDate = (v: DateValue, today: number): string => {
     return f.month === t.month ? `${f.day} to ${t.day} ${end}` : `${f.day} ${MONTHS[f.month - 1]} to ${t.day} ${end}`
   }
   const parts: string[] = []
-  // A part of the day reads as the person said it: Thursday mornings, evenings, in the afternoon.
-  const part = v.part
   if ('on' in v) parts.push(day(v.on, true))
   else if ('every' in v) {
     // Weekdays in week order, three or more in a row as a run: Monday to Friday, then Saturdays.
@@ -550,18 +558,14 @@ const readDate = (v: DateValue, today: number): string => {
       else groups.push([d])
     }
     const name = (d: number) => capital(WEEKDAYS[d]!)
-    // With a part, each weekday is singular and the part plural: Tuesday and Friday afternoons.
-    const each = (d: number) => (part === undefined ? `${name(d)}s` : name(d))
-    const named = or(groups.flatMap((g) => (g.length >= 3 ? [`${name(g[0]!)} to ${name(g.at(-1)!)}`] : g.map(each))), 'and')
+    const named = or(groups.flatMap((g) => (g.length >= 3 ? [`${name(g[0]!)} to ${name(g.at(-1)!)}`] : g.map((d) => `${name(d)}s`))), 'and')
     // All seven days mean any of them, as hours with no days named are written. Several answers are
-    // joined in a list, so each reads whole: evenings, any day, and with clock times every day.
-    if (days.length === 7) parts.push(part !== undefined ? `${part}s` : v.start === undefined ? 'any day' : 'every day')
-    else parts.push(part === undefined ? named : `${named} ${part}s`)
+    // joined in a list, so each reads whole: any day, and with clock times every day.
+    parts.push(days.length === 7 ? (v.start === undefined ? 'any day' : 'every day') : named)
   } else parts.push(span(v.from, v.to))
   if (v.start !== undefined) parts.push(v.end === undefined ? readTime(v.start) : `${readTime(v.start)} to ${readTime(v.end)}`)
-  else if (part !== undefined && !('every' in v)) parts.push('on' in v ? `in the ${part}` : `${part}s`)
   if ('every' in v && (v.from !== undefined || v.to !== undefined)) parts.push(span(v.from, v.to))
-  return capital(parts.filter((part) => part !== '').join(', '))
+  return capital(parts.join(', '))
 }
 
 // Question 4: what does a market ask a role? Each piece's own start, where its input opens.
@@ -620,11 +624,15 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
           return (fields[other]?.several && Array.isArray(held) ? held : [held]).some((v) => values.includes(v as string))
         })
         if (!applies) return `${key} is only for a ${kind} whose ${when.map(([other, values]) => `${other} is ${or(values)}`).join(', and whose ')}`
+        // A shared name with a meaning of its own, such as score, takes only what it says.
+        const means = has(shared, key) && has(MEANS, key) ? MEANS[key]! : undefined
+        if (means) {
+          if (typeof value !== 'string' || !means.fits.test(value)) return `${key} takes ${means.takes}`
+          continue
+        }
         const answers = isSeveral(field) ? value : [value]
         if (!Array.isArray(answers) || answers.length === 0 || !distinct(answers) || !answers.every((v) => fitsOne(field, v, lists))) return `${key} takes ${takes(field)}`
         if (field.piece === 'photo' && !answers.every((sha256) => files.includes(sha256))) return `${key} names a file the body's files do not list`
-        const means = has(shared, key) ? MEANS[key] : undefined
-        if (means && !means.fits.test(value as string)) return `${key} takes ${means.takes}`
       }
       return null
     },
@@ -660,7 +668,7 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
           // Each key merges: the role's over the field's, the field's over the piece's own.
           ...(own ? { start: { ...own, ...field.ask?.start, ...words?.start } } : {}),
           ...(field.piece === 'choice' ? { choices: valuesOf(field, lists).map((value) => ({ value, label: labelOf(field, value, lists) })) } : {}),
-          takes: takes(field),
+          takes: takesOf(kind as Kind, key, field),
         }
       })
     },

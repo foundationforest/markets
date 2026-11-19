@@ -32,35 +32,32 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "cleaner": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": "part" } } }
+        "as": { "cleaner": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": true } } }
       }
     },
     "price": {
       "piece": "price",
-      "per": ["hour", "visit", "day"],
-      "ask": { "label": "Price", "as": { "cleaner": { "question": "What do you charge?" }, "client": { "label": "Budget", "question": "What would you pay at most?" } } }
+      "per": ["hour", "day"],
+      "ask": {
+        "label": "Price",
+        "as": {
+          "cleaner": { "question": "What do you charge?", "hint": "Such as 15 an hour. A minimum, such as at least 2 hours, goes in its note." },
+          "client": { "label": "Budget", "question": "What would you pay at most?", "hint": "Such as 60 for 3 hours, which also says how long the job is." }
+        }
+      }
     },
-    "frequency": {
-      "piece": "choice",
-      "values": ["once", "weekly", "every-two-weeks", "monthly"],
-      "several": true,
-      "ask": { "label": "How often", "as": { "cleaner": { "question": "How often can you come?" }, "client": { "question": "How often should they come?" } } }
-    },
-    "visitHours": {
-      "piece": "number",
-      "unit": "hours",
-      "ask": { "label": "Visit length", "as": { "cleaner": { "question": "How long is a visit?", "start": { "range": true } }, "client": { "question": "How long should it take?" } } }
-    },
-    "bedrooms": { "piece": "number", "roles": ["client"], "ask": { "label": "Bedrooms", "question": "How many bedrooms?" } },
-    "bathrooms": { "piece": "number", "roles": ["client"], "ask": { "label": "Bathrooms", "question": "How many bathrooms?" } },
     "bringsSupplies": { "piece": "choice", "values": ["yes", "no"], "roles": ["cleaner"], "ask": { "label": "Brings supplies", "question": "Do you bring your own supplies?" } },
     "needsSupplies": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Bring supplies", "question": "Should the cleaner bring supplies?" } },
-    "fineWithPets": { "piece": "choice", "values": ["yes", "no"], "roles": ["cleaner"], "ask": { "label": "Fine with pets", "question": "Are you fine with pets at home?" } },
-    "pets": { "piece": "choice", "values": ["dogs", "cats", "others"], "several": true, "roles": ["client"], "ask": { "label": "Pets", "question": "Which pets are at home?" } },
-    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "description": {
       "piece": "text",
-      "ask": { "label": "About", "long": true, "as": { "cleaner": { "question": "What should clients know?" }, "client": { "question": "What should the cleaner know?" } } }
+      "ask": {
+        "label": "About",
+        "long": true,
+        "as": {
+          "cleaner": { "question": "What should clients know?", "hint": "Such as how often you can come, whether you mind pets, and the languages you speak." },
+          "client": { "question": "What should the cleaner know?", "hint": "Such as how often, how big the home is, any pets, and the languages you speak." }
+        }
+      }
     }
   },
   "preview": ["jobs", "area", "days", "price"],

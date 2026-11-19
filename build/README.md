@@ -20,9 +20,8 @@ it. Any program may ignore it, and it may change at any time, even in a live mar
 
 An entry is a JSON object of answers, by field name. Any field may be left out. A field takes one
 answer, or with `several` a list of one or more, each different. Answers in two fields never pair
-up: Lisbon from 12 to 15 May and Porto from 16 to 19 May are two listings. Numbers, amounts and
-coordinates are decimal text, such as `"2.5"`. Only `radiusKm` and a price's `count` are JSON
-numbers, both whole.
+up: Lisbon from 12 to 15 May and Porto from 16 to 19 May are two listings. Numbers, amounts, counts
+and coordinates are decimal text, such as `"2.5"`. Only `radiusKm` is a JSON number, whole.
 
 `match` compares two answers of one field. An answer left out matches anything. Several answers
 match when any pair does. How fields combine is each index's choice: an index that hides a listing
@@ -40,40 +39,46 @@ is no limit: `{ "from": "18" }` is 18 and over. A measure names its `unit`: `min
 
 **price**: always a list of one or more, each `{ "amount", "currency", "per", "count", "note" }`.
 `currency` is a code such as `EUR`. `per` is one of the field's `per`, or left out for the whole
-deal. `count`, only with a `per`, is how many the amount buys, 1 when left
-out: `{ "amount": "90", "currency": "EUR", "per": "item", "count": 3 }` is 90 for three. A `note` is
-the person's few words on that price, one line of at most 80 characters, never matched. In a
-request, a price is the most the writer would pay. Prices match when the offer's costs no more than
-the request's, by amount divided by count, in the same currency and `per`. Prices that cannot be
-compared never block a match.
+deal. `count`, only with a `per`, is how many the amount buys, 1 when left out, and whole but per
+`hour`, where it is a length: `{ "amount": "25", "currency": "EUR", "per": "hour", "count": "0.75" }`
+is 25 for 45 minutes. A `note` is the person's few words on that price, one line of at most 80
+characters, never matched, such as "at least 2 hours". In a request, a price is the most the writer
+would pay, and one with a length also says how long the job is. Prices match when the offer's costs
+no more than the request's, by amount divided by count, in the same currency and `per`. Prices that
+cannot be compared never block a match.
 
 **place**: a circle, `{ "lat": "40.4342", "lon": "-3.7031", "radiusKm": 1 }`, in degrees and
-kilometres. Radius 0 is an exact spot, set on a map. Any other radius means "in or
-around here". A spot written from memory is a 1 km circle, and its name goes in the `description`.
-A place has no name: a name has a language and can disagree with its coordinates. A whole
-country is a big circle. A place reads as its numbers. Two places match when their circles touch.
+kilometres. Radius 0 is an exact spot, set on a map. Any other radius means "in or around here". A
+circle written from memory is 1 km, centred on the neighbourhood the person names, whose name goes in
+the `description`. An app placing one from where the person stands keeps them inside it, never at
+its centre, which points to their door: it moves the centre by up to a tenth of the radius, the same
+way each time for that profile, so listings cannot be averaged back to the spot. Radius 0, a public
+spot, moves nothing. A place has no name: a name has a language and can disagree with its
+coordinates. A whole country is a big circle. A place reads as its numbers. Two places match when
+their circles touch.
 
 **date**: days, and hours if wanted. Days are one day, `{ "on": "2026-11-24" }`; a span, both ends
 included and either left out, `{ "from": "2027-06-01", "to": "2027-08-31" }`, so a deadline is
 `{ "to": "2027-01-15" }`; or weekdays every week, `{ "every": ["monday", "thursday"] }`, `monday` to
 `sunday`, with a `from` and a `to` if wanted. Hours are a `start`, or a `start` and an `end`, as
-`HH:MM`, on each of those days. An end before the start runs past midnight. Or hours are a `part` of
-the day: `morning`, `afternoon` or `evening`. A part keeps the person's word. Hours on any day are
-`every` with all seven days. An answer with hours or a part names its `zone` by its IANA time zone
-name, such as `Europe/Madrid`, never by offset. One without hours has no zone.
+`HH:MM`, on each of those days. An end before the start runs past midnight. "Mornings" is not a
+time, so a writer asks the person for the hours. Hours on any day are `every` with all seven days. An
+answer with hours names its `zone` by its IANA time zone name, such as `Europe/Madrid`, never by
+offset. One without hours has no zone.
 
 ```json
 { "every": ["saturday"], "from": "2027-05-01", "to": "2027-09-30", "start": "10:00", "zone": "Europe/Lisbon" }
-{ "every": ["thursday"], "part": "morning", "zone": "Europe/London" }
+{ "every": ["thursday"], "start": "09:00", "end": "12:00", "zone": "Europe/London" }
 ```
 
 Weekly hours are several answers: Monday to Friday 9 to 17 and Saturday 10 to 14 are two. Clock
 times at both ends of a span, taken slots, exceptions and "every two weeks" stay in words.
 
 Two dates match when their real moments overlap, each read in its zone. A start alone is that
-moment. A part counts as 6:00 to 12:00, 12:00 to 18:00 or 18:00 to 24:00. With no hours, an answer
-is the whole day, in the zone of the answer it meets. Two weekly answers compare in the week of a
-given day, today by default, since summer time moves one zone against another.
+moment. With no hours, an answer is the whole day, in the zone of the answer it meets. Two weekly
+answers compare in the week of a given day, today by default, since summer time moves one zone
+against another. An app takes a date's zone from the listing's place when it has one: the hours are
+where the deal is.
 
 **photo**: one of the entry's files, by the SHA-256 of its bytes in lowercase hex, listed in `files`
 as [the standard names a file](https://github.com/foundationforest/standard/blob/main/folders/README.md#files).
@@ -109,14 +114,15 @@ A field's **rules**:
   `{ "kind": ["socks"] }`. A field with several answers counts when any does. Never in a loop. An
   entry never holds a field that does not apply.
 - `values` on a choice; `unit` on a measure; `per` on a price, what its amount may be for, such as
-  `["hour", "lesson"]`.
+  `["hour", "day"]`. Never `visit`, `session` or `lesson`: only the seller knows how long one is, so
+  a price per one compares with no price per hour.
 
 Its **suggestions**, under `ask`, are checked only for being well formed:
 
 - `label`: two or three words, for a value or a filter. Left out: the name in words.
 - `question`, and a `hint`. Left out, the question is the label.
 - `start`: where the input opens. A place's `radiusKm`; a date's `way` (`day`, `from-to`, `until` or
-  `weekly`) and `hours` (`true` or `"part"`); a number's `range: true`.
+  `weekly`) and `hours: true`; a number's `range: true`.
 - `as`: by role, its own `label`, `question`, `hint` and `start`, over the field's, a `start` key by
   key. In a review, the role is the one reviewed.
 - `long: true`: text of several lines.
@@ -140,14 +146,8 @@ outside Forest. It is public, and the same contact on two profiles links them. N
 
 A market starts as beta, and may change in any way. Once live, it never goes back, and only grows:
 what was posted in it keeps fitting, and every profile stays what it is. `check.sh` fails on any
-change against main that breaks this. A live market that must break becomes a new market, with a new
-name.
-
-## Notes for apps
-
-- Centre a home's circle on its neighbourhood, never on where the person stands: a circle round them
-  points to their door.
-- Take a date's zone from the listing's place when it has one: the hours are where the deal is.
+change to a market file against main that breaks this, though nothing yet checks the pieces. A live
+market that must break becomes a new market, with a new name.
 
 ## From a program
 
@@ -156,13 +156,15 @@ name.
 code from strings.
 
 ```ts
-import { loadMarkets } from '@foundationforest/markets'
+import { labelOf, loadMarkets, valuesOf } from '@foundationforest/markets'
 
 const markets = loadMarkets() // the checkout it sits in, or loadMarkets(dir)
 markets.checkEntry('knitting', 'client', 'listing', body) // null, or why it does not fit
 markets.match(field, a, b) // for a price, a is the offer's
 markets.read(field, value) // "Monday to Friday, 9:00 to 17:00"
 markets.ask('knitting', 'client') // the fields to ask, in order
+valuesOf(field, markets.lists) // a choice's values
+labelOf(field, 'es', markets.lists) // "Spanish"
 ```
 
 `read` is a helper in English, not part of the standard: a program may word things its own way. For

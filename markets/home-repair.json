@@ -33,17 +33,17 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "repairer": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": "part" } } }
+        "as": { "repairer": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": true } } }
       }
     },
     "price": {
       "piece": "price",
-      "per": ["hour", "visit", "day"],
+      "per": ["hour", "day"],
       "ask": {
         "label": "Price",
         "as": {
-          "repairer": { "question": "What do you charge?" },
-          "client": { "label": "Budget", "question": "What would you pay at most?" }
+          "repairer": { "question": "What do you charge?", "hint": "Such as 30 an hour, or a price for the whole job. A call-out fee is a price of its own, with a note." },
+          "client": { "label": "Budget", "question": "What would you pay at most?", "hint": "For the whole job, or such as 60 for 2 hours." }
         }
       }
     },
@@ -52,11 +52,16 @@
       "several": true,
       "ask": { "label": "Photos", "as": { "repairer": { "question": "Any photos of your work?" }, "client": { "question": "Any photos of what needs fixing?" } } }
     },
-    "licences": { "piece": "text", "several": true, "roles": ["repairer"], "ask": { "label": "Licences", "question": "Which licences or certificates do you hold?" } },
-    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "description": {
       "piece": "text",
-      "ask": { "label": "About", "long": true, "as": { "repairer": { "question": "What should clients know?" }, "client": { "question": "What should the repairer know?" } } }
+      "ask": {
+        "label": "About",
+        "long": true,
+        "as": {
+          "repairer": { "question": "What should clients know?", "hint": "Such as the licences or certificates you hold, and the languages you speak." },
+          "client": { "question": "What should the repairer know?", "hint": "Such as what is wrong and since when, and the languages you speak." }
+        }
+      }
     }
   },
   "preview": ["jobs", "area", "days", "price", "photos"],

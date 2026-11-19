@@ -20,14 +20,6 @@
         "as": { "seller": { "question": "What is it?" }, "buyer": { "question": "What are you looking for?" } }
       }
     },
-    "brand": {
-      "piece": "text",
-      "ask": {
-        "label": "Brand and model",
-        "hint": "Such as Levi's 501 or iPhone 13 128 GB.",
-        "as": { "seller": { "question": "What brand and model is it?" }, "buyer": { "question": "Which brand or model?" } }
-      }
-    },
     "condition": {
       "piece": "choice",
       "values": ["new", "like-new", "good", "fair", "for-parts"],
@@ -61,28 +53,6 @@
         "label": "Size",
         "labels": { "xxs": "XXS", "xs": "XS", "s": "S", "m": "M", "l": "L", "xl": "XL", "xxl": "XXL", "3xl": "3XL", "4xl": "4XL" },
         "as": { "seller": { "question": "What size is it?" }, "buyer": { "question": "Which sizes?" } }
-      }
-    },
-    "waist": {
-      "piece": "choice",
-      "values": ["w24", "w25", "w26", "w27", "w28", "w29", "w30", "w31", "w32", "w33", "w34", "w35", "w36", "w38", "w40", "w42", "w44"],
-      "several": true,
-      "when": { "category": ["clothes"] },
-      "ask": {
-        "label": "Waist",
-        "labels": { "w24": "W24", "w25": "W25", "w26": "W26", "w27": "W27", "w28": "W28", "w29": "W29", "w30": "W30", "w31": "W31", "w32": "W32", "w33": "W33", "w34": "W34", "w35": "W35", "w36": "W36", "w38": "W38", "w40": "W40", "w42": "W42", "w44": "W44" },
-        "as": { "seller": { "question": "What waist size is it?" }, "buyer": { "question": "Which waist sizes?" } }
-      }
-    },
-    "leg": {
-      "piece": "choice",
-      "values": ["l26", "l28", "l30", "l32", "l34", "l36", "l38"],
-      "several": true,
-      "when": { "category": ["clothes"] },
-      "ask": {
-        "label": "Leg",
-        "labels": { "l26": "L26", "l28": "L28", "l30": "L30", "l32": "L32", "l34": "L34", "l36": "L36", "l38": "L38" },
-        "as": { "seller": { "question": "What leg length is it?" }, "buyer": { "question": "Which leg lengths?" } }
       }
     },
     "age": {
@@ -145,9 +115,19 @@
       "when": { "handover": ["shipped"] },
       "ask": { "label": "Ships to", "as": { "seller": { "question": "Which countries do you ship to?", "hint": "Leave it empty to ship anywhere." }, "buyer": { "label": "Ship to", "question": "Where should it be shipped?" } } }
     },
-    "description": { "piece": "text", "ask": { "label": "About", "long": true, "as": { "seller": { "question": "What should buyers know?" }, "buyer": { "question": "What should sellers know?" } } } }
+    "description": {
+      "piece": "text",
+      "ask": {
+        "label": "About",
+        "long": true,
+        "as": {
+          "seller": { "question": "What should buyers know?", "hint": "Such as the brand and model, like Levi's 501 or iPhone 13 128 GB, and for trousers the waist and leg." },
+          "buyer": { "question": "What should sellers know?", "hint": "Such as the brand or model you want, and for trousers the waist and leg." }
+        }
+      }
+    }
   },
-  "preview": ["photos", "category", "brand", "condition", "price", "wearer", "size", "waist", "leg", "age", "footLength", "area"],
+  "preview": ["photos", "category", "condition", "price", "wearer", "size", "age", "footLength", "area"],
   "review": {
     "asDescribed": { "piece": "choice", "values": ["yes", "no"], "roles": ["seller"], "ask": { "label": "As described", "question": "Was the item as the listing said and showed?" } },
     "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["buyer"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }

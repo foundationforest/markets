@@ -53,8 +53,14 @@
     },
     "price": {
       "piece": "price",
-      "per": ["hour", "lesson", "month"],
-      "ask": { "label": "Price", "as": { "tutor": { "question": "What do you charge?" }, "student": { "label": "Budget", "question": "What would you pay at most?" } } }
+      "per": ["hour", "month"],
+      "ask": {
+        "label": "Price",
+        "as": {
+          "tutor": { "question": "What do you charge?", "hint": "Such as 20 an hour, or 15 for 45 minutes. For a month, say in its note how many lessons." },
+          "student": { "label": "Budget", "question": "What would you pay at most?", "hint": "Such as 15 for 45 minutes, which also says how long a lesson is." }
+        }
+      }
     },
     "days": {
       "piece": "date",
@@ -62,14 +68,8 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "tutor": { "question": "When do you teach?" }, "student": { "question": "When can the lessons be?", "start": { "hours": "part" } } }
+        "as": { "tutor": { "question": "When do you teach?" }, "student": { "question": "When can the lessons be?" } }
       }
-    },
-    "lessonMinutes": {
-      "piece": "number",
-      "unit": "minutes",
-      "several": true,
-      "ask": { "label": "Lesson length", "as": { "tutor": { "question": "How long is a lesson?" }, "student": { "question": "How long should a lesson be?" } } }
     },
     "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "description": {

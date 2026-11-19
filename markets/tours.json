@@ -51,7 +51,13 @@
     "price": {
       "piece": "price",
       "per": ["person", "hour"],
-      "ask": { "label": "Price", "as": { "guide": { "question": "What do you charge?" }, "guest": { "label": "Budget", "question": "What would you pay at most?" } } }
+      "ask": {
+        "label": "Price",
+        "as": {
+          "guide": { "question": "What do you charge?", "hint": "Such as 25 a person, or 40 an hour for a private tour." },
+          "guest": { "label": "Budget", "question": "What would you pay at most?" }
+        }
+      }
     },
     "photos": { "piece": "photo", "several": true, "roles": ["guide"], "ask": { "label": "Photos", "question": "Any photos from your tours?" } },
     "tourHours": {

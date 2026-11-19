@@ -39,7 +39,7 @@
     "days": {
       "piece": "date",
       "several": true,
-      "ask": { "label": "Days and times", "question": "When are you free?", "start": { "way": "weekly", "hours": "part" } }
+      "ask": { "label": "Days and times", "question": "When are you free?", "start": { "way": "weekly", "hours": true } }
     },
     "description": { "piece": "text", "ask": { "label": "About", "long": true, "question": "What do you like to talk about?" } }
   },

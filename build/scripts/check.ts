@@ -102,6 +102,7 @@ const PLAIN: { [schemaPath: string]: string } = {
 const PLAIN_FIELD: { [schemaPath: string]: string } = {
   '#/allOf/3/then/not': 'must not hold "several": a price is always several',
   '#/properties/values/oneOf': 'must be a list of values, or the name of a list in build/lists.json',
+  '#/properties/per/items/not': 'must not be visit, session or lesson: its length is unknown, so a price per one compares with no price per hour; a price for time is per hour, for a length',
 }
 /** A field's own path, where ajv's schema paths start from the field's schema. */
 const FIELD = /^\/(listing|review)\/[^/]+(\/|$)/

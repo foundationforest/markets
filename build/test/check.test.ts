@@ -119,6 +119,12 @@ test('each field is one of the eight pieces, and each rule is kept to the pieces
   )
 })
 
+test('a price is never per visit, session or lesson, whose length is unknown', () => {
+  const container = 'must not be visit, session or lesson: its length is unknown, so a price per one compares with no price per hour; a price for time is per hour, for a length'
+  assert.equal(said((m) => m.listing.price.per.push('session')), of(`/listing/price/per/2 ${container}`))
+  assert.equal(said((m) => (m.listing.deposit.per = ['visit', 'lesson'])), of(`/listing/deposit/per/0 ${container}`, `/listing/deposit/per/1 ${container}`))
+})
+
 test("a choice's values are its own list, or the name of a shared list in build/lists.json", () => {
   assert.equal(said((m) => (m.listing.languages.values = 'tongues')), of('/listing/languages/values: "tongues" is not a list in build/lists.json'))
   assert.equal(said((m) => (m.listing.languages.values = [])), of('/listing/languages/values must be a list of values, or the name of a list in build/lists.json'))
@@ -170,7 +176,7 @@ test('suggestions are checked only to be well formed: each key for the piece it 
   assert.equal(said((m) => (m.listing.kind.ask.lable = 'Kind')), of('/listing/kind/ask: unknown key "lable"'))
   assert.equal(said((m) => (m.listing.area.ask.start = {})), of('/listing/area/ask/start must not be empty'))
   assert.equal(said((m) => (m.listing.meet.ask.start.way = 'monthly')), of('/listing/meet/ask/start/way must be one of "day", "from-to", "until", "weekly"'))
-  assert.equal(said((m) => (m.listing.meet.ask.start.hours = 'morning')), of('/listing/meet/ask/start/hours must be one of true, "part"'))
+  assert.equal(said((m) => (m.listing.meet.ask.start.hours = 'part')), of('/listing/meet/ask/start/hours must be true, or left out'))
   assert.equal(said((m) => (m.listing.price.ask.as.client.label = '')), of('/listing/price/ask/as/client/label must be one line of text, not only spaces'))
   // A label for a value of a shared list is one of its values.
   assert.equal(said((m) => (m.listing.languages.ask.labels = { es: 'Castilian' })), stale)

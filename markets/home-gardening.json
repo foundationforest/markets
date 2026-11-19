@@ -37,37 +37,37 @@
       "ask": {
         "label": "Days and times",
         "start": { "way": "weekly", "hours": true },
-        "as": { "gardener": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": "part" } } }
+        "as": { "gardener": { "question": "When do you work?" }, "client": { "question": "When should they come?", "start": { "way": "day", "hours": true } } }
       }
     },
     "price": {
       "piece": "price",
-      "per": ["hour", "visit", "day"],
-      "ask": { "label": "Price", "as": { "gardener": { "question": "What do you charge?" }, "client": { "label": "Budget", "question": "What would you pay at most?" } } }
+      "per": ["hour", "day"],
+      "ask": {
+        "label": "Price",
+        "as": {
+          "gardener": { "question": "What do you charge?", "hint": "Such as 20 an hour. A minimum, such as at least 2 hours, goes in its note." },
+          "client": { "label": "Budget", "question": "What would you pay at most?", "hint": "Such as 60 for 3 hours, which also says how long the job is." }
+        }
+      }
     },
     "photos": {
       "piece": "photo",
       "several": true,
       "ask": { "label": "Photos", "as": { "gardener": { "question": "Any photos of your work?" }, "client": { "question": "Any photos of the garden?" } } }
     },
-    "frequency": {
-      "piece": "choice",
-      "values": ["once", "weekly", "every-two-weeks", "monthly"],
-      "several": true,
-      "ask": { "label": "How often", "as": { "gardener": { "question": "How often can you come?" }, "client": { "question": "How often should they come?" } } }
-    },
-    "visitHours": {
-      "piece": "number",
-      "unit": "hours",
-      "ask": { "label": "Visit length", "as": { "gardener": { "question": "How long is a visit?", "start": { "range": true } }, "client": { "question": "How long should it take?" } } }
-    },
-    "gardenArea": { "piece": "number", "unit": "square-metres", "roles": ["client"], "ask": { "label": "Garden size", "question": "How big is the garden?" } },
     "bringsTools": { "piece": "choice", "values": ["yes", "no"], "roles": ["gardener"], "ask": { "label": "Brings tools", "question": "Do you bring your own tools?", "hint": "Such as a mower." } },
     "needsTools": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Bring tools", "question": "Should the gardener bring tools?", "hint": "Such as a mower." } },
-    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
     "description": {
       "piece": "text",
-      "ask": { "label": "About", "long": true, "as": { "gardener": { "question": "What should clients know?" }, "client": { "question": "What should the gardener know?" } } }
+      "ask": {
+        "label": "About",
+        "long": true,
+        "as": {
+          "gardener": { "question": "What should clients know?", "hint": "Such as how often you can come, and the languages you speak." },
+          "client": { "question": "What should the gardener know?", "hint": "Such as how often, how big the garden is, and the languages you speak." }
+        }
+      }
     }
   },
   "preview": ["jobs", "area", "days", "price", "photos"],
