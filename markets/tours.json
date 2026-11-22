@@ -1,7 +1,7 @@
 {
   "name": "tours",
-  "summary": "Local guides show people around their town or its nature.",
-  "description": "For adults, who may bring their own children. Learning a sport, such as surfing, is sports-coaching.",
+  "summary": "Take a tour, or give one.",
+  "description": "Local guides, in their town or its nature, for adults, who may bring their own children. Learning a sport, such as surfing, is sports-coaching.",
   "status": "beta",
   "icon": "map-trifold",
   "number": 11,
@@ -10,14 +10,19 @@
     { "role": "guest", "listings": "requests" }
   ],
   "listing": {
+    "description": {
+      "piece": "text",
+      "ask": {
+        "label": "Description",
+        "long": true,
+        "as": { "guide": { "question": "What tour do you give?", "hint": "Such as where it goes, and what guests see." }, "guest": { "question": "What tour are you looking for?" } }
+      }
+    },
     "kind": {
       "piece": "choice",
       "values": ["food", "walking", "history", "nature", "art"],
       "several": true,
-      "ask": {
-        "label": "Kind",
-        "as": { "guide": { "question": "What kinds of tours do you give?" }, "guest": { "question": "What kind of tour?" } }
-      }
+      "ask": { "label": "Kind", "as": { "guide": { "question": "What kinds of tours do you give?" }, "guest": { "question": "What kind of tour?" } } }
     },
     "group": {
       "piece": "choice",
@@ -41,13 +46,15 @@
       "several": true,
       "ask": {
         "label": "Days and times",
-        "as": {
-          "guide": { "question": "When do your tours start?", "start": { "way": "weekly", "hours": true } },
-          "guest": { "question": "When can the tour be?", "start": { "way": "from-to" } }
-        }
+        "as": { "guide": { "question": "When do your tours start?", "start": { "way": "weekly", "hours": true } }, "guest": { "question": "When can the tour be?", "start": { "way": "from-to" } } }
       }
     },
-    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?", "as": { "guide": { "question": "Which languages are your tours in?" } } } },
+    "languages": {
+      "piece": "choice",
+      "values": "languages",
+      "several": true,
+      "ask": { "label": "Languages", "question": "Which languages do you speak?", "as": { "guide": { "question": "Which languages are your tours in?" } } }
+    },
     "price": {
       "piece": "price",
       "per": ["person", "hour"],
@@ -63,26 +70,15 @@
     "tourHours": {
       "piece": "number",
       "unit": "hours",
-      "ask": { "label": "Tour length", "as": { "guide": { "question": "How long is a tour?" }, "guest": { "question": "How long should it be?", "hint": "Your limit, such as up to 3.", "start": { "range": true } } } }
-    },
-    "groupSize": {
-      "piece": "number",
       "ask": {
-        "label": "Group size",
-        "as": {
-          "guide": { "question": "How many people can join?", "hint": "Your limit, such as up to 12.", "start": { "range": true } },
-          "guest": { "question": "How many of you are coming?" }
-        }
+        "label": "Tour length",
+        "as": { "guide": { "question": "How long is a tour?" }, "guest": { "question": "How long should it be?", "hint": "Your limit, such as up to 3.", "start": { "range": true } } }
       }
     },
-    "description": {
-      "piece": "text",
-      "ask": { "label": "About", "long": true, "as": { "guide": { "question": "What should guests know?" }, "guest": { "question": "What should the guide know?" } } }
+    "spots": {
+      "piece": "number",
+      "ask": { "label": "Group size", "as": { "guide": { "question": "How many people can join?", "hint": "Your limit, such as 12." }, "guest": { "question": "How many of you are coming?" } } }
     }
   },
-  "preview": ["kind", "group", "area", "days", "languages", "price", "photos"],
-  "review": {
-    "asDescribed": { "piece": "choice", "values": ["yes", "no"], "roles": ["guide"], "ask": { "label": "As described", "question": "Was the tour as the listing said?" } },
-    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["guest"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
-  }
+  "preview": ["kind", "group", "area", "days", "languages", "price", "photos"]
 }

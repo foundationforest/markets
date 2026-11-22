@@ -50,6 +50,7 @@
       }
     },
     "deposit": { "piece": "price", "roles": ["knitter"], "ask": { "label": "Deposit", "question": "What do you ask for before you start?" } },
+    "spots": { "piece": "number", "roles": ["knitter"], "ask": { "label": "Orders at once", "question": "How many orders can you take at once?", "hint": "0 when you are full." } },
     "days": { "piece": "number", "unit": "days", "roles": ["knitter"], "ask": { "label": "Days to knit", "question": "How many days does an order take?", "start": { "range": true } } },
     "due": { "piece": "date", "roles": ["client"], "ask": { "label": "Needed by", "question": "When do you need it by?", "start": { "way": "until" } } },
     "handover": { "piece": "choice", "values": ["in-person", "shipped"], "several": true, "ask": { "label": "Handover", "question": "How is it handed over?" } },
@@ -75,7 +76,7 @@
     "photos": { "piece": "photo", "several": true, "roles": ["knitter"], "ask": { "label": "Photos", "question": "Photos of work you have done" } },
     "shop": { "piece": "link", "roles": ["knitter"], "ask": { "label": "Shop", "question": "Where can people see more of your work?" } }
   },
-  "preview": ["kind", "photos", "description", "price"],
+  "preview": ["kind", "photos", "price"],
   "review": {
     "onTime": { "piece": "choice", "values": ["yes", "no"], "roles": ["knitter"], "ask": { "label": "On time", "question": "Did it come by the day agreed?" } },
     "daysLate": { "piece": "number", "unit": "days", "roles": ["knitter"], "when": { "onTime": ["no"] }, "ask": { "label": "Days late", "question": "How many days late did it come?" } },

@@ -1,0 +1,50 @@
+{
+  "name": "software-development",
+  "summary": "Find a developer for your project, or find projects to build.",
+  "description": "Software, AI, data and automation, built and fixed remotely. Security work included; not design alone, video or hardware.",
+  "status": "beta",
+  "icon": "code",
+  "number": 17,
+  "roles": [
+    { "role": "developer", "listings": "offers" },
+    { "role": "client", "listings": "requests" }
+  ],
+  "listing": {
+    "description": {
+      "piece": "text",
+      "ask": {
+        "label": "Description",
+        "long": true,
+        "as": {
+          "developer": { "question": "What do you build?", "hint": "Such as the languages, frameworks and tools you use, like Python, React or Shopify, how long a job takes you, and your hours." },
+          "client": { "question": "What do you need built?", "hint": "Such as the languages, frameworks or tools it uses, like Python, React or Shopify, and the hours you need them." }
+        }
+      }
+    },
+    "kind": {
+      "piece": "choice",
+      "values": ["website", "web-app", "mobile-app", "desktop-app", "backend", "data", "ai", "automation", "security", "game"],
+      "several": true,
+      "ask": {
+        "label": "Kind",
+        "labels": { "website": "website or online shop", "ai": "AI" },
+        "as": { "developer": { "question": "What kinds of software do you work on?" }, "client": { "question": "What kind of software is it?" } }
+      }
+    },
+    "price": {
+      "piece": "price",
+      "per": ["hour", "day"],
+      "ask": {
+        "label": "Price",
+        "as": {
+          "developer": { "question": "What do you charge?", "hint": "Such as 50 an hour, or a price for the whole job." },
+          "client": { "label": "Budget", "question": "What would you pay at most?", "hint": "For the whole job, or such as 400 for 8 hours." }
+        }
+      }
+    },
+    "due": { "piece": "date", "roles": ["client"], "ask": { "label": "Needed by", "question": "When do you need it by?", "start": { "way": "until" } } },
+    "portfolio": { "piece": "link", "roles": ["developer"], "ask": { "label": "Portfolio", "question": "Where can clients see your work?" } },
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } }
+  },
+  "preview": ["kind", "price", "due"]
+}

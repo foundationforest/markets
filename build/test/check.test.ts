@@ -135,6 +135,8 @@ test('the shared names keep their meaning, and a market never lists the fields e
   assert.equal(said((m) => (m.listing.description = { piece: 'choice', values: ['x'] })), of('/listing/description/piece must be "text": description is a shared name, a listing\'s main text'))
   assert.equal(said((m) => (m.listing.description.several = true)), of('/listing/description must not hold "several": description is a shared name, and a listing holds one'))
   assert.equal(said((m) => (m.listing.price = { piece: 'number' })), of('/listing/price/piece must be "price": price is a shared name, the money a program sorts by'))
+  assert.equal(said((m) => (m.listing.spots = { piece: 'text' })), of('/listing/spots/piece must be "number": spots is a shared name, how many places an offer has or how many people a request is for'))
+  assert.equal(said((m) => (m.listing.spots = { piece: 'number', several: true, unit: 'days' })), of('/listing/spots must not hold "several": spots is a shared name, one whole number', '/listing/spots must not hold "unit": spots is a shared name, a count of places'))
   assert.equal(said((m) => (m.listing.contact = { piece: 'text' })), of('/listing: "contact" is a field every listing may hold: build/README.md defines it, and no market lists it'))
   assert.equal(said((m) => (m.review.score = { piece: 'number' })), of('/review: "score" is a field every review holds: build/README.md defines it, and a market adds only others'))
   assert.equal(said((m) => (m.listing.files = { piece: 'photo' })), of('/listing: "files" is not a field name: the standard keeps it for the files an entry names'))
@@ -149,7 +151,7 @@ test('roles, when and preview name what the market has, and when never goes in a
   assert.equal(said((m) => (m.listing.chest.when = { languages: ['es', 'Spanish'] })), of('/listing/chest/when/languages: "Spanish" is not one of languages\'s values'))
   assert.equal(said((m) => (m.listing.colour = { piece: 'choice', values: ['red'], roles: ['knitter'] }) && (m.listing.chest.when = { colour: ['red'], kind: ['jumper'] })), of('/listing/chest: its when names "colour", which is only for knitter, so its roles must be among those'))
   assert.equal(said((m) => (m.listing.kind.when = { size: ['m'] })), of('/listing: when goes in a loop (kind depends on size depends on kind), so a form cannot ask any of them first'))
-  assert.equal(said((m) => (m.preview = ['kind', 'colour'])), of('/preview: "colour" is not a field in "listing": the fields are description, kind, wearer, size, age, chest, footLength, yarns, price, deposit, days, due, handover, area, meet, shipsTo, languages, photos, shop'))
+  assert.equal(said((m) => (m.preview = ['kind', 'colour'])), of('/preview: "colour" is not a field in "listing": the fields are description, kind, wearer, size, age, chest, footLength, yarns, price, deposit, spots, days, due, handover, area, meet, shipsTo, languages, photos, shop'))
 })
 
 test('suggestions are checked only to be well formed: each key for the piece it opens, each role and label for one the market has', () => {
@@ -234,6 +236,14 @@ test('a market new here starts as beta and takes the next number after the highe
   assert.equal(run({ markets: [main[0], fresh('felting', 6), fresh('sewing', 7)] }, { markets: main }).stderr, stale)
   assert.equal(run({ markets: [main[0], fresh('felting', 9)] }, { markets: main }).stderr, 'markets/felting.json:\n  - /number is 9, but a market new here takes the next number after the highest on main, 5: here 6\n')
   assert.equal(run({ markets: [main[0], fresh('felting', 6, 'live')] }, { markets: main }).stderr, 'markets/felting.json:\n  - is new and live: a market starts as beta; live is a promise made after it has been tried\n')
+})
+
+test('a beta market renamed is a new market: it takes the next number, and its old name may go', () => {
+  const main = [copy(), { ...copy('goods'), status: 'beta' }]
+  const renamed = (number: number) => ({ ...copy('goods-selling'), status: 'beta', number })
+  const next = Math.max(...main.map((m) => m.number)) + 1
+  assert.equal(run({ markets: [main[0], renamed(next)] }, { markets: main }).stderr, stale)
+  assert.equal(run({ markets: [main[0], renamed(main[1].number)] }, { markets: main }).stderr, `markets/goods-selling.json:\n  - /number is ${main[1].number}, but a market new here takes the next number after the highest on main, ${next - 1}: here ${next}\n`)
 })
 
 // Each case is a market of its own, named for the case, live on main unless it says otherwise, and

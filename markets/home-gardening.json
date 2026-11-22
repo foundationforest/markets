@@ -1,6 +1,6 @@
 {
   "name": "home-gardening",
-  "summary": "Gardeners mow, prune, plant and care for people's gardens.",
+  "summary": "Find help with your garden, or offer yours.",
   "description": "Caring for a garden, not landscaping, building or felling trees. Repairs are home-repair, and cleaning is home-cleaning.",
   "status": "beta",
   "icon": "plant",
@@ -10,6 +10,17 @@
     { "role": "client", "listings": "requests" }
   ],
   "listing": {
+    "description": {
+      "piece": "text",
+      "ask": {
+        "label": "Description",
+        "long": true,
+        "as": {
+          "gardener": { "question": "What garden work do you offer?", "hint": "Such as how often you can come." },
+          "client": { "question": "What does your garden need?", "hint": "Such as how often, and how big the garden is." }
+        }
+      }
+    },
     "jobs": {
       "piece": "choice",
       "values": ["mowing", "hedges", "pruning", "weeding", "planting", "leaves", "watering", "clearing", "waste-removal"],
@@ -57,23 +68,7 @@
       "ask": { "label": "Photos", "as": { "gardener": { "question": "Any photos of your work?" }, "client": { "question": "Any photos of the garden?" } } }
     },
     "bringsTools": { "piece": "choice", "values": ["yes", "no"], "roles": ["gardener"], "ask": { "label": "Brings tools", "question": "Do you bring your own tools?", "hint": "Such as a mower." } },
-    "needsTools": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Bring tools", "question": "Should the gardener bring tools?", "hint": "Such as a mower." } },
-    "description": {
-      "piece": "text",
-      "ask": {
-        "label": "About",
-        "long": true,
-        "as": {
-          "gardener": { "question": "What should clients know?", "hint": "Such as how often you can come, and the languages you speak." },
-          "client": { "question": "What should the gardener know?", "hint": "Such as how often, how big the garden is, and the languages you speak." }
-        }
-      }
-    }
+    "needsTools": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Bring tools", "question": "Should the gardener bring tools?", "hint": "Such as a mower." } }
   },
-  "preview": ["jobs", "area", "days", "price", "photos"],
-  "review": {
-    "onTime": { "piece": "choice", "values": ["yes", "no"], "roles": ["gardener"], "ask": { "label": "On time", "question": "Did they come at the time agreed?" } },
-    "done": { "piece": "choice", "values": ["yes", "no"], "roles": ["gardener"], "ask": { "label": "Done as agreed", "question": "Was the work done as agreed?" } },
-    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
-  }
+  "preview": ["jobs", "area", "days", "price", "photos"]
 }

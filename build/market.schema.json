@@ -15,17 +15,18 @@
     "number": { "description": "A whole number from 1 that no other market holds.", "type": "integer", "minimum": 1 },
     "roles": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/role" } },
     "listing": {
-      "description": "The fields of a listing here, by name. description is one text and price a price, when a market has them; never contact, which every listing may hold.",
+      "description": "The fields of a listing here, by name. description is one text, price a price and spots one number with no unit, when a market has them; never contact, which every listing may hold.",
       "$ref": "#/$defs/fields",
       "type": "object",
       "properties": {
         "description": { "type": "object", "properties": { "piece": { "const": "text" } }, "not": { "required": ["several"] } },
-        "price": { "type": "object", "properties": { "piece": { "const": "price" } } }
+        "price": { "type": "object", "properties": { "piece": { "const": "price" } } },
+        "spots": { "type": "object", "properties": { "piece": { "const": "number" } }, "allOf": [{ "not": { "required": ["several"] } }, { "not": { "required": ["unit"] } }] }
       },
       "propertyNames": { "not": { "enum": ["contact"] } }
     },
     "preview": {
-      "description": "The listing fields that matter first, most needed first. Left out: description, price, then the place fields, of those the market has.",
+      "description": "The listing fields that matter first after description, which always comes first, most needed first. Left out: price, then the place fields, of those the market has.",
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
