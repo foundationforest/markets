@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "coach": { "question": "What coaching do you offer?", "hint": "Such as the languages you coach in." },
-          "student": { "question": "What coaching are you looking for?", "hint": "Such as how often, and the languages you speak." }
+          "coach": { "question": "What coaching do you offer?" },
+          "student": { "question": "What coaching are you looking for?", "hint": "Such as how often." }
         }
       }
     },

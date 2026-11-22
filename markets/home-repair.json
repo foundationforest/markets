@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "repairer": { "question": "What repairs and jobs do you take on?", "hint": "Such as the licences or certificates you hold, and the languages you speak." },
-          "client": { "question": "What needs fixing?", "hint": "Such as what is wrong and since when, and the languages you speak." }
+          "repairer": { "question": "What repairs and jobs do you take on?", "hint": "Such as the licences or certificates you hold." },
+          "client": { "question": "What needs fixing?", "hint": "Such as what is wrong and since when." }
         }
       }
     },

@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "cleaner": { "question": "What cleaning do you offer?", "hint": "Such as how often you can come, whether you mind pets, and the languages you speak." },
-          "client": { "question": "What cleaning do you need?", "hint": "Such as how often, how big the home is, any pets, and the languages you speak." }
+          "cleaner": { "question": "What cleaning do you offer?", "hint": "Such as how often you can come, and whether you mind pets." },
+          "client": { "question": "What cleaning do you need?", "hint": "Such as how often, how big the home is, and any pets." }
         }
       }
     },

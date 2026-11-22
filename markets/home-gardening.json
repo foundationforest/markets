@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "gardener": { "question": "What garden work do you offer?", "hint": "Such as how often you can come, and the languages you speak." },
-          "client": { "question": "What does your garden need?", "hint": "Such as how often, how big the garden is, and the languages you speak." }
+          "gardener": { "question": "What garden work do you offer?", "hint": "Such as how often you can come." },
+          "client": { "question": "What does your garden need?", "hint": "Such as how often, and how big the garden is." }
         }
       }
     },
