@@ -97,6 +97,9 @@ const PLAIN: { [schemaPath: string]: string } = {
   '#/properties/listing/properties/description/not': 'must not hold "several": description is a shared name, and a listing holds one',
   '#/properties/listing/properties/description/properties/piece/const': 'must be "text": description is a shared name, a listing\'s main text',
   '#/properties/listing/properties/price/properties/piece/const': 'must be "price": price is a shared name, the money a program sorts by',
+  '#/properties/listing/properties/spots/properties/piece/const': 'must be "number": spots is a shared name, how many places an offer has or how many people a request is for',
+  '#/properties/listing/properties/spots/allOf/0/not': 'must not hold "several": spots is a shared name, one whole number',
+  '#/properties/listing/properties/spots/allOf/1/not': 'must not hold "unit": spots is a shared name, a count of places',
 }
 /** The same, for a field, whose paths ajv gives from the field's own schema. */
 const PLAIN_FIELD: { [schemaPath: string]: string } = {

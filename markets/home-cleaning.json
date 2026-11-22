@@ -1,6 +1,7 @@
 {
   "name": "home-cleaning",
-  "summary": "Cleaners clean people's homes.",
+  "summary": "Find someone to clean your home, or offer to clean.",
+  "description": "Cleaning in a home. Repairs are home-repair, and garden work is home-gardening.",
   "status": "beta",
   "icon": "broom",
   "number": 5,
@@ -9,6 +10,17 @@
     { "role": "client", "listings": "requests" }
   ],
   "listing": {
+    "description": {
+      "piece": "text",
+      "ask": {
+        "label": "Description",
+        "long": true,
+        "as": {
+          "cleaner": { "question": "What cleaning do you offer?", "hint": "Such as how often you can come, whether you mind pets, and the languages you speak." },
+          "client": { "question": "What cleaning do you need?", "hint": "Such as how often, how big the home is, any pets, and the languages you speak." }
+        }
+      }
+    },
     "jobs": {
       "piece": "choice",
       "values": ["regular-cleaning", "deep-cleaning", "moving-out", "ironing", "laundry", "windows"],
@@ -47,22 +59,7 @@
       }
     },
     "bringsSupplies": { "piece": "choice", "values": ["yes", "no"], "roles": ["cleaner"], "ask": { "label": "Brings supplies", "question": "Do you bring your own supplies?" } },
-    "needsSupplies": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Bring supplies", "question": "Should the cleaner bring supplies?" } },
-    "description": {
-      "piece": "text",
-      "ask": {
-        "label": "About",
-        "long": true,
-        "as": {
-          "cleaner": { "question": "What should clients know?", "hint": "Such as how often you can come, whether you mind pets, and the languages you speak." },
-          "client": { "question": "What should the cleaner know?", "hint": "Such as how often, how big the home is, any pets, and the languages you speak." }
-        }
-      }
-    }
+    "needsSupplies": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Bring supplies", "question": "Should the cleaner bring supplies?" } }
   },
-  "preview": ["jobs", "area", "days", "price"],
-  "review": {
-    "onTime": { "piece": "choice", "values": ["yes", "no"], "roles": ["cleaner"], "ask": { "label": "On time", "question": "Did they come at the time agreed?" } },
-    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["client"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
-  }
+  "preview": ["jobs", "area", "days", "price"]
 }

@@ -1,6 +1,6 @@
 {
   "name": "sports-coaching",
-  "summary": "Coaches teach a sport or fitness, one on one or in groups.",
+  "summary": "Find or become a coach, in any sport or in fitness.",
   "description": "Sport and fitness; desk subjects and chess are tutoring. The student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
   "status": "beta",
   "icon": "soccer-ball",
@@ -10,9 +10,53 @@
     { "role": "student", "listings": "requests" }
   ],
   "listing": {
+    "description": {
+      "piece": "text",
+      "ask": {
+        "label": "Description",
+        "long": true,
+        "as": {
+          "coach": { "question": "What coaching do you offer?", "hint": "Such as the languages you coach in." },
+          "student": { "question": "What coaching are you looking for?", "hint": "Such as how often, and the languages you speak." }
+        }
+      }
+    },
     "sports": {
       "piece": "choice",
-      "values": ["tennis", "padel", "squash", "badminton", "table-tennis", "golf", "swimming", "running", "athletics", "cycling", "triathlon", "football", "american-football", "basketball", "volleyball", "rugby", "hockey", "ice-hockey", "baseball", "cricket", "boxing", "martial-arts", "climbing", "skiing", "snowboarding", "surfing", "sailing", "horse-riding", "gymnastics", "fitness", "yoga", "pilates"],
+      "values": [
+        "tennis",
+        "padel",
+        "squash",
+        "badminton",
+        "table-tennis",
+        "golf",
+        "swimming",
+        "running",
+        "athletics",
+        "cycling",
+        "triathlon",
+        "football",
+        "american-football",
+        "basketball",
+        "volleyball",
+        "rugby",
+        "hockey",
+        "ice-hockey",
+        "baseball",
+        "cricket",
+        "boxing",
+        "martial-arts",
+        "climbing",
+        "skiing",
+        "snowboarding",
+        "surfing",
+        "sailing",
+        "horse-riding",
+        "gymnastics",
+        "fitness",
+        "yoga",
+        "pilates"
+      ],
       "several": true,
       "ask": {
         "label": "Sports",
@@ -30,7 +74,11 @@
       "piece": "number",
       "unit": "years",
       "several": true,
-      "ask": { "label": "Ages", "hint": "Adults are 18 and over.", "as": { "coach": { "question": "Which ages do you coach?", "start": { "range": true } }, "student": { "question": "How old is each learner?" } } }
+      "ask": {
+        "label": "Ages",
+        "hint": "Adults are 18 and over.",
+        "as": { "coach": { "question": "Which ages do you coach?", "start": { "range": true } }, "student": { "question": "How old is each learner?" } }
+      }
     },
     "mode": {
       "piece": "choice",
@@ -70,29 +118,13 @@
         "as": { "coach": { "question": "When do you coach?" }, "student": { "question": "When can the sessions be?" } }
       }
     },
-    "groupSize": {
+    "spots": {
       "piece": "number",
-      "several": true,
       "ask": {
-        "label": "Group size",
-        "start": { "range": true },
-        "as": { "coach": { "question": "How many learners in a session?" }, "student": { "question": "How big a group would you join?" } }
-      }
-    },
-    "description": {
-      "piece": "text",
-      "ask": {
-        "label": "About",
-        "long": true,
-        "as": {
-          "coach": { "question": "What should students know?", "hint": "Such as the languages you coach in." },
-          "student": { "question": "What should the coach know?", "hint": "Such as how often, and the languages you speak." }
-        }
+        "label": "Learners",
+        "as": { "coach": { "question": "How many learners can join a session?", "hint": "Your limit, such as 1 for one on one." }, "student": { "question": "How many learners?" } }
       }
     }
   },
-  "preview": ["sports", "levels", "ages", "mode", "area", "price"],
-  "review": {
-    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["student"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
-  }
+  "preview": ["sports", "levels", "ages", "mode", "area", "price"]
 }

@@ -13,7 +13,7 @@ import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { loadMarkets as loadGiven, previewOf as previewGiven, type Files } from '../src/browser.ts'
 import { labelOf as labelGiven, valuesOf as valuesGiven } from '../src/browser.ts'
-import { SHARED, labelOf, loadMarkets, nameWords, previewOf, valuesOf, type Directory, type Field, type Market, type Markets } from '../src/index.ts'
+import { SHARED, labelOf, loadMarkets, nameWords, previewOf, valuesOf, type Directory, type Field, type Market, type Markets, type Named } from '../src/index.ts'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const json = (path: string) => JSON.parse(readFileSync(join(ROOT, path), 'utf8'))
@@ -48,7 +48,7 @@ const both = <M extends 'checkEntry' | 'ask' | 'match' | 'read'>(method: M, ...a
 const check = (...args: Parameters<Markets['checkEntry']>) => both('checkEntry', ...args)
 const ask = (...args: Parameters<Markets['ask']>) => both('ask', ...args)
 const today = { today: '2026-11-17' }
-const match = (field: Field, a: unknown, b: unknown) => both('match', field, a, b, today)
+const match = (field: Named, a: unknown, b: unknown) => both('match', field, a, b, today)
 const read = (field: Field, value: unknown) => both('read', field, value, today)
 
 const K = 'knitting'
@@ -189,6 +189,27 @@ test('date: days, and hours with their zone if wanted', () => {
   assert.match(listing('knitter', { ...inPerson, meet: week[0] })!, /^meet takes a list of one or more, each different/)
 })
 
+test("spots: one whole number from 0, a listing's or a date's own, only in a listing that may hold spots", () => {
+  for (const spots of ['0', '4', '12']) assert.equal(listing('knitter', { spots }), null)
+  const takes = 'spots takes one whole number from 0 as decimal text, such as "4", where "0" is full'
+  for (const spots of ['1.5', '-1', '01', '', 4, { from: '1', to: '4' }, ['4']]) assert.equal(listing('knitter', { spots }), takes)
+  assert.equal(`spots takes ${ask(K, 'knitter').find((f) => f.name === 'spots')!.takes}`, takes)
+  assert.equal(listing('client', { spots: '2' }), 'spots is for listings by knitter')
+  // A date answer may hold its own spots, "0" when that time is full.
+  const saturday = { on: '2026-11-28', start: '10:00', zone: 'Europe/Lisbon' }
+  for (const spots of ['0', '3']) assert.equal(listing('knitter', { ...inPerson, meet: [{ ...saturday, spots }] }), null)
+  const meet = ask(K, 'knitter').find((f) => f.name === 'meet')!.takes
+  assert.match(meet, /; and, if wanted, its own spots for that time, one whole number from 0 /)
+  for (const spots of ['-1', '2.5', 3]) assert.equal(listing('knitter', { ...inPerson, meet: [{ ...saturday, spots }] }), `meet takes ${meet}`)
+  // Only in a listing that may hold spots: never by a role spots is not for, nor in a market without spots.
+  const client = ask(K, 'client').find((f) => f.name === 'meet')!.takes
+  assert.doesNotMatch(client, /spots/)
+  assert.equal(listing('client', { ...inPerson, meet: [{ ...saturday, spots: '3' }] }), `meet takes ${client}`)
+  const { spots: _spots, ...noSpots } = knitting.listing
+  const without = loadGiven({ ...files, markets: [{ ...knitting, listing: noSpots }] })
+  assert.equal(without.checkEntry(K, 'knitter', 'listing', { ...inPerson, meet: [{ ...saturday, spots: '3' }] }), `meet takes ${client}`)
+})
+
 test("photo: one of the entry's files, by its SHA-256; link: a web address", () => {
   assert.equal(listing('knitter', { photos: [photo.sha256], files: [photo] }), null)
   assert.equal(listing('knitter', { photos: [photo.sha256] }), "photos names a file the body's files do not list")
@@ -237,8 +258,8 @@ test('a review holds the fields every review holds, and its market adds others, 
 
 // Question 2: do these two answers match?
 
-const date: Field = { piece: 'date' }
-const dates: Field = { piece: 'date', several: true }
+const date: Named = { name: 'when', piece: 'date' }
+const dates: Named = { name: 'days', piece: 'date', several: true }
 const Z = 'Europe/Madrid'
 const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
 
@@ -338,7 +359,7 @@ test('hours hold their start and not their end, each read in its zone', () => {
 })
 
 test('places match when their circles touch', () => {
-  const place: Field = { piece: 'place' }
+  const place: Named = { name: 'area', piece: 'place' }
   const getafe = { lat: '40.3083', lon: '-3.7327', radiusKm: 10 }
   const toledo = { lat: '39.8628', lon: '-4.0273', radiusKm: 5 }
   const retiro = { lat: '40.4153', lon: '-3.6845', radiusKm: 0 }
@@ -348,22 +369,22 @@ test('places match when their circles touch', () => {
 })
 
 test('numbers match when they overlap, choices when the same, and an answer left out matches anything', () => {
-  const age: Field = { piece: 'number', unit: 'years' }
+  const age: Named = { name: 'age', piece: 'number', unit: 'years' }
   assert.equal(match(age, { from: '9', to: '11' }, '10'), true)
   assert.equal(match(age, { from: '18' }, { from: '30', to: '40' }), true)
   assert.equal(match(age, { to: '6' }, '7'), false)
   assert.equal(match({ ...age, several: true }, [{ from: '3', to: '5' }, { from: '9', to: '11' }], [{ from: '6', to: '8' }]), false)
   assert.equal(match({ ...age, several: true }, [{ from: '3', to: '5' }, { from: '9', to: '11' }], ['10']), true)
-  const kind: Field = { piece: 'choice', values: ['hat', 'socks'] }
+  const kind: Named = { name: 'kind', piece: 'choice', values: ['hat', 'socks'] }
   assert.equal(match(kind, 'hat', 'hat'), true)
   assert.equal(match(kind, 'hat', 'socks'), false)
   assert.equal(match({ ...kind, several: true }, ['hat', 'socks'], ['socks']), true)
   for (const field of [age, kind, date, { ...kind, several: true as const }]) assert.equal(match(field, undefined, ['10']), true)
-  assert.equal(match({ piece: 'place', several: true }, [{ lat: '40.4168', lon: '-3.7038', radiusKm: 5 }], undefined), true)
+  assert.equal(match({ name: 'area', piece: 'place', several: true }, [{ lat: '40.4168', lon: '-3.7038', radiusKm: 5 }], undefined), true)
 })
 
 test("prices: the offer's costs no more than the request's, per the same thing in the same currency", () => {
-  const field: Field = { piece: 'price', per: ['item'] }
+  const field: Named = { name: 'price', piece: 'price', per: ['item'] }
   const offer = [{ amount: '35', currency: 'EUR', per: 'item' }, { amount: '90', currency: 'EUR', per: 'item', count: '3' }]
   assert.equal(match(field, offer, [{ amount: '30', currency: 'EUR', per: 'item' }]), true)
   assert.equal(match(field, offer, [{ amount: '29', currency: 'EUR', per: 'item' }]), false)
@@ -376,7 +397,7 @@ test("prices: the offer's costs no more than the request's, per the same thing i
 })
 
 test('prices for time compare by the hour, at any length', () => {
-  const field: Field = { piece: 'price', per: ['hour'] }
+  const field: Named = { name: 'price', piece: 'price', per: ['hour'] }
   // 25 for 45 minutes is 33.33 an hour.
   const lesson = [{ amount: '25', currency: 'EUR', per: 'hour', count: '0.75' }]
   assert.equal(match(field, lesson, [{ amount: '35', currency: 'EUR', per: 'hour' }]), true)
@@ -388,8 +409,31 @@ test('prices for time compare by the hour, at any length', () => {
   assert.equal(match(field, lesson, [{ amount: '50', currency: 'EUR', per: 'hour', count: '1.5' }]), true)
 })
 
+test("spots: the offer's are at least the request's, and a time with its own spots 0 is full", () => {
+  const spots: Named = { name: 'spots', piece: 'number' }
+  assert.equal(match(spots, '12', '3'), true)
+  assert.equal(match(spots, '3', '3'), true)
+  assert.equal(match(spots, '2', '3'), false)
+  assert.equal(match(spots, '0', '1'), false)
+  assert.equal(match(spots, undefined, '3'), true)
+  assert.equal(match(spots, '0', undefined), true)
+  // The same answers in a number by another name overlap, or not.
+  assert.equal(match({ ...spots, name: 'rooms' }, '12', '3'), false)
+  // A date's own spots: "0" is full, and where both answers hold their own, the offer's are at least the request's.
+  const saturday = { on: '2026-11-28', start: '10:00', zone: 'Europe/Lisbon' }
+  assert.equal(match(date, { ...saturday, spots: '0' }, saturday), false)
+  assert.equal(match(date, { ...saturday, spots: '3' }, saturday), true)
+  assert.equal(match(date, { ...saturday, spots: '3' }, { ...saturday, spots: '4' }), false)
+  assert.equal(match(date, { ...saturday, spots: '4' }, { ...saturday, spots: '4' }), true)
+  // Several answers match when any pair does: a full Saturday does not stop a weekly answer meeting that
+  // day. Weighing a time's own spots over the other answers, and over the listings' spots, is the index's.
+  assert.equal(match(dates, [{ every: ['saturday'], start: '10:00', zone: 'Europe/Lisbon' }, { ...saturday, spots: '0' }], [{ on: '2026-11-28' }]), true)
+  // A field with no name could be spots, so match throws rather than guess.
+  assert.throws(() => markets.match({ piece: 'number' } as Named, '12', '3'), { message: 'match takes a field with its name, as ask gives it' })
+})
+
 test('text, a photo and a link are read, not matched', () => {
-  for (const piece of ['text', 'photo', 'link'] as const) assert.equal(match({ piece }, 'a', 'b'), true)
+  for (const piece of ['text', 'photo', 'link'] as const) assert.equal(match({ name: piece, piece }, 'a', 'b'), true)
 })
 
 // Question 3: how does this answer read, in plain English?
@@ -412,6 +456,10 @@ test('a date reads as people say it, the year left out when it is this one', () 
   assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], start: '07:00', from: '2026-12-01', zone: Z }), 'Every day, 7:00, from 1 December')
   assert.equal(read(date, { every: [...weekdays, 'saturday', 'sunday'], to: '2027-01-15' }), 'Any day, until 15 January 2027')
   assert.equal(read(date, { every: ['friday'], start: '22:00', end: '02:00', to: '2027-05-01', zone: Z }), 'Fridays, 22:00 to 2:00, until 1 May 2027')
+  // A date's own spots read last, and "0" as full.
+  assert.equal(read(date, { on: '2026-11-28', start: '10:00', zone: Z, spots: '3' }), 'Saturday 28 November, 10:00, 3 spots')
+  assert.equal(read(date, { every: ['saturday'], start: '10:00', from: '2026-12-05', zone: Z, spots: '1' }), 'Saturdays, 10:00, from 5 December, 1 spot')
+  assert.equal(read(date, { on: '2026-11-28', spots: '0' }), 'Saturday 28 November, full')
   assert.equal(read(dates, [{ every: weekdays, start: '09:00', end: '17:00', zone: Z }, { every: ['saturday'], start: '10:00', end: '14:00', zone: Z }]), 'Monday to Friday, 9:00 to 17:00; Saturdays, 10:00 to 14:00')
   // Several answers are joined in a list, so each reads whole: the 10:00 is not a weekend hour.
   const tours = [{ every: ['saturday', 'sunday'], start: '09:00', zone: Z }, { every: [...weekdays, 'saturday', 'sunday'], start: '10:00', zone: Z }]
@@ -465,9 +513,12 @@ test('the other pieces read in plain words', () => {
 
 // Question 4: what does this market ask this role?
 
-test("a market asks a role its fields in order: the preview first, each after the fields its when names, then contact", () => {
-  assert.deepEqual(ask(K, 'knitter').map((f) => f.name), ['kind', 'photos', 'description', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'deposit', 'days', 'handover', 'area', 'meet', 'shipsTo', 'languages', 'shop', 'contact'])
-  assert.deepEqual(ask(K, 'client').map((f) => f.name), ['kind', 'description', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'due', 'handover', 'area', 'meet', 'languages', 'contact'])
+test("a market asks a role its fields in order: description, the preview, the rest, each after the fields its when names, then contact", () => {
+  assert.deepEqual(ask(K, 'knitter').map((f) => f.name), ['description', 'kind', 'photos', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'deposit', 'spots', 'days', 'handover', 'area', 'meet', 'shipsTo', 'languages', 'shop', 'contact'])
+  assert.deepEqual(ask(K, 'client').map((f) => f.name), ['description', 'kind', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'due', 'handover', 'area', 'meet', 'languages', 'contact'])
+  // Description comes first even where the preview names it later, or the file holds it later.
+  const late = { ...knitting, preview: ['kind', 'description'], listing: { kind: knitting.listing.kind!, description: knitting.listing.description! } }
+  assert.deepEqual(loadGiven({ ...files, markets: [late] }).ask(K, 'client').map((f) => f.name), ['description', 'kind', 'contact'])
   assert.deepEqual(ask(K, 'client', 'review', 'knitter').map((f) => f.name), ['subject', 'listing', 'score', 'text', 'onTime', 'daysLate', 'again'])
   assert.deepEqual(ask(K, 'knitter', 'review', 'client').map((f) => f.name), ['subject', 'listing', 'score', 'text', 'paid', 'again'])
   assert.deepEqual(ask(K, 'knitter', 'vouch').map((f) => f.name), ['subject', 'text'])
@@ -514,10 +565,10 @@ test("each field comes with its words: the role's, or else the field's, or else 
   assert.equal(by('knitter', 'review', 'client').paid!.question, 'Did they pay as agreed?')
 })
 
-test("previewOf gives a market's preview, or else description, price, then its place fields, of those it has", () => {
+test("previewOf gives a market's preview, or else price, then its place fields, of those it has", () => {
   assert.deepEqual(previewOf(knitting), knitting.preview)
   const { preview: _preview, ...none } = knitting
-  assert.deepEqual(previewOf(none), ['description', 'price', 'area'])
+  assert.deepEqual(previewOf(none), ['price', 'area'])
 })
 
 test("labelOf and valuesOf give a choice's values and how each reads, as ask's choices do", () => {

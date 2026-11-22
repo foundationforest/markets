@@ -1,12 +1,12 @@
 {
   "markets": [
     {
-      "name": "goods",
-      "summary": "People sell everyday things, new or used.",
-      "description": "Not motor vehicles or homes. If it has to be shipped, keep to things you could afford to lose.",
+      "name": "goods-selling",
+      "summary": "Buy and sell everyday things, new or used.",
+      "description": "Selling, not renting; not motor vehicles or homes. If it has to be shipped, keep to things you could afford to lose.",
       "status": "beta",
       "icon": "tag",
-      "number": 4,
+      "number": 16,
       "roles": [
         {
           "role": "seller",
@@ -20,7 +20,8 @@
     },
     {
       "name": "home-cleaning",
-      "summary": "Cleaners clean people's homes.",
+      "summary": "Find someone to clean your home, or offer to clean.",
+      "description": "Cleaning in a home. Repairs are home-repair, and garden work is home-gardening.",
       "status": "beta",
       "icon": "broom",
       "number": 5,
@@ -37,7 +38,7 @@
     },
     {
       "name": "home-gardening",
-      "summary": "Gardeners mow, prune, plant and care for people's gardens.",
+      "summary": "Find help with your garden, or offer yours.",
       "description": "Caring for a garden, not landscaping, building or felling trees. Repairs are home-repair, and cleaning is home-cleaning.",
       "status": "beta",
       "icon": "plant",
@@ -55,7 +56,7 @@
     },
     {
       "name": "home-repair",
-      "summary": "Repairers do plumbing, electrical and handyman jobs in people's homes.",
+      "summary": "Find someone for repairs and small jobs at home, or offer to do them.",
       "description": "Repairs and small jobs in a home, not renovations or building work. Garden work is home-gardening, and cleaning is home-cleaning.",
       "status": "beta",
       "icon": "wrench",
@@ -73,7 +74,7 @@
     },
     {
       "name": "language-exchange",
-      "summary": "Two people practise each other's language, taking turns.",
+      "summary": "Practise a language with someone who wants to practise yours.",
       "description": "For adults only, practising for free; paid lessons are tutoring.",
       "status": "beta",
       "icon": "translate",
@@ -86,12 +87,12 @@
       ]
     },
     {
-      "name": "software",
-      "summary": "Developers build and fix software, AI, data and automation, remotely.",
-      "description": "Security work included; not design alone, video or hardware.",
+      "name": "software-development",
+      "summary": "Find a developer for your project, or find projects to build.",
+      "description": "Software, AI, data and automation, built and fixed remotely. Security work included; not design alone, video or hardware.",
       "status": "beta",
       "icon": "code",
-      "number": 13,
+      "number": 17,
       "roles": [
         {
           "role": "developer",
@@ -105,7 +106,7 @@
     },
     {
       "name": "sports-coaching",
-      "summary": "Coaches teach a sport or fitness, one on one or in groups.",
+      "summary": "Find or become a coach, in any sport or in fitness.",
       "description": "Sport and fitness; desk subjects and chess are tutoring. The student is whoever arranges the coaching, often a parent, who stays present for a child's session in person.",
       "status": "beta",
       "icon": "soccer-ball",
@@ -123,7 +124,7 @@
     },
     {
       "name": "stays-free",
-      "summary": "Hosts give guests a couch or a room for free.",
+      "summary": "Find a free place to stay, or host a traveller.",
       "description": "For adults only, staying for free; a bed for help is stays-work.",
       "status": "beta",
       "icon": "couch",
@@ -141,7 +142,7 @@
     },
     {
       "name": "stays-work",
-      "summary": "Hosts give guests a bed, and often meals, for their help.",
+      "summary": "Trade your help for a place to stay, or host someone to help you out.",
       "description": "For adults only, and never childcare. A free stay with no help is stays-free, and help for a cause with no bed is volunteering.",
       "status": "beta",
       "icon": "barn",
@@ -159,8 +160,8 @@
     },
     {
       "name": "tours",
-      "summary": "Local guides show people around their town or its nature.",
-      "description": "For adults, who may bring their own children. Learning a sport, such as surfing, is sports-coaching.",
+      "summary": "Take a tour, or give one.",
+      "description": "Local guides, in their town or its nature, for adults, who may bring their own children. Learning a sport, such as surfing, is sports-coaching.",
       "status": "beta",
       "icon": "map-trifold",
       "number": 11,
@@ -177,7 +178,7 @@
     },
     {
       "name": "tutoring",
-      "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
+      "summary": "Find or become a tutor, in any subject.",
       "description": "School subjects, languages and chess; sport and fitness are sports-coaching, and practising a language for free is language-exchange. The student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
       "status": "beta",
       "icon": "graduation-cap",
@@ -195,7 +196,7 @@
     },
     {
       "name": "volunteering",
-      "summary": "Volunteers give their time to cleanups, food banks, events and good causes.",
+      "summary": "Give your time to a cause, or find volunteers for yours.",
       "description": "For adults only, online too, and never caring for children or for people who need care. A bed for help is stays-work.",
       "status": "beta",
       "icon": "hand-heart",

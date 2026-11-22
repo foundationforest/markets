@@ -1,6 +1,6 @@
 {
   "name": "tutoring",
-  "summary": "Tutors teach school subjects, languages, chess and other desk subjects.",
+  "summary": "Find or become a tutor, in any subject.",
   "description": "School subjects, languages and chess; sport and fitness are sports-coaching, and practising a language for free is language-exchange. The student is whoever arranges the lessons, often a parent, who stays present for a child's lesson in person.",
   "status": "beta",
   "icon": "graduation-cap",
@@ -10,11 +10,15 @@
     { "role": "student", "listings": "requests" }
   ],
   "listing": {
+    "description": {
+      "piece": "text",
+      "ask": { "label": "Description", "long": true, "as": { "tutor": { "question": "What lessons do you give?" }, "student": { "question": "What lessons are you looking for?" } } }
+    },
     "subjects": {
       "piece": "choice",
       "values": ["maths", "physics", "chemistry", "biology", "languages", "history", "geography", "economics", "accounting", "computer-science", "philosophy", "chess"],
       "several": true,
-      "ask": { "label": "Subjects", "as": { "tutor": { "question": "What do you teach?" }, "student": { "question": "Which subjects?" } } }
+      "ask": { "label": "Subjects", "as": { "tutor": { "question": "Which subjects do you teach?" }, "student": { "question": "Which subjects?" } } }
     },
     "taughtLanguages": {
       "piece": "choice",
@@ -65,20 +69,9 @@
     "days": {
       "piece": "date",
       "several": true,
-      "ask": {
-        "label": "Days and times",
-        "start": { "way": "weekly", "hours": true },
-        "as": { "tutor": { "question": "When do you teach?" }, "student": { "question": "When can the lessons be?" } }
-      }
+      "ask": { "label": "Days and times", "start": { "way": "weekly", "hours": true }, "as": { "tutor": { "question": "When do you teach?" }, "student": { "question": "When can the lessons be?" } } }
     },
-    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } },
-    "description": {
-      "piece": "text",
-      "ask": { "label": "About", "long": true, "as": { "tutor": { "question": "What should students know?" }, "student": { "question": "What should the tutor know?" } } }
-    }
+    "languages": { "piece": "choice", "values": "languages", "several": true, "ask": { "label": "Languages", "question": "Which languages do you speak?" } }
   },
-  "preview": ["subjects", "taughtLanguages", "levels", "mode", "area", "price"],
-  "review": {
-    "paid": { "piece": "choice", "values": ["yes", "no"], "roles": ["student"], "ask": { "label": "Paid", "question": "Did they pay as agreed?" } }
-  }
+  "preview": ["subjects", "taughtLanguages", "levels", "mode", "area", "price"]
 }

@@ -9,7 +9,7 @@ import { fromFiles, type Directory, type Lists, type Market, type Markets } from
 
 export {
   PIECES, SHARED, UNITS, WAYS, WEEKDAYS, labelOf, nameWords, previewOf, valuesOf, wordsOf,
-  type Ask, type Asked, type DateValue, type Directory, type Field, type Fields, type Kind, type Lists, type Market, type Markets,
+  type Ask, type Asked, type DateValue, type Directory, type Field, type Fields, type Kind, type Lists, type Market, type Markets, type Named,
   type NumberValue, type Options, type Piece, type PlaceValue, type PriceValue, type Role, type Start, type Status, type Unit, type Way, type Weekday, type Words,
 } from './markets.ts'
 

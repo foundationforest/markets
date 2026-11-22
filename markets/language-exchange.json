@@ -1,6 +1,6 @@
 {
   "name": "language-exchange",
-  "summary": "Two people practise each other's language, taking turns.",
+  "summary": "Practise a language with someone who wants to practise yours.",
   "description": "For adults only, practising for free; paid lessons are tutoring.",
   "status": "beta",
   "icon": "translate",
@@ -9,6 +9,10 @@
     { "role": "partner", "listings": "requests" }
   ],
   "listing": {
+    "description": {
+      "piece": "text",
+      "ask": { "label": "Description", "long": true, "question": "What exchange are you looking for?", "hint": "Such as what you like to talk about, and how often." }
+    },
     "learns": {
       "piece": "choice",
       "values": "languages",
@@ -36,19 +40,7 @@
       "when": { "mode": ["in-person"] },
       "ask": { "label": "Area", "question": "Where can you meet?", "hint": "Your neighbourhood and town, not your address.", "start": { "radiusKm": 5 } }
     },
-    "days": {
-      "piece": "date",
-      "several": true,
-      "ask": { "label": "Days and times", "question": "When are you free?", "start": { "way": "weekly", "hours": true } }
-    },
-    "description": { "piece": "text", "ask": { "label": "About", "long": true, "question": "What do you like to talk about?" } }
+    "days": { "piece": "date", "several": true, "ask": { "label": "Days and times", "question": "When are you free?", "start": { "way": "weekly", "hours": true } } }
   },
-  "preview": ["learns", "level", "languages", "mode", "area", "days"],
-  "review": {
-    "showedUp": {
-      "piece": "choice",
-      "values": ["yes", "no"],
-      "ask": { "label": "Showed up", "question": "Did they come every time as agreed?", "hint": "A meeting missed, or cancelled too late to plan around, is no." }
-    }
-  }
+  "preview": ["learns", "level", "languages", "mode", "area", "days"]
 }
