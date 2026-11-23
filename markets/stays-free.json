@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "host": { "question": "What stay do you offer?", "hint": "Such as how many nights guests can stay, who you host, and any pets at home." },
-          "guest": { "question": "What stay are you looking for?", "hint": "Such as how many nights, and whether you mind pets." }
+          "host": { "question": "What should a guest know before writing to you?", "hint": "Such as how many nights guests can stay, who you host, and any pets at home." },
+          "guest": { "question": "What should a host know before writing to you?", "hint": "Such as how many nights, and whether you mind pets." }
         }
       }
     },

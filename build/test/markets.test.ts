@@ -89,14 +89,24 @@ test('the market, the role, the kind and the body are named before any field', (
   assert.equal(check(K, 'knitter', 'listing', ['hat']), 'a listing is an object of its fields')
 })
 
-test('a listing may leave out any field, and holds only its market\'s and contact', () => {
+test('a listing may leave out any field, and holds only its market\'s, title and contact', () => {
   assert.equal(listing('knitter', {}), null)
   assert.equal(listing('knitter', { description: 'Hats', colour: 'red' }), 'a listing in knitting has no field colour')
   assert.equal(listing('knitter', { constructor: 'x' }), 'a listing in knitting has no field constructor')
   assert.equal(listing('knitter', JSON.parse('{ "__proto__": "x" }')), 'a listing in knitting has no field __proto__')
-  for (const { role } of knitting.roles) assert.equal(listing(role, { contact: '+34 600 000 000' }), null)
+  for (const { role } of knitting.roles) assert.equal(listing(role, { title: 'Merino hats', contact: '+34 600 000 000' }), null)
   assert.equal(listing('knitter', { contact: ['+34 600 000 000'] }), 'contact takes text')
   assert.equal(check(K, 'knitter', 'review', { subject, contact: 'x' }), 'a review in knitting has no field contact')
+  assert.equal(check(K, 'knitter', 'review', { subject, title: 'x' }), 'a review in knitting has no field title')
+})
+
+test('title: one line, not only spaces, of at most 60 characters, counted as characters', () => {
+  for (const title of ["Levi's 501 jeans", 'Tennis for beginners', 'a'.repeat(60), '🧶'.repeat(60), 'é'.repeat(60)]) assert.equal(listing('knitter', { title }), null, title)
+  const takes = 'title takes one line of at most 60 characters'
+  for (const title of ['Merino hats\nand scarves', 'Merino hats\r', '', '   ', 'a'.repeat(61), '🧶'.repeat(61), 7, ['Merino hats']]) {
+    assert.equal(listing('knitter', { title }), takes, JSON.stringify(title))
+  }
+  assert.equal(`title takes ${ask(K, 'knitter').find((f) => f.name === 'title')!.takes}`, takes)
 })
 
 test('the first field that does not fit is the one answered', () => {
@@ -513,12 +523,15 @@ test('the other pieces read in plain words', () => {
 
 // Question 4: what does this market ask this role?
 
-test("a market asks a role its fields in order: description, the preview, the rest, each after the fields its when names, then contact", () => {
-  assert.deepEqual(ask(K, 'knitter').map((f) => f.name), ['description', 'kind', 'photos', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'deposit', 'spots', 'days', 'handover', 'area', 'meet', 'shipsTo', 'languages', 'shop', 'contact'])
-  assert.deepEqual(ask(K, 'client').map((f) => f.name), ['description', 'kind', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'due', 'handover', 'area', 'meet', 'languages', 'contact'])
-  // Description comes first even where the preview names it later, or the file holds it later.
+test("a market asks a role its fields in order: title, description, the preview, the rest, each after the fields its when names, then contact", () => {
+  assert.deepEqual(ask(K, 'knitter').map((f) => f.name), ['title', 'description', 'kind', 'photos', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'deposit', 'spots', 'days', 'handover', 'area', 'meet', 'shipsTo', 'languages', 'shop', 'contact'])
+  assert.deepEqual(ask(K, 'client').map((f) => f.name), ['title', 'description', 'kind', 'price', 'wearer', 'size', 'age', 'chest', 'footLength', 'yarns', 'due', 'handover', 'area', 'meet', 'languages', 'contact'])
+  // Title, then description, come first even where the preview names description later, or the file holds it later.
   const late = { ...knitting, preview: ['kind', 'description'], listing: { kind: knitting.listing.kind!, description: knitting.listing.description! } }
-  assert.deepEqual(loadGiven({ ...files, markets: [late] }).ask(K, 'client').map((f) => f.name), ['description', 'kind', 'contact'])
+  assert.deepEqual(loadGiven({ ...files, markets: [late] }).ask(K, 'client').map((f) => f.name), ['title', 'description', 'kind', 'contact'])
+  // A market with no description still asks its title first.
+  const bare = { ...knitting, preview: undefined, listing: { kind: knitting.listing.kind! } }
+  assert.deepEqual(loadGiven({ ...files, markets: [bare] }).ask(K, 'client').map((f) => f.name), ['title', 'kind', 'contact'])
   assert.deepEqual(ask(K, 'client', 'review', 'knitter').map((f) => f.name), ['subject', 'listing', 'score', 'text', 'onTime', 'daysLate', 'again'])
   assert.deepEqual(ask(K, 'knitter', 'review', 'client').map((f) => f.name), ['subject', 'listing', 'score', 'text', 'paid', 'again'])
   assert.deepEqual(ask(K, 'knitter', 'vouch').map((f) => f.name), ['subject', 'text'])
@@ -552,6 +565,10 @@ test("each field comes with its words: the role's, or else the field's, or else 
   assert.equal(knitter.description!.question, 'What do you knit, and how?')
   assert.equal(knitter.description!.ask!.long, true)
   assert.equal(knitter.contact!.question, 'How can people reach you outside Forest?')
+  assert.equal(client.title!.label, 'Title')
+  assert.equal(client.title!.question, 'What is it, in a few words?')
+  assert.equal(client.title!.hint, "What someone would search for, such as Levi's 501 jeans or Tennis for beginners.")
+  assert.equal(client.title!.ask!.long, undefined)
   assert.deepEqual(client.size!.choices!.slice(0, 2), [{ value: 'xs', label: 'XS' }, { value: 's', label: 'S' }])
   assert.deepEqual(client.handover!.choices, [{ value: 'in-person', label: 'In person' }, { value: 'shipped', label: 'Shipped' }])
   // A picker never shows a lower-case label: each choice reads as if it stood alone.

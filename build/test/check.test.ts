@@ -138,6 +138,7 @@ test('the shared names keep their meaning, and a market never lists the fields e
   assert.equal(said((m) => (m.listing.spots = { piece: 'text' })), of('/listing/spots/piece must be "number": spots is a shared name, how many places an offer has or how many people a request is for'))
   assert.equal(said((m) => (m.listing.spots = { piece: 'number', several: true, unit: 'days' })), of('/listing/spots must not hold "several": spots is a shared name, one whole number', '/listing/spots must not hold "unit": spots is a shared name, a count of places'))
   assert.equal(said((m) => (m.listing.contact = { piece: 'text' })), of('/listing: "contact" is a field every listing may hold: build/README.md defines it, and no market lists it'))
+  assert.equal(said((m) => (m.listing.title = { piece: 'text' })), of('/listing: "title" is a field every listing may hold: build/README.md defines it, and no market lists it'))
   assert.equal(said((m) => (m.review.score = { piece: 'number' })), of('/review: "score" is a field every review holds: build/README.md defines it, and a market adds only others'))
   assert.equal(said((m) => (m.listing.files = { piece: 'photo' })), of('/listing: "files" is not a field name: the standard keeps it for the files an entry names'))
   assert.equal(said((m) => (m.listing['start-time'] = { piece: 'date' })), of('/listing: "start-time" is not a field name: a lowercase letter, then letters and digits, at most 64 characters'))

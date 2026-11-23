@@ -15,7 +15,7 @@
       "ask": {
         "label": "Description",
         "long": true,
-        "as": { "guide": { "question": "What tour do you give?", "hint": "Such as where it goes, and what guests see." }, "guest": { "question": "What tour are you looking for?" } }
+        "as": { "guide": { "question": "What should a guest know before writing to you?", "hint": "Such as where it goes, and what guests see." }, "guest": { "question": "What should a guide know before writing to you?" } }
       }
     },
     "kind": {

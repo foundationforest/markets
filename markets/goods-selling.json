@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "seller": { "question": "What are you selling?", "hint": "Such as the brand and model, like Levi's 501 or iPhone 13 128 GB; for trousers the waist and leg, and for a bike its frame size." },
-          "buyer": { "question": "What are you looking for?", "hint": "Such as the brand or model you want; for trousers the waist and leg, and for a bike its frame size." }
+          "seller": { "question": "What should a buyer know before writing to you?", "hint": "Such as the waist and leg for trousers, and the frame size for a bike." },
+          "buyer": { "question": "What should a seller know before writing to you?", "hint": "Such as the waist and leg for trousers, and the frame size for a bike." }
         }
       }
     },
