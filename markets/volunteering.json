@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "organizer": { "question": "What is the cause, and the help you need?", "hint": "Such as how many hours a week, for help that goes on, and the languages volunteers should speak." },
-          "volunteer": { "question": "What would you like to help with?", "hint": "Such as how many hours a week you can give, and the languages you speak." }
+          "organizer": { "question": "What should a volunteer know before writing to you?", "hint": "Such as the cause, how many hours a week, for help that goes on, and the languages volunteers should speak." },
+          "volunteer": { "question": "What should an organizer know before writing to you?", "hint": "Such as how many hours a week you can give, and the languages you speak." }
         }
       }
     },

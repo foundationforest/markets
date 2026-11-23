@@ -12,7 +12,7 @@
   "listing": {
     "description": {
       "piece": "text",
-      "ask": { "label": "Description", "long": true, "as": { "tutor": { "question": "What lessons do you give?" }, "student": { "question": "What lessons are you looking for?" } } }
+      "ask": { "label": "Description", "long": true, "as": { "tutor": { "question": "What should a student know before writing to you?" }, "student": { "question": "What should a tutor know before writing to you?" } } }
     },
     "subjects": {
       "piece": "choice",

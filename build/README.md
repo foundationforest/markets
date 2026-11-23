@@ -111,11 +111,11 @@ as [the standard names a file](https://github.com/foundationforest/standard/blob
 | `number` | A whole number from 1, no other market's. |
 | `roles` | Each `{ "role", "listings" }`: a word spelled as a name is, and `offers` or `requests`. |
 | `listing` | A listing's fields, by name. `description` is one text, `price` a price, `spots` one number with no unit. |
-| `preview` | Optional: the listing fields that matter first, after `description`, which `ask` gives first: a listing has no title but its first line. |
+| `preview` | Optional: the listing fields that matter first, after `title` and `description`, which `ask` gives first. |
 | `review` | Optional: the fields a review here adds. |
 
 A field's name is a lowercase letter, then letters and digits, at most 64. It is never `files`,
-`contact`, or in a review `subject`, `listing`, `score` or `text`. The shortest field is
+`title`, `contact`, or in a review `subject`, `listing`, `score` or `text`. The shortest field is
 `{ "piece": "text" }`.
 
 A field's **rules**:
@@ -152,8 +152,12 @@ Its **suggestions**, under `ask`, are checked only for being well formed:
 
 Each must hold `subject`, the address of the profile it is about. `listing` is the deal's listing,
 `<profile address>/listing/<id>`. `score` is a number from `"1"` to `"10"`, at most one decimal.
-Every listing may hold `contact`, as text: how to reach the writer outside Forest. It is public, and
-the same contact on two profiles links them. No market lists these.
+
+Every listing may hold `title` and `contact`, as text. A title says what the listing is in a few
+words: one line of at most 60 characters, so a card, a message or a search result shows it whole.
+Where a listing has none, a reader shows the start of its description instead. A contact is how to
+reach the writer outside Forest: it is public, and the same contact on two profiles links them. No
+market lists these.
 
 ## Status
 

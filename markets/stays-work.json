@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "host": { "question": "What stay do you offer, for what help?", "hint": "Such as how long guests can stay, and who you host." },
-          "guest": { "question": "What stay are you looking for?", "hint": "Such as how long you want to stay, and what you are good at." }
+          "host": { "question": "What should a guest know before writing to you?", "hint": "Such as how long guests can stay, and who you host." },
+          "guest": { "question": "What should a host know before writing to you?", "hint": "Such as how long you want to stay, and what you are good at." }
         }
       }
     },

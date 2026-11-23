@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "developer": { "question": "What do you build?", "hint": "Such as the languages, frameworks and tools you use, like Python, React or Shopify, how long a job takes you, and your hours." },
-          "client": { "question": "What do you need built?", "hint": "Such as the languages, frameworks or tools it uses, like Python, React or Shopify, and the hours you need them." }
+          "developer": { "question": "What should a client know before writing to you?", "hint": "Such as the languages, frameworks and tools you use, like Python, React or Shopify, how long a job takes you, and your hours." },
+          "client": { "question": "What should a developer know before writing to you?", "hint": "Such as the languages, frameworks or tools it uses, like Python, React or Shopify, and the hours you need them." }
         }
       }
     },

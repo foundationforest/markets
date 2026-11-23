@@ -95,11 +95,16 @@ export type DateValue = ({ on: string } | { from?: string; to?: string } | { eve
 const SPOTS = 'spots'
 
 /**
- * The fields each kind holds in every market, beyond its market's: a listing's contact, and what every
- * review, vouch and report holds. A market adds fields to its reviews only, and never lists contact.
+ * The fields each kind holds in every market, beyond its market's: a listing's title and contact, and
+ * what every review, vouch and report holds. A market adds fields to its reviews only, and never lists
+ * title or contact.
  */
 export const SHARED: { [kind in Kind]: Fields } = {
   listing: {
+    title: {
+      piece: 'text',
+      ask: { label: 'Title', question: 'What is it, in a few words?', hint: "What someone would search for, such as Levi's 501 jeans or Tennis for beginners." },
+    },
     contact: {
       piece: 'text',
       ask: { label: 'Contact', question: 'How can people reach you outside Forest?', hint: 'A phone, a handle or an email. Anyone can read it, and the same contact on two profiles links them.' },
@@ -126,7 +131,12 @@ const SPOTS_FITS = /^(0|[1-9][0-9]*)$/
 const SPOTS_TAKES = 'one whole number from 0 as decimal text, such as "4", where "0" is full'
 /** What a name the format knows takes beyond its piece, by kind. */
 const MEANS: { [kind in Kind]?: { [name: string]: { fits: RegExp; takes: string } } } = {
-  listing: { [SPOTS]: { fits: SPOTS_FITS, takes: SPOTS_TAKES } },
+  listing: {
+    // A title is shown whole on a card, in a message and in search: one line, not only spaces, of at
+    // most 60 characters, counted as characters, not code units, by the u flag.
+    title: { fits: /^(?=[^\r\n]*\S)[^\r\n]{1,60}$/u, takes: 'one line of at most 60 characters' },
+    [SPOTS]: { fits: SPOTS_FITS, takes: SPOTS_TAKES },
+  },
   review: {
     score: { fits: /^(10(\.0)?|[1-9](\.[0-9])?)$/, takes: 'one number from "1" to "10" with at most one decimal, such as "8.5"' },
     listing: { fits: /^[^/]+\/listing\/[^/]+$/, takes: "a listing's address, <profile address>/listing/<id>" },
@@ -139,8 +149,8 @@ const meansOf = (kind: Kind, key: string) => {
 }
 
 /**
- * The names of a market's listing fields that matter first, after description, most needed first:
- * its preview, or else price, then its place fields, of those it has.
+ * The names of a market's listing fields that matter first, after title and description, most needed
+ * first: its preview, or else price, then its place fields, of those it has.
  */
 export function previewOf(market: Market): string[] {
   const { listing } = market
@@ -673,9 +683,10 @@ export function fromFiles({ directory, lists, markets: given }: Files): Markets 
       const fields = fieldsOf(market, kind as Kind)
       const who = kind === 'listing' ? role : aboutRole
       const names = Object.keys(fields).filter((key) => !fields[key]!.roles || who === undefined || fields[key]!.roles!.includes(who))
-      // A listing's description first, its title; then its preview, then the rest as the file has them;
-      // each after the fields its when names.
-      const first = kind === 'listing' ? ['description', ...previewOf(market)].filter((key) => names.includes(key)) : []
+      // A listing's title first, then its description, then its preview, then the rest as the file has
+      // them, contact last, since fieldsOf puts the shared fields after the market's; each after the
+      // fields its when names.
+      const first = kind === 'listing' ? ['title', 'description', ...previewOf(market)].filter((key) => names.includes(key)) : []
       const spots = kind === 'listing' && holdsSpots(market, role)
       const ordered: string[] = []
       const after = (key: string, path: string[] = []) => {

@@ -16,8 +16,8 @@
         "label": "Description",
         "long": true,
         "as": {
-          "repairer": { "question": "What repairs and jobs do you take on?", "hint": "Such as the licences or certificates you hold." },
-          "client": { "question": "What needs fixing?", "hint": "Such as what is wrong and since when." }
+          "repairer": { "question": "What should a client know before writing to you?", "hint": "Such as the licences or certificates you hold." },
+          "client": { "question": "What should a repairer know before writing to you?", "hint": "Such as what is wrong and since when." }
         }
       }
     },

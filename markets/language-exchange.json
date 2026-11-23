@@ -11,7 +11,7 @@
   "listing": {
     "description": {
       "piece": "text",
-      "ask": { "label": "Description", "long": true, "question": "What exchange are you looking for?", "hint": "Such as what you like to talk about, and how often." }
+      "ask": { "label": "Description", "long": true, "question": "What should a partner know before writing to you?", "hint": "Such as what you like to talk about, and how often." }
     },
     "learns": {
       "piece": "choice",
